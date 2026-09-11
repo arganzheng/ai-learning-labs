@@ -1,0 +1,12 @@
+Llama-3-8B: KV 128.0 KiB/token, weights 15.0 GFLOPs/token
+     ctx   KV cache      prefill  prefill@60%   attn/token attn share
+    8192      1.0 G      0.14 PF       0.24 s       4.3 GF      22.2%
+   32768      4.0 G      0.77 PF       1.30 s      17.2 GF      53.4%
+  131072     16.0 G      6.47 PF      10.90 s      68.7 GF      82.1%
+
+Llama-3-70B: KV 320.0 KiB/token, weights 139.0 GFLOPs/token
+     ctx   KV cache      prefill  prefill@60%   attn/token attn share
+    8192      2.5 G      1.23 PF       2.07 s      21.5 GF      13.4%
+   32768     10.0 G      5.96 PF      10.05 s      85.9 GF      38.2%
+  131072     40.0 G     40.74 PF      68.65 s     343.6 GF      71.2%
+

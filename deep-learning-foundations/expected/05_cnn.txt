@@ -1,0 +1,30 @@
+== 1. a 3x3 conv on a 6x6 image IS a 16x36 matrix ==
+max |conv - M@x| = 8.881784197001252e-16
+matrix shape (16, 36), entries 576, nonzero 144, distinct free params 9
+row 0 of M (reshaped 6x6):
+[[-0.65 -0.13  0.78  0.    0.    0.  ]
+ [ 1.49 -1.26  1.51  0.    0.    0.  ]
+ [ 1.35  0.78  0.26  0.    0.    0.  ]
+ [ 0.    0.    0.    0.    0.    0.  ]
+ [ 0.    0.    0.    0.    0.    0.  ]
+ [ 0.    0.    0.    0.    0.    0.  ]]
+
+== 2. ResNet-50 (torchvision, no pretrained weights): params and FLOPs at 224x224 ==
+params 25.56M  (conv 23.45M, fc 2.05M, bn 0.05M)
+FLOPs per image: conv 8.17 G, fc 0.004 G  -> 8.18 GFLOPs (= 4.09 GMACs)
+one 3x3 conv 64->64 @56x56: params 36,864  FLOPs 231 MFLOPs; as a dense layer on the same tensor it would be (200,704)^2 = 40.3G params
+receptive field of L stacked 3x3 (stride 1): 1+2L -> {1: 3, 5: 11, 10: 21, 20: 41}
+
+== 4. ViT patch embedding == conv with kernel = stride = patch ==
+max |conv - unfold+linear| = 1.1920928955078125e-06
+tokens per image: 196  (= (224/16)^2);  patch embedding params 590,592  (= 3*16*16*768 + 768)
+  ViT-B/16 @224        -> 196 tokens
+  ViT-L/14 @224        -> 256 tokens
+  CLIP ViT-L/14 @336   -> 576 tokens
+  ViT-H/14 @224        -> 256 tokens
+
+== 3. deep conv net (BN everywhere) on MNIST 14x14, 3 epochs of 20k images, SGD momentum lr 0.05, clip 1.0: plain vs residual at L=20 / 56 ==
+L=20 plain   : init grad norm block1 1.7e+00 vs block20 1.6e-01 (ratio 10.92) | train loss @ep1 0.460 @end 0.128 | test acc  96.4%  (111s)
+L=20 residual: init grad norm block1 1.3e+00 vs block20 3.7e-01 (ratio 3.39) | train loss @ep1 0.224 @end 0.093 | test acc  96.8%  (105s)
+L=56 plain   : init grad norm block1 9.5e+02 vs block56 3.3e-01 (ratio 2848.66) | train loss @ep1 1.676 @end 0.724 | test acc  70.9%  (317s)
+L=56 residual: init grad norm block1 2.2e+00 vs block56 7.6e-01 (ratio 2.85) | train loss @ep1 0.268 @end 0.129 | test acc  96.1%  (335s)

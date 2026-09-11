@@ -1,0 +1,21 @@
+== gradient check: [20,16,5] float64 net, 30 random entries per parameter, eps 1e-6 ==
+grad check worst rel err: 1.11e-07
+
+== FLOPs and activation memory for one step, batch 128 ==
+params: 203530
+batch 128: fwd 52.0 MFLOPs  bwd 104.1 MFLOPs  ratio 2.00
+  2*N*tokens = 52.1 MFLOPs (fwd approx ignoring bias)
+  saved activations: 552 KiB  vs weights 795 KiB
+
+== same weights and batch through PyTorch autograd ==
+loss numpy 2.279627 torch 2.279627
+dW1 max abs diff 3.73e-09
+db1 max abs diff 5.59e-09
+dW2 max abs diff 1.49e-08
+db2 max abs diff 1.86e-08
+
+== SGD lr 0.1, batch 128, 15 epochs ==
+epoch 1   train loss 0.4478  test acc 92.35%  (0.5s)
+epoch 5   train loss 0.1445  test acc 95.98%  (0.3s)
+epoch 10  train loss 0.0841  test acc 97.17%  (0.3s)
+epoch 15  train loss 0.0582  test acc 97.42%  (0.3s)

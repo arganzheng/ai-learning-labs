@@ -1,0 +1,45 @@
+== Mixtral-8x7B
+  attention           1.342 B
+  dense_ffn           0.000 B
+  router              0.001 B
+  routed_experts     45.097 B
+  shared_experts      0.000 B
+  norms               0.000 B
+  embedding           0.262 B
+  total               46.70 B
+  active              12.88 B
+  flops/token          25.8 GFLOPs
+  C(E,k)           2.800e+01
+  B=   1  active experts     2.0  read    12.9 B  a2a/layer        32 KiB
+  B=   8  active experts     7.2  read    42.2 B  a2a/layer       256 KiB
+  B=  32  active experts     8.0  read    46.7 B  a2a/layer      1024 KiB
+  B= 128  active experts     8.0  read    46.7 B  a2a/layer      4096 KiB
+  B= 512  active experts     8.0  read    46.7 B  a2a/layer     16384 KiB
+== DeepSeek-V3
+  attention          11.413 B
+  dense_ffn           1.189 B
+  router              0.106 B
+  routed_experts    653.909 B
+  shared_experts      2.554 B
+  norms               0.001 B
+  embedding           1.853 B
+  total              671.03 B
+  active              37.55 B
+  flops/token          75.1 GFLOPs
+  C(E,k)           4.097e+14
+  B=   1  active experts     8.0  read    37.6 B  a2a/layer       168 KiB
+  B=   8  active experts    57.4  read   163.8 B  a2a/layer      1344 KiB
+  B=  32  active experts   163.3  read   434.3 B  a2a/layer      5376 KiB
+  B= 128  active experts   251.6  read   659.8 B  a2a/layer     21504 KiB
+  B= 512  active experts   256.0  read   671.0 B  a2a/layer     86016 KiB
+== Llama-3-70B
+  attention          12.080 B
+  dense_ffn          56.371 B
+  router              0.000 B
+  routed_experts      0.000 B
+  shared_experts      0.000 B
+  norms               0.001 B
+  embedding           2.101 B
+  total               70.55 B
+  active              70.55 B
+  flops/token         141.1 GFLOPs

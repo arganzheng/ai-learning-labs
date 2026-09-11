@@ -1,0 +1,32 @@
+== Llama-3-8B: d=4096 L=32 n_h=32 n_kv=8 d_head=128 d_ff=14336 V=128256
+component                 params             exact    share
+W_Q                       16.78M        16,777,216         
+W_K                        4.19M         4,194,304         
+W_V                        4.19M         4,194,304         
+W_O                       16.78M        16,777,216         
+attention/layer           41.94M        41,943,040    0.52%
+FFN/layer                176.16M       176,160,768    2.19%
+norms/layer                8,192             8,192    0.00%
+per_layer                218.11M       218,112,000    2.72%
+all_layers                6.980B     6,979,584,000   86.92%
+embedding                525.34M       525,336,576    6.54%
+lm_head                  525.34M       525,336,576    6.54%
+final_norm                 4,096             4,096    0.00%
+total                     8.030B     8,030,261,248         
+
+== Llama-3-70B: d=8192 L=80 n_h=64 n_kv=8 d_head=128 d_ff=28672 V=128256
+component                 params             exact    share
+W_Q                       67.11M        67,108,864         
+W_K                        8.39M         8,388,608         
+W_V                        8.39M         8,388,608         
+W_O                       67.11M        67,108,864         
+attention/layer          150.99M       150,994,944    0.21%
+FFN/layer                704.64M       704,643,072    1.00%
+norms/layer               16,384            16,384    0.00%
+per_layer                855.65M       855,654,400    1.21%
+all_layers               68.452B    68,452,352,000   97.02%
+embedding                 1.051B     1,050,673,152    1.49%
+lm_head                   1.051B     1,050,673,152    1.49%
+final_norm                 8,192             8,192    0.00%
+total                    70.554B    70,553,706,496         
+

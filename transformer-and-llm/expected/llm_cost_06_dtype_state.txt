@@ -1,0 +1,5 @@
+Llama-3-8B   params=   8.03B  16 B/param  state=    128.5 GB  H100(80GB) >=    1.6 张
+Llama-3-70B  params=  70.55B  16 B/param  state=   1128.9 GB  H100(80GB) >=   14.1 张
+DeepSeek-V3  params= 671.00B  16 B/param  state=  10736.0 GB  H100(80GB) >=  134.2 张
+V3-fp8-recipe 11 B/param  state=7.38 TB  {'weight_copy': 1, 'grad': 2, 'master': 4, 'moment1': 2, 'moment2': 2}
+8B-fp32      16 B/param  state=128.5 GB

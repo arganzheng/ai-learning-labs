@@ -1,0 +1,13 @@
+Llama-3-8B: 8.03B  BF16 16.1 GB  INT4(g128) 4.25 bit -> 4.27 GB
+  decode 下界 BF16 4.79 ms  W4A16 1.27 ms
+  LoRA r=16 attn 13.63M  all 41.94M (0.52%)
+Llama-3-70B: 70.55B  BF16 141.1 GB  INT4(g128) 4.25 bit -> 37.48 GB
+  decode 下界 BF16 42.12 ms  W4A16 11.19 ms
+  LoRA r=16 attn 65.54M  all 207.09M (0.29%)
+投机解码 alpha=0.8 gamma=4 c=0.1 (Llama-3-8B, H100):
+  B=   1  peak 2.40  60%MFU 2.40  E[tokens]=3.36
+  B=   8  peak 2.40  60%MFU 2.40  E[tokens]=3.36
+  B=  32  peak 2.40  60%MFU 2.40  E[tokens]=3.36
+  B=  64  peak 2.38  60%MFU 1.61  E[tokens]=3.36
+  B= 128  peak 1.39  60%MFU 0.89  E[tokens]=3.36
+  B= 256  peak 0.76  60%MFU 0.62  E[tokens]=3.36

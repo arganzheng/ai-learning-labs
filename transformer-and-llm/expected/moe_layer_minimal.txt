@@ -1,0 +1,2 @@
+out (16, 64) params 221696
+tokens per expert: [6, 8, 3, 3, 3, 3, 4, 2]

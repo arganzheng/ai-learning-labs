@@ -1,0 +1,18 @@
+model         attn    KV B/token  KiB/token   128K ctx  FLOP/byte
+Llama-3-8B    gqa         131072      128.0     16.0 G          4
+Llama-3-70B   gqa         327680      320.0     40.0 G          8
+DeepSeek-V3   mla          70272       68.6      8.6 G        242
+
+Llama-3-8B as MHA : 512 KiB/token
+DeepSeek-V3 as MHA: 3.81 MiB/token, ratio = 56.9x
+
+max concurrency on H100 (weights + KV only, BF16 KV):
+model          GPUs  weights      4K      8K     32K    128K
+Llama-3-8B        1     16GB     119      59      14       3
+Llama-3-70B       8    141GB     371     185      46      11
+DeepSeek-V3      16    671GB    2115    1057     264      66
+
+same, with FP8 KV cache:
+Llama-3-8B        1     16GB     238     119      29       7
+Llama-3-70B       8    141GB     743     371      92      23
+DeepSeek-V3      16    671GB    4231    2115     528     132

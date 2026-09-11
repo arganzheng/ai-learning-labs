@@ -1,0 +1,6 @@
+# CPU-only is enough for every experiment in this repo.
+# Install the CPU wheel of PyTorch first if you do not want the CUDA build:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+numpy>=2.0
+torch>=2.4
+torchvision>=0.19

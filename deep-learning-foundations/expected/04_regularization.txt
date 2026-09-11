@@ -1,0 +1,100 @@
+== 1. double descent: n=4000 train, 20% label noise, 2-layer MLP, width sweep, Adam 1e-3, 6000 full-batch steps ==
+ width   params params/n train err test err test loss
+     2     1600      0.4     54.5%    60.3%     1.945
+     4     3190      0.8     26.0%    42.6%     2.066
+     8     6370      1.6      3.4%    43.4%     5.475
+    16    12730      3.2      0.0%    35.4%     4.442
+    32    25450      6.4      0.0%    27.3%     2.547
+    64    50890     12.7      0.0%    22.4%     1.816
+   128   101770     25.4      0.0%    19.3%     1.354
+   256   203530     50.9      0.0%    16.8%     1.139
+   512   407050    101.8      0.0%    16.0%     1.083
+  1024   814090    203.5      0.0%    15.4%     1.011
+  2048  1628170    407.0      0.0%    14.5%     0.954
+
+== 2. regularizers: n=1000, width 512, AdamW 1e-3, 300 epochs (batch 100): train/test loss ==
+none                 ep  10  train loss 0.018  test loss 0.402  test acc 88.7%
+none                 ep  30  train loss 0.003  test loss 0.425  test acc 88.9%
+none                 ep 100  train loss 0.000  test loss 0.478  test acc 88.9%
+none                 ep 300  train loss 0.000  test loss 0.548  test acc 89.1%
+none                 early stopping: best test loss 0.402 (acc 88.7%) at epoch 10
+wd=0.5               ep  10  train loss 0.022  test loss 0.392  test acc 88.8%
+wd=0.5               ep  30  train loss 0.006  test loss 0.390  test acc 89.0%
+wd=0.5               ep 100  train loss 0.002  test loss 0.392  test acc 89.4%
+wd=0.5               ep 300  train loss 0.000  test loss 0.422  test acc 89.6%
+wd=0.5               early stopping: best test loss 0.390 (acc 89.0%) at epoch 40
+dropout=0.5          ep  10  train loss 0.035  test loss 0.397  test acc 88.6%
+dropout=0.5          ep  30  train loss 0.004  test loss 0.421  test acc 89.5%
+dropout=0.5          ep 100  train loss 0.000  test loss 0.492  test acc 89.7%
+dropout=0.5          ep 300  train loss 0.000  test loss 0.622  test acc 89.6%
+dropout=0.5          early stopping: best test loss 0.397 (acc 88.6%) at epoch 10
+wd=0.5+dropout=0.5   ep  10  train loss 0.041  test loss 0.388  test acc 88.7%
+wd=0.5+dropout=0.5   ep  30  train loss 0.007  test loss 0.386  test acc 89.6%
+wd=0.5+dropout=0.5   ep 100  train loss 0.002  test loss 0.389  test acc 89.6%
+wd=0.5+dropout=0.5   ep 300  train loss 0.000  test loss 0.419  test acc 89.7%
+wd=0.5+dropout=0.5   early stopping: best test loss 0.385 (acc 89.2%) at epoch 20
+
+== 3. char-level MLP LM (context 8) on Python stdlib source: train vs held-out loss per epoch ==
+-- train chars 20,000  vocab 95  params 116,303  (5.82 params per training char)
+   epoch  1  train loss 3.166  held-out loss 3.084  gap -0.082  memorized(32 chars)   0.0%  (0s)
+   epoch  2  train loss 2.834  held-out loss 2.848  gap +0.014  memorized(32 chars)   0.5%  (0s)
+   epoch  3  train loss 2.578  held-out loss 2.705  gap +0.127  memorized(32 chars)   nan%  (0s)
+   epoch  4  train loss 2.353  held-out loss 2.593  gap +0.240  memorized(32 chars)   0.5%  (0s)
+   epoch  5  train loss 2.170  held-out loss 2.522  gap +0.352  memorized(32 chars)   nan%  (1s)
+   epoch  6  train loss 2.016  held-out loss 2.477  gap +0.461  memorized(32 chars)   2.0%  (1s)
+   epoch  7  train loss 1.894  held-out loss 2.444  gap +0.550  memorized(32 chars)   nan%  (1s)
+   epoch  8  train loss 1.790  held-out loss 2.432  gap +0.642  memorized(32 chars)   2.5%  (1s)
+   epoch  9  train loss 1.695  held-out loss 2.409  gap +0.714  memorized(32 chars)   nan%  (1s)
+   epoch 10  train loss 1.609  held-out loss 2.406  gap +0.798  memorized(32 chars)   3.5%  (1s)
+   epoch 11  train loss 1.530  held-out loss 2.395  gap +0.864  memorized(32 chars)   nan%  (1s)
+   epoch 12  train loss 1.463  held-out loss 2.392  gap +0.929  memorized(32 chars)   4.5%  (1s)
+   epoch 13  train loss 1.393  held-out loss 2.396  gap +1.003  memorized(32 chars)   nan%  (2s)
+   epoch 14  train loss 1.327  held-out loss 2.391  gap +1.064  memorized(32 chars)   nan%  (2s)
+   epoch 15  train loss 1.270  held-out loss 2.403  gap +1.133  memorized(32 chars)   nan%  (2s)
+   epoch 16  train loss 1.213  held-out loss 2.411  gap +1.199  memorized(32 chars)   5.5%  (2s)
+   epoch 17  train loss 1.159  held-out loss 2.411  gap +1.252  memorized(32 chars)   nan%  (2s)
+   epoch 18  train loss 1.111  held-out loss 2.440  gap +1.329  memorized(32 chars)   nan%  (2s)
+   epoch 19  train loss 1.059  held-out loss 2.436  gap +1.377  memorized(32 chars)   nan%  (3s)
+   epoch 20  train loss 1.014  held-out loss 2.458  gap +1.444  memorized(32 chars)   5.5%  (3s)
+   epoch 21  train loss 0.973  held-out loss 2.466  gap +1.494  memorized(32 chars)   nan%  (3s)
+   epoch 22  train loss 0.928  held-out loss 2.487  gap +1.559  memorized(32 chars)   nan%  (3s)
+   epoch 23  train loss 0.890  held-out loss 2.504  gap +1.613  memorized(32 chars)   nan%  (3s)
+   epoch 24  train loss 0.850  held-out loss 2.529  gap +1.679  memorized(32 chars)   nan%  (3s)
+   epoch 25  train loss 0.816  held-out loss 2.557  gap +1.741  memorized(32 chars)   nan%  (3s)
+   epoch 26  train loss 0.776  held-out loss 2.564  gap +1.788  memorized(32 chars)   nan%  (4s)
+   epoch 27  train loss 0.746  held-out loss 2.599  gap +1.854  memorized(32 chars)   nan%  (4s)
+   epoch 28  train loss 0.714  held-out loss 2.621  gap +1.906  memorized(32 chars)   nan%  (4s)
+   epoch 29  train loss 0.684  held-out loss 2.652  gap +1.968  memorized(32 chars)   nan%  (4s)
+   epoch 30  train loss 0.656  held-out loss 2.669  gap +2.013  memorized(32 chars)   7.0%  (4s)
+   epoch 31  train loss 0.632  held-out loss 2.711  gap +2.079  memorized(32 chars)   nan%  (4s)
+   epoch 32  train loss 0.606  held-out loss 2.734  gap +2.128  memorized(32 chars)   nan%  (4s)
+   epoch 33  train loss 0.579  held-out loss 2.755  gap +2.176  memorized(32 chars)   nan%  (4s)
+   epoch 34  train loss 0.557  held-out loss 2.786  gap +2.229  memorized(32 chars)   nan%  (5s)
+   epoch 35  train loss 0.533  held-out loss 2.816  gap +2.283  memorized(32 chars)   nan%  (5s)
+   epoch 36  train loss 0.516  held-out loss 2.854  gap +2.338  memorized(32 chars)   nan%  (5s)
+   epoch 37  train loss 0.491  held-out loss 2.887  gap +2.396  memorized(32 chars)   nan%  (5s)
+   epoch 38  train loss 0.474  held-out loss 2.919  gap +2.446  memorized(32 chars)   nan%  (5s)
+   epoch 39  train loss 0.457  held-out loss 2.947  gap +2.490  memorized(32 chars)   nan%  (5s)
+   epoch 40  train loss 0.438  held-out loss 2.976  gap +2.538  memorized(32 chars)  10.0%  (5s)
+-- train chars 200,000  vocab 96  params 116,832  (0.58 params per training char)
+   epoch  1  train loss 2.082  held-out loss 1.940  gap -0.142  memorized(32 chars)   0.5%  (1s)
+   epoch  2  train loss 1.790  held-out loss 1.771  gap -0.018  memorized(32 chars)   0.5%  (1s)
+   epoch  3  train loss 1.606  held-out loss 1.700  gap +0.094  memorized(32 chars)   nan%  (2s)
+   epoch  4  train loss 1.472  held-out loss 1.658  gap +0.186  memorized(32 chars)   0.5%  (3s)
+   epoch  5  train loss 1.378  held-out loss 1.644  gap +0.266  memorized(32 chars)   nan%  (3s)
+   epoch  6  train loss 1.302  held-out loss 1.628  gap +0.326  memorized(32 chars)   1.0%  (4s)
+   epoch  7  train loss 1.241  held-out loss 1.621  gap +0.381  memorized(32 chars)   nan%  (4s)
+   epoch  8  train loss 1.188  held-out loss 1.612  gap +0.423  memorized(32 chars)   0.5%  (5s)
+   epoch  9  train loss 1.145  held-out loss 1.618  gap +0.473  memorized(32 chars)   nan%  (6s)
+   epoch 10  train loss 1.110  held-out loss 1.621  gap +0.511  memorized(32 chars)   1.0%  (6s)
+-- train chars 2,000,000  vocab 101  params 119,477  (0.06 params per training char)
+   epoch  1  train loss 1.524  held-out loss 1.698  gap +0.173  memorized(32 chars)   0.0%  (6s)
+   epoch  2  train loss 1.391  held-out loss 1.631  gap +0.240  memorized(32 chars)   0.0%  (12s)
+   epoch  3  train loss 1.333  held-out loss 1.620  gap +0.287  memorized(32 chars)   nan%  (18s)
+   epoch  4  train loss 1.305  held-out loss 1.605  gap +0.300  memorized(32 chars)   0.0%  (24s)
+   epoch  5  train loss 1.283  held-out loss 1.608  gap +0.324  memorized(32 chars)   nan%  (30s)
+   epoch  6  train loss 1.273  held-out loss 1.605  gap +0.332  memorized(32 chars)   0.0%  (35s)
+   epoch  7  train loss 1.257  held-out loss 1.609  gap +0.352  memorized(32 chars)   nan%  (42s)
+   epoch  8  train loss 1.241  held-out loss 1.612  gap +0.371  memorized(32 chars)   0.0%  (47s)
+   epoch  9  train loss 1.234  held-out loss 1.606  gap +0.372  memorized(32 chars)   nan%  (53s)
+   epoch 10  train loss 1.226  held-out loss 1.600  gap +0.374  memorized(32 chars)   0.0%  (59s)

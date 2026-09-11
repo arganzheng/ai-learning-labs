@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# datasets downloaded by the scripts
+deep-learning-foundations/data/
+
+# C++ build output
+build/
+*.o
+*.out
+a.out
+
+.DS_Store

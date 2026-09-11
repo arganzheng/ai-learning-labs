@@ -1,0 +1,28 @@
+0.9^128 = 1.39e-06   1.1^128 = 1.99e+05
+
+== activation std at blocks 1/8/16/32/64 (init), then grad norm of the Linear at those depths ==
+plain-naive        loss  2.303 | act std  1.30e+00  1.46e-01  1.38e-02  4.33e-05  7.20e-10 | grad  4.17e-10  6.08e-10  6.40e-10  4.10e-10  6.84e-10
+plain-kaiming      loss  3.896 | act std  1.85e+00  2.34e+00  3.54e+00  2.84e+00  3.09e+00 | grad  1.75e+00  6.77e+00  1.30e+01  9.92e+00  9.99e+00
+ln                 loss  2.501 | act std  1.85e+00  1.00e+00  1.00e+00  1.00e+00  1.00e+00 | grad  2.56e-01  2.96e-01  4.47e-01  6.24e-01  1.48e+00
+res-nonorm         loss 25.041 | act std  1.90e+00  2.09e+01  3.24e+02  6.95e+04  6.00e+09 | grad  5.77e+09  1.08e+10  1.69e+10  2.13e+10  3.74e+10
+res-nonorm-scaled  loss  3.513 | act std  1.30e+00  1.32e+00  1.36e+00  1.45e+00  1.64e+00 | grad  2.29e-01  2.34e-01  2.26e-01  2.29e-01  2.53e-01
+prenorm            loss  2.836 | act std  1.29e+00  1.31e+00  1.33e+00  1.37e+00  1.46e+00 | grad  1.44e-01  1.55e-01  1.35e-01  1.26e-01  1.19e-01
+postnorm           loss  2.746 | act std  1.90e+00  1.00e+00  1.00e+00  1.00e+00  1.00e+00 | grad  5.11e-01  5.71e-01  7.78e-01  1.02e+00  1.96e+00
+
+== 300 SGD steps, lr 0.05, batch 128: loss at step 1 / 100 / 300 ==
+plain-naive        2.303 / 2.301 / 2.305   test acc  11.7%  (6s)
+plain-kaiming      diverged (NaN) at step 3
+ln                 2.463 / 2.328 / 2.328   test acc   9.6%  (10s)
+res-nonorm         diverged (NaN) at step 1
+res-nonorm-scaled  diverged (NaN) at step 2
+prenorm            2.779 / 0.202 / 0.158   test acc  91.6%  (14s)
+postnorm           2.751 / 2.552 / 2.326   test acc   8.8%  (14s)
+
+== 300 SGD steps, lr 0.005, batch 128: loss at step 1 / 100 / 300 ==
+plain-naive        2.303 / 2.302 / 2.303   test acc  11.7%  (6s)
+plain-kaiming      3.540 / 2.170 / 1.893   test acc  29.3%  (5s)
+ln                 2.463 / 2.269 / 1.562   test acc  37.2%  (10s)
+res-nonorm         diverged (NaN) at step 1
+res-nonorm-scaled  diverged (NaN) at step 10
+prenorm            2.779 / 0.280 / 0.155   test acc  90.1%  (14s)
+postnorm           2.751 / 1.818 / 0.982   test acc  64.3%  (17s)

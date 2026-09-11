@@ -1,0 +1,24 @@
+FP32 max         3.4028234663852886e+38
+FP32 min normal  1.1754943508222875e-38
+FP32 min subnorm 1.401298464324817e-45
+FP16 max         65504.0
+FP16 min normal  6.103515625e-05
+FP16 min subnorm 5.960464477539063e-08
+FP16 inf         inf
+BF16 max         3.3895313892515355e+38
+BF16 min normal  1.1754943508222875e-38
+BF16 min subnorm 9.183549615799121e-41
+E4M3 max         448.0
+E4M3 0x7F        nan
+E4M3 min normal  0.015625
+E4M3 min subnorm 0.001953125
+E5M2 max         57344.0
+E5M2 0x7C        inf
+E5M2 min normal  6.103515625e-05
+E5M2 min subnorm 1.52587890625e-05
+torch.float32          eps=1.192e-07  2^-M=1.192e-07  max=3.403e+38  tiny=1.175e-38
+torch.float16          eps=9.766e-04  2^-M=9.766e-04  max=6.550e+04  tiny=6.104e-05
+torch.bfloat16         eps=7.812e-03  2^-M=7.812e-03  max=3.390e+38  tiny=1.175e-38
+torch.float8_e4m3fn    eps=1.250e-01  2^-M=1.250e-01  max=4.480e+02  tiny=1.562e-02
+torch.float8_e5m2      eps=2.500e-01  2^-M=2.500e-01  max=5.734e+04  tiny=6.104e-05
+float32 element_size: 4

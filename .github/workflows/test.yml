@@ -1,0 +1,45 @@
+name: smoke
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: install (CPU torch)
+        run: |
+          pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+      - name: python-for-ai-infra
+        working-directory: python-for-ai-infra
+        run: for f in */*.py; do echo "== $f"; python "$f"; done
+      - name: transformer-and-llm
+        working-directory: transformer-and-llm
+        run: |
+          for f in *.py; do echo "== $f"; python "$f" > /tmp/out.txt || { cat /tmp/out.txt; exit 1; }; done
+          python tools/gen_patch_merge_svg.py /tmp/patch.svg
+      - name: deep-learning-foundations (--quick)
+        working-directory: deep-learning-foundations
+        run: |
+          for f in 0*.py; do echo "== $f"; python "$f" --quick; done
+
+  cpp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: build and run
+        working-directory: cpp-for-ai-infra
+        run: |
+          make -j
+          make run
+          make ex04 2>&1 | grep -q "error" && echo "ex04 fails to compile as intended"

@@ -1,0 +1,35 @@
+== Llama-3-8B on H100 SXM (ridge = 295 FLOP/byte) ==
+params total 8.03 B, gemm 7.50 B
+weight FLOPs/token   15.01 GFLOPs
+attn FLOPs/token@8192 4.29 GFLOPs
+weight bytes (BF16)  16.06 GB
+KV bytes/token       128 KiB
+
+ batch    ctx    KV read  I(FLOP/B)  t_mem(ms)  t_cmp(ms)  step(ms)    tok/s bound
+     1   8192      1.0Gi        1.1       5.11       0.02      5.11      196 memory
+     8   8192      8.0Gi        6.3       7.36       0.16      7.36     1087 memory
+    64   8192     64.0Gi       14.6      25.31       1.25     25.31     2529 memory
+   295   8192    295.0Gi       17.1      99.35       5.76     99.35     2969 memory
+
+prefill   8192 causal=False    158.14 TFLOP  @60% MFU 0.266 s
+prefill   8192 causal=True     140.55 TFLOP  @60% MFU 0.237 s
+prefill 131072 causal=False     10.97 PFLOP  @60% MFU 18.494 s
+prefill 131072 causal=True       6.47 PFLOP  @60% MFU 10.905 s
+
+== Llama-3-70B on H100 SXM (ridge = 295 FLOP/byte) ==
+params total 70.55 B, gemm 69.50 B
+weight FLOPs/token   139.00 GFLOPs
+attn FLOPs/token@8192 21.47 GFLOPs
+weight bytes (BF16)  141.11 GB
+KV bytes/token       320 KiB
+
+ batch    ctx    KV read  I(FLOP/B)  t_mem(ms)  t_cmp(ms)  step(ms)    tok/s bound
+     1   8192      2.5Gi        1.1      42.92       0.16     42.92       23 memory
+     8   8192     20.0Gi        7.9      48.53       1.30     48.53      165 memory
+    64   8192    160.0Gi       32.8      93.40      10.38     93.40      685 memory
+
+prefill   8192 causal=False      1.31 PFLOP  @60% MFU 2.215 s
+prefill   8192 causal=True       1.23 PFLOP  @60% MFU 2.067 s
+prefill 131072 causal=False     63.26 PFLOP  @60% MFU 106.598 s
+prefill 131072 causal=True      40.74 PFLOP  @60% MFU 68.651 s
+

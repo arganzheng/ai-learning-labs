@@ -1,0 +1,12 @@
+CLIP ViT-L/14-336      patches   577 tokens   577 encoder  0.38 TFLOP (attn 9%)
+    Llama-3-8B   prefill    8.7 TFLOP  KV    72.1 MiB  enc-out   4.5 MiB
+    Llama-3-70B  prefill   80.2 TFLOP  KV   180.3 MiB  enc-out   9.0 MiB
+Qwen2-VL ViT           patches  5476 tokens  1369 encoder 11.81 TFLOP (attn 42%)
+    Llama-3-8B   prefill   20.5 TFLOP  KV   171.1 MiB  enc-out  10.7 MiB
+    Llama-3-70B  prefill  190.3 TFLOP  KV   427.8 MiB  enc-out  21.4 MiB
+InternViT-300M         patches  5120 tokens  1280 encoder  5.68 TFLOP (attn 45%)
+    Llama-3-8B   prefill   19.2 TFLOP  KV   160.0 MiB  enc-out  10.0 MiB
+    Llama-3-70B  prefill  177.9 TFLOP  KV   400.0 MiB  enc-out  20.0 MiB
+Llama-3.2 ViT-H/14     patches  6404 tokens  6404 encoder 18.48 TFLOP (attn 45%)
+    Llama-3-8B   prefill   96.1 TFLOP  KV   800.5 MiB  enc-out  50.0 MiB
+    Llama-3-70B  prefill  890.2 TFLOP  KV  2001.2 MiB  enc-out 100.1 MiB

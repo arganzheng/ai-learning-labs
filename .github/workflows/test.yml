@@ -25,8 +25,18 @@ jobs:
       - name: transformer-and-llm
         working-directory: transformer-and-llm
         run: |
-          for f in *.py; do echo "== $f"; python "$f" > /tmp/out.txt || { cat /tmp/out.txt; exit 1; }; done
+          # scaling_law_fit / training_recipe_lab / bpe_from_scratch train small models: --quick keeps them to ~1 min each
+          for f in *.py; do
+            echo "== $f"
+            case "$f" in
+              scaling_law_fit.py|training_recipe_lab.py|bpe_from_scratch.py) python "$f" --quick > /tmp/out.txt ;;
+              *) python "$f" > /tmp/out.txt ;;
+            esac || { cat /tmp/out.txt; exit 1; }
+          done
           python tools/gen_patch_merge_svg.py /tmp/patch.svg
+          python tools/gen_scaling_svg.py /tmp/scaling.svg
+          python tools/gen_schedule_svg.py /tmp/schedule.svg
+      # post-training/ is not run in CI: it downloads Qwen2.5-0.5B (~1 GB) and fine-tunes it; see its README.
       - name: deep-learning-foundations (--quick)
         working-directory: deep-learning-foundations
         run: |

@@ -8,8 +8,9 @@
 |---|---|---|---|
 | [`python-for-ai-infra/`](python-for-ai-infra/) | Python 在 AI-Infra：从语言机制到生产交付 | Infra L1 | Python 3.10+ 标准库 |
 | [`cpp-for-ai-infra/`](cpp-for-ai-infra/) | C++ 在 AI-Infra：从对象模型到算子扩展 | Infra L1 | C++17 编译器 + make |
-| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值 | Infra L2 · 算法 L4（两张地图共享） | 纯 Python；部分实验 NumPy / PyTorch |
+| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值（含预训练补篇 09–12） | Infra L2 · 算法 L4（两张地图共享） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
 | [`deep-learning-foundations/`](deep-learning-foundations/) | 深度学习基础：从反向传播到残差 | 算法 L3 | NumPy；05 / 06 需 PyTorch（CPU） |
+| [`post-training/`](post-training/) | 后训练：从 SFT 到可验证奖励 | 算法 L5 | PyTorch + transformers / trl / peft；MPS 或 CUDA |
 
 尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、大规模训练、vLLM、AI 平台工程、算法地图 L0–L2 导读、应用地图）会在有可运行示例时按同样方式加目录。
 

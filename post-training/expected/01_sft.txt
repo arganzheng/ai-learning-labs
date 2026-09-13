@@ -1,0 +1,52 @@
+设备 mps，模型 Qwen/Qwen2.5-0.5B，训练类实验 80 步（batch 4 × max_length 512）
+
+=== 实验 1：chat template 把对话变成什么 ===
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is 2+2?<|im_end|>
+<|im_start|>assistant
+4.<|im_end|>
+<|im_start|>user
+And 3+3?<|im_end|>
+<|im_start|>assistant
+
+  共 44 个 token，其中特殊 token 9 个：['<|im_start|>', '<|im_end|>', '<|im_start|>', '<|im_end|>', '<|im_start|>', '<|im_end|>', '<|im_start|>', '<|im_end|>', '<|im_start|>']
+  im_start / im_end 的 id：151644 / 151645（tokenizer 共 151665 个 token，其中基础词表 151643；模型 embedding 有 151936 行，多出的是预留位）
+  同一段对话不用模板、手拼 'User:/Assistant:'：32 个 token，没有任何特殊 token——训练时用这种格式、推理时用官方模板（或反过来），模型看到的是两种没见过对方的分布。
+
+=== 实验 2：不 packing 时 padding 浪费多少 ===
+  800 条样本的 token 数：中位数 256，p90 548，最大 2134，合计 243,422
+  其中 prompt 部分（含模板与 system）中位数 56，回复部分中位数约 200：不 mask 时约 34% 的 loss 位置落在 prompt 上
+  max_length  512，batch 8：动态 padding 后实际算了   393,016 个位置，有效 56%；packing 只需 434 条 512 的序列（有效 100%）
+  max_length 1024，batch 8：动态 padding 后实际算了   510,208 个位置，有效 47%；packing 只需 234 条 1024 的序列（有效 100%）
+  max_length 2048，batch 8：动态 padding 后实际算了   540,048 个位置，有效 45%；packing 只需 119 条 2048 的序列（有效 100%）
+  长度按相近分组（length grouping）能把动态 padding 的浪费降到 10% 以内；packing 接近 100%，但要配 attention 掩码（或 padding-free 的变长 kernel）防止跨样本 attention。
+
+=== 实验 3：loss 算不算 prompt（completion_only_loss），各训 80 步，lr 1e-5，全量 ===
+  训练前 base 模型在验证集回复上的 loss：2.494（PPL 12.1）
+  completion_only_loss=True  训练 loss 2.409 → 2.182   验证回复 loss 2.4936 → 2.3924   13.7 s/步
+  completion_only_loss=False 训练 loss 2.814 → 2.397   验证回复 loss 2.4936 → 2.3869   13.1 s/步
+  看什么：不 mask 时训练 loss 的数值本身就不同（混进了 prompt 的 token，不能与 mask 的 loss 直接比）；验证集只算回复，两者的差才是 mask 的真实影响。prompt 短、回复长的数据（本数据集 prompt 只占 34%）里两者接近甚至不 mask 略好——prompt 的文字是额外的语言建模信号；prompt 占大头的数据上 mask 的优势才明显。
+
+=== 实验 4：全量微调 vs LoRA——参数、训练状态、80 步后的验证 loss ===
+  配置                           可训练参数      占比        训练状态(混合精度)      8B 规格同比例
+  全量                         494.0M 100.00%          7.36 GiB        120 GiB
+  LoRA r=16 attention          2.2M   0.44%          0.95 GiB         15 GiB
+  LoRA r=16 全部线性层              8.8M   1.78%          1.03 GiB         17 GiB
+  LoRA r=64 全部线性层             35.2M   7.12%          1.38 GiB         22 GiB
+  （训练状态 = 冻结权重 BF16 2 B + 可训练参数的 FP32 主权重 4 B + Adam 8 B + 梯度 2 B；不含激活值）
+
+  全量 lr 1e-5                       训练 loss 2.182   验证回复 loss 2.3924   7.0 s/步
+  LoRA r=16 全部线性层 lr 1e-4          训练 loss 2.183   验证回复 loss 2.3936   5.7 s/步
+  看什么：LoRA 的可训练参数不到 2%，训练状态降到全量的几分之一；同样步数下验证 loss 略高，lr 要比全量大一个数量级（LoRA 的有效更新幅度被 alpha/r 与低秩结构缩放）。
+
+=== 实验 5：SFT 之后预训练能力掉多少——普通文本上的 loss（80 步）===
+  训练前：普通文本 loss 2.8749（PPL 17.7），验证回复 loss 2.4936
+  配置                               普通文本 loss      变化     验证回复 loss
+  全量 lr 1e-5                          2.8961 +0.0213        2.3924
+  全量 lr 1e-4                          3.4918 +0.6170        2.7951
+  LoRA r=16 全部线性层 lr 1e-4             2.8844 +0.0096        2.3936
+  看什么：lr 大一个数量级，回复 loss 降得更快，普通文本的 loss 也涨得更多——这就是遗忘；LoRA 因为只动低秩子空间，对普通文本的扰动通常更小。真实配方用 1e-5 量级、混入预训练数据回放、或对 checkpoint 做平均。
+
+总耗时 5098s（前 20 分钟与另一个进程共享 GPU；单独运行约 60 分钟）

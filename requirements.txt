@@ -4,3 +4,12 @@
 numpy>=2.0
 torch>=2.4
 torchvision>=0.19
+# Only transformer-and-llm/tokenizer_compare.py needs these two (and network access):
+tiktoken>=0.7
+tokenizers>=0.19
+# post-training/ (trl trainers on Qwen2.5-0.5B / 1.5B; MPS or CUDA recommended):
+transformers>=4.50
+trl>=0.20
+peft>=0.15
+datasets>=3.0
+accelerate>=1.0

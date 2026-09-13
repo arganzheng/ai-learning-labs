@@ -1,0 +1,40 @@
+=== 公开配方：超参数与由它们推出的步数、每步时间 ===
+model                     batch   seq  peak lr  warmup   steps   每步(16K H100, MFU 40%)  调度
+GPT-3 175B                 3.2M  2048  6.0e-05       0  93,750              0.5 s (16384 卡)  cosine → 10%，warmup 375M token
+                          warmup 按 token 给：375M / 3.2M ≈ 117 步
+Llama-2 7B                   4M  4096  3.0e-04    2000 500,000              0.2 s (2048 卡)  cosine → 10%
+Llama-2 70B                  4M  4096  1.5e-04    2000 500,000              2.1 s (2048 卡)  cosine → 10%
+Llama-3 405B                16M  8192  8.0e-05    8000 975,000              6.0 s (16384 卡)  cosine → 8e-7（1.2M 步）
+                          batch 4M(seq 4K) → 8M(seq 8K, 252M token 后) → 16M(2.87T 后)
+DeepSeek-V3（37B 激活）         63M  4096  2.2e-04    2000 234,921             17.3 s (2048 卡)  常数到 10T → cosine 到 2.2e-5（4.3T）→ 常数 333B → 7.29e-6（167B）
+                          batch 3072 → 15360 条序列（前 469B token 内线性增大）
+  warmup 占总步数：Llama-3 405B 8000 / 975K = 0.8%；Llama-2 2000 / 500K = 0.4%；DeepSeek-V3 2000 / 235K = 0.9%。
+
+=== DeepSeek LLM 的经验律：lr_opt = 0.3118·C^-0.125，B_opt = 0.2920·C^0.3271（token）===
+   C (FLOPs)    lr_opt    B_opt   对照
+     1.0e+21   7.4e-04    2.16M   
+     1.0e+22   5.5e-04    4.59M   
+     8.4e+22   4.2e-04     9.2M   Llama-2 7B：lr 3e-4，batch 4M
+     8.4e+23   3.2e-04    19.5M   Llama-2 70B：lr 1.5e-4，batch 4M
+     3.3e+24   2.7e-04    30.6M   DeepSeek-V3：lr 2.2e-4，batch 63M
+     3.8e+25   2.0e-04      68M   Llama-3 405B：lr 8e-5，batch 16M
+  量级对得上（lr 随算力缓慢下降，batch 随算力上升），但常数只对拟合它的数据与结构成立；MoE 的 C 用激活参数算。
+
+=== checkpoint 的字节数与写带宽 ===
+model              BF16 权重       完整训练状态            每小时存一次 → 平均写带宽    8 卡节点 × 2 GB/s 的写入需要
+Llama-3 8B         16.1 GB       112 GB               0.03 GB/s                  1 分钟（单节点串行）
+Llama-3 70B         141 GB       988 GB               0.27 GB/s                  8 分钟（单节点串行）
+Llama-3 405B        810 GB      5.67 TB               1.57 GB/s                 47 分钟（单节点串行）
+DeepSeek-V3 671B   1.34 TB      9.39 TB               2.61 GB/s                 78 分钟（单节点串行）
+  完整状态 = 14 B/参数（第六篇：BF16 权重 + FP32 主权重 + Adam 两个矩）。数据读 9 MB/s，checkpoint 写 GB/s——训练的 I/O 在这里。
+
+=== loss spike 的回滚代价（PaLM 的做法：回退约 100 步，跳过 200–500 个 batch）===
+  Llama-3 405B 规格：跳过 200 个 batch = 3.2B token，重算 300 步 ≈ 30 分钟 × 16K 卡 = 8,190 GPU 小时
+  Llama-3 405B 规格：跳过 500 个 batch = 8B token，重算 600 步 ≈ 60 分钟 × 16K 卡 = 16,380 GPU 小时
+  一次 spike 的直接代价是几千到上万 GPU 小时；间接代价是人盯着曲线的时间。
+
+=== 长上下文阶段：attention 在每 token FLOPs 里的占比（Llama-3 405B：d=16384，126 层）===
+  seq    8192：attention 占 4%
+  seq   32768：attention 占 14%
+  seq  131072：attention 占 40%
+  800B token 的长上下文阶段占总 token 的 5%，按 FLOPs 算更多；这也是它要单独成为一个阶段、用不同数据配比的原因。

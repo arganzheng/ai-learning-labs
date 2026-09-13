@@ -1,0 +1,26 @@
+=== 玩具例子：经典的 low / lower / newest / widest ===
+  merge   1:        'e' + 's'        -> id 256  (出现 9 次)
+  merge   2:       'es' + 't'        -> id 257  (出现 9 次)
+  merge   3:        'l' + 'o'        -> id 258  (出现 7 次)
+  merge   4:       'lo' + 'w'        -> id 259  (出现 7 次)
+  merge   5:        ' ' + 'low'      -> id 260  (出现 6 次)
+  merge   6:        ' ' + 'n'        -> id 261  (出现 6 次)
+  merge   7:       ' n' + 'e'        -> id 262  (出现 6 次)
+  merge   8:      ' ne' + 'w'        -> id 263  (出现 6 次)
+  encode('lowest') -> ['low', 'est']
+  encode('newer') -> ['n', 'e', 'w', 'e', 'r']
+  encode('wide') -> ['w', 'i', 'd', 'e']
+
+=== 词表大小扫描（语料 1.0 MB 标准库源码）===
+  vocab  训练集 bytes/token             英文         Python             中文
+    256             1.00     1.00 B/tok     1.00 B/tok     1.00 B/tok
+    512             2.21     1.63 B/tok     2.17 B/tok     1.00 B/tok
+   1024             2.81     1.79 B/tok     2.32 B/tok     1.00 B/tok
+   2048             3.35     2.42 B/tok     2.41 B/tok     1.00 B/tok
+   4096             3.85     2.68 B/tok     2.41 B/tok     1.00 B/tok
+   8192             4.27     2.68 B/tok     2.41 B/tok     1.00 B/tok
+  16384             4.57     3.00 B/tok     2.50 B/tok     1.00 B/tok
+
+=== 中文在英文/代码语料上训出的词表里：几乎回到字节级 ===
+  31 个字符 -> 93 个 token（每字符 3.0 token；UTF-8 每个汉字 3 字节）
+  前 12 个 token: ['\\xe6', '\\x9c', '\\xba', '\\xe5', '\\x99', '\\xa8', '\\xe5', '\\xad', '\\xa6', '\\xe4', '\\xb9', '\\xa0']

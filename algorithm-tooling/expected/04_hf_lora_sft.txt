@@ -1,0 +1,40 @@
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 4553.53it/s]
+=== 1. Hub 上的三个文件 → 模型 ===
+  config.json: hidden 896, layers 24, heads 14/2 kv, intermediate 4864, vocab 151936, tie_embeddings True
+  参数量 494 M; tokenizer 词表 151665; chat template 有
+=== 2. chat template：一条样本变成什么 ===
+  '<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhat is the capital of France?<|im_end|>\n<|im_start|>assistant\nParis.<|im_end|>\n'
+=== 3. peft：LoRA 挂到哪些层、多少可训练参数 ===
+  可训练 8.80 M / 494 M = 1.78%
+  训练状态 ≈ 可训练 × 16 B = 141 MB；冻结权重 fp32 1.98 GB（bf16 时减半）
+  挂了 LoRA 的线性层: ['down_proj', 'gate_proj', 'k_proj', 'o_proj', 'q_proj', 'up_proj', 'v_proj']
+=== 4. trl：SFTTrainer 训 20 步 ===
+  一个 batch: input_ids (4, 36), labels 里被 mask 成 -100 的 token 122/144 (85%，prompt 与 padding 不算 loss)
+{'loss': '5.254', 'grad_norm': '56.51', 'learning_rate': '0.0002', 'entropy': '3.84', 'num_tokens': '134', 'mean_token_accuracy': '0.2273', 'epoch': '0.3333'}
+{'loss': '3.346', 'grad_norm': '27.47', 'learning_rate': '0.00019', 'entropy': '3.68', 'num_tokens': '263', 'mean_token_accuracy': '0.55', 'epoch': '0.6667'}
+{'loss': '3.051', 'grad_norm': '16.84', 'learning_rate': '0.00018', 'entropy': '3.417', 'num_tokens': '401', 'mean_token_accuracy': '0.65', 'epoch': '1'}
+{'loss': '2.513', 'grad_norm': '6.682', 'learning_rate': '0.00017', 'entropy': '2.653', 'num_tokens': '535', 'mean_token_accuracy': '0.7368', 'epoch': '1.333'}
+{'loss': '2.088', 'grad_norm': '4.4', 'learning_rate': '0.00016', 'entropy': '2.393', 'num_tokens': '668', 'mean_token_accuracy': '0.75', 'epoch': '1.667'}
+{'loss': '1.741', 'grad_norm': '3.548', 'learning_rate': '0.00015', 'entropy': '2.126', 'num_tokens': '802', 'mean_token_accuracy': '0.8261', 'epoch': '2'}
+{'loss': '1.814', 'grad_norm': '1.345', 'learning_rate': '0.00014', 'entropy': '2.05', 'num_tokens': '934', 'mean_token_accuracy': '0.8', 'epoch': '2.333'}
+{'loss': '1.602', 'grad_norm': '0.7463', 'learning_rate': '0.00013', 'entropy': '1.736', 'num_tokens': '1068', 'mean_token_accuracy': '0.8182', 'epoch': '2.667'}
+{'loss': '1.734', 'grad_norm': '0.6462', 'learning_rate': '0.00012', 'entropy': '1.837', 'num_tokens': '1203', 'mean_token_accuracy': '0.8', 'epoch': '3'}
+{'loss': '1.491', 'grad_norm': '0.4785', 'learning_rate': '0.00011', 'entropy': '1.565', 'num_tokens': '1342', 'mean_token_accuracy': '0.8261', 'epoch': '3.333'}
+{'loss': '1.792', 'grad_norm': '0.5434', 'learning_rate': '0.0001', 'entropy': '1.872', 'num_tokens': '1474', 'mean_token_accuracy': '0.7895', 'epoch': '3.667'}
+{'loss': '1.694', 'grad_norm': '0.4168', 'learning_rate': '9e-05', 'entropy': '1.767', 'num_tokens': '1604', 'mean_token_accuracy': '0.8', 'epoch': '4'}
+{'loss': '1.604', 'grad_norm': '0.3479', 'learning_rate': '8e-05', 'entropy': '1.669', 'num_tokens': '1738', 'mean_token_accuracy': '0.8095', 'epoch': '4.333'}
+{'loss': '1.678', 'grad_norm': '0.3694', 'learning_rate': '7e-05', 'entropy': '1.746', 'num_tokens': '1873', 'mean_token_accuracy': '0.8', 'epoch': '4.667'}
+{'loss': '1.592', 'grad_norm': '0.3141', 'learning_rate': '6e-05', 'entropy': '1.654', 'num_tokens': '2005', 'mean_token_accuracy': '0.8095', 'epoch': '5'}
+{'loss': '1.516', 'grad_norm': '0.2739', 'learning_rate': '5e-05', 'entropy': '1.573', 'num_tokens': '2138', 'mean_token_accuracy': '0.8182', 'epoch': '5.333'}
+{'loss': '1.664', 'grad_norm': '0.2752', 'learning_rate': '4e-05', 'entropy': '1.728', 'num_tokens': '2271', 'mean_token_accuracy': '0.8', 'epoch': '5.667'}
+{'loss': '1.662', 'grad_norm': '0.2553', 'learning_rate': '3e-05', 'entropy': '1.727', 'num_tokens': '2406', 'mean_token_accuracy': '0.8', 'epoch': '6'}
+{'loss': '1.509', 'grad_norm': '0.214', 'learning_rate': '2e-05', 'entropy': '1.566', 'num_tokens': '2539', 'mean_token_accuracy': '0.8182', 'epoch': '6.333'}
+{'loss': '1.658', 'grad_norm': '0.2301', 'learning_rate': '1e-05', 'entropy': '1.722', 'num_tokens': '2673', 'mean_token_accuracy': '0.8', 'epoch': '6.667'}
+{'train_runtime': '15.23', 'train_samples_per_second': '5.252', 'train_steps_per_second': '1.313', 'train_loss': '2.05', 'epoch': '6.667'}
+  loss: 第 1 步 5.254 → 最后 1.658  (15 s, 0.8 s/步)
+=== 5. 训后生成 ===
+  Q: What is the capital of France?
+  A: 'Paris.看查看\npositories\nThe capital of the United States'
+  Q: What is the capital of Italy?
+  A: 'Rome.看查看\nRowAtIndexPath\n Florence.看查看\nRowAtIndexPath'
+=== 6. merge_and_unload 后参数量 494 M（LoRA 已合回基座，推理零开销）===

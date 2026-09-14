@@ -8,11 +8,14 @@
 |---|---|---|---|
 | [`python-for-ai-infra/`](python-for-ai-infra/) | Python 在 AI-Infra：从语言机制到生产交付 | Infra L1 | Python 3.10+ 标准库 |
 | [`cpp-for-ai-infra/`](cpp-for-ai-infra/) | C++ 在 AI-Infra：从对象模型到算子扩展 | Infra L1 | C++17 编译器 + make |
-| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值（含预训练补篇 09–12） | Infra L2 · 算法 L4（两张地图共享） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
+| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值（8 篇）+ 预训练：从 tokenizer 到训练配方（4 篇，`llm_cost_09`–`_12` 及配套实验） | Infra L2 · 算法 L4（成本表两张地图共享；预训练只在算法地图） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
+| [`algorithm-tooling/`](algorithm-tooling/) | 算法工程师的工具箱：从一个想法到一次能跑的实验 | 算法 L1 | numpy、torch（CPU）、pandas、matplotlib；04 需 transformers / peft / trl + 下载 Qwen2.5-0.5B |
+| [`classical-ml/`](classical-ml/) | LLM 时代的经典机器学习：只讲它在哪里重现 | 算法 L2 | numpy、scikit-learn、matplotlib |
 | [`deep-learning-foundations/`](deep-learning-foundations/) | 深度学习基础：从反向传播到残差 | 算法 L3 | NumPy；05 / 06 需 PyTorch（CPU） |
 | [`post-training/`](post-training/) | 后训练：从 SFT 到可验证奖励 | 算法 L5 | PyTorch + transformers / trl / peft；MPS 或 CUDA |
+| [`rl-post-training-infra/`](rl-post-training-infra/) | RL 后训练基础设施：rollout 与训练如何共享一组 GPU | Infra L4（09） | 纯 Python（账本）；后续实验需 verl + 8 卡 |
 
-尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、大规模训练、vLLM、AI 平台工程、算法地图 L0–L2 导读、应用地图）会在有可运行示例时按同样方式加目录。
+尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、大规模训练、vLLM、AI 平台工程、开源贡献、算法地图 L0 数学、应用地图）会在有可运行示例时按同样方式加目录。
 
 ## 使用
 
@@ -20,7 +23,7 @@
 git clone https://github.com/arganzheng/ai-learning-labs.git
 cd ai-learning-labs
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt          # numpy + torch + torchvision，CPU 即可
+pip install -r requirements.txt          # numpy + torch + torchvision + pandas + matplotlib + scikit-learn，CPU 即可
 ```
 
 然后进到某个系列目录，按它的 README 运行。约定：

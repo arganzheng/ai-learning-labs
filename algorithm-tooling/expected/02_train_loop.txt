@@ -1,0 +1,15 @@
+语料: 1,800,000 训练字符, 200,000 验证字符; 词表 128; 初始 loss 应约 ln V = 4.85
+模型: 4 层, d=128, 840,448 参数
+step    0  loss 5.065  lr 6.00e-06  grad_norm 2.01    0.1s
+step  100  loss 2.720  lr 2.98e-04  grad_norm 0.34    5.1s
+step  200  loss 2.447  lr 2.84e-04  grad_norm 0.31   10.5s
+step  300  loss 2.287  lr 2.56e-04  grad_norm 0.31   16.2s
+step  400  loss 2.353  lr 2.19e-04  grad_norm 0.31   21.7s
+step  500  loss 2.330  lr 1.76e-04  grad_norm 0.56   27.4s
+step  600  loss 2.266  lr 1.31e-04  grad_norm 0.37   32.8s
+step  700  loss 2.290  lr 9.08e-05  grad_norm 0.31   37.9s
+step  800  loss 2.190  lr 5.82e-05  grad_norm 0.35   43.1s
+step  900  loss 2.233  lr 3.72e-05  grad_norm 0.31   48.3s
+step  999  loss 2.022  lr 3.00e-05  grad_norm 0.31   53.6s
+验证 loss 2.261  (PPL 9.6)
+采样(温度 0.8): 'def ovates the iord undsthians idul t flilen re ones arigsinepr of t t fibjeale tt b'

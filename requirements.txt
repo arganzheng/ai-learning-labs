@@ -4,6 +4,10 @@
 numpy>=2.0
 torch>=2.4
 torchvision>=0.19
+# algorithm-tooling/ and classical-ml/ (算法地图 L1 / L2):
+pandas>=2.0
+matplotlib>=3.8
+scikit-learn>=1.4
 # Only transformer-and-llm/tokenizer_compare.py needs these two (and network access):
 tiktoken>=0.7
 tokenizers>=0.19

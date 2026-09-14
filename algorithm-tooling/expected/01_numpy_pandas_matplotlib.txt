@@ -1,0 +1,37 @@
+=== 1. NumPy 手写 causal attention vs torch.scaled_dot_product_attention ===
+形状: Q (2, 8, 16) -> S (2, 8, 8) -> 输出 (2, 8, 16)
+最大绝对误差: 2.65e-07   (float32 下 1e-6 量级即为一致)
+第 0 个 batch 的 attention 权重（每行和为 1，上三角为 0）：
+[[1.   0.   0.   0.   0.   0.   0.   0.  ]
+ [0.28 0.72 0.   0.   0.   0.   0.   0.  ]
+ [0.92 0.05 0.03 0.   0.   0.   0.   0.  ]
+ [0.33 0.08 0.5  0.09 0.   0.   0.   0.  ]
+ [0.29 0.24 0.   0.3  0.18 0.   0.   0.  ]
+ [0.22 0.15 0.12 0.11 0.05 0.35 0.   0.  ]
+ [0.04 0.44 0.09 0.3  0.06 0.06 0.01 0.  ]
+ [0.01 0.12 0.05 0.12 0.12 0.16 0.23 0.19]]
+
+=== 2. 广播的三条规则 ===
+  (4,3) + (3,)  bias 加到每一行             -> (4, 3)
+  (4,3) + (4,1) 每行一个标量                 -> (4, 3)
+  (4,3) + (4,)  行数对不上最后一维              -> ValueError: operands could not be broadcast together with shapes (4,3) (4,) 
+  陷阱：(3,) + (3,1) 不报错，得到 (3, 3) ——想做逐元素相加却得到外积形状的表
+[[0 1 2]
+ [1 2 3]
+ [2 3 4]]
+
+=== 3. Pandas：按类别聚合、找退化的题 ===
+               acc_new  count  acc_base  delta   ci95
+category                                             
+algebra          0.770    200     0.695  0.075  0.058
+combinatorics    0.525     80     0.475  0.050  0.109
+geometry         0.627    150     0.580  0.047  0.077
+number_theory    0.610    100     0.640 -0.030  0.096
+总体: base 0.619 -> new 0.662
+退化的题（base 对、new 错）: 28；改善的题: 51
+退化最多的类别: {'algebra': 12, 'geometry': 7, 'combinatorics': 5, 'number_theory': 4}
+
+=== 4. Matplotlib：多 seed 画均值与阴影带，对数 x 轴看早期 ===
+曲线形状 (5, 1000)；step 10 / 100 / 1000 的均值 loss: 6.49 / 4.39 / 1.88，seed 间标准差 0.066
+已保存 /Users/argan/Code/ai-learning-labs/algorithm-tooling/out/loss_curves.png
+

@@ -1,0 +1,23 @@
+=== 1. 训练状态：每个可训练参数 16 字节 ===
+  bf16 权重 2 + bf16 梯度 2 + fp32 主权重 4 + AdamW 一阶矩 4 + 二阶矩 4 = 16 字节
+  Llama-3-8B: 每层 218 M, 32 层 + 嵌入 = 8.03 B 参数; r=16 LoRA 可训练 41.9 M (0.52%)
+  方案                                            冻结/权重       训练状态         合计
+  全量微调 (bf16 + AdamW)                         128.5 GB     0.00 GB    128.5 GB
+  LoRA r=16 (冻结 bf16 基座)                       16.1 GB     0.67 GB     16.7 GB
+  QLoRA (4-bit 基座 ≈ 0.5 B/参数 + 常数)              4.4 GB     0.67 GB      5.1 GB
+  → 80 GB 一张卡：全量放不下（要 ≥ 2 卡 + FSDP 切状态），LoRA 一张卡绰绰有余，QLoRA 消费级卡
+
+=== 2. 激活：与参数量无关，与 batch × seq × 层数 × d 成正比 ===
+  B=1, T=4096: 残差流一份 32 MiB/层, 32 层 1.0 GiB
+  反向要保存的中间量约 528 MiB/层, 32 层 16.5 GiB  ← 比参数的 16 GB 都大
+  gradient checkpointing 只存每层输入 (1.0 GiB)，反向重算其余，多约 1/3 前向计算
+  B=8 时激活 ×8 = 132 GiB —— 长序列大 batch 下激活是显存大头，OOM 先看这里
+
+=== 3. dtype 的实际字节：torch 上量 ===
+  torch.float32    1000×1000 = 4.0 MB  (element_size 4)
+  torch.bfloat16   1000×1000 = 2.0 MB  (element_size 2)
+  torch.float16    1000×1000 = 2.0 MB  (element_size 2)
+  torch.int8       1000×1000 = 1.0 MB  (element_size 1)
+  autocast 下: Linear 输出 torch.bfloat16, .float() 后 softmax torch.float32; 权重本身仍是 torch.float32（主副本不变）
+
+=== 4. 没有 CUDA，跳过对账；有卡时会打印 算的 16 B/参数 vs torch.cuda.max_memory_allocated() ===

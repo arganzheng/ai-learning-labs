@@ -1,0 +1,33 @@
+=== 1. 两个上限（H100 SXM: 989 TFLOPS bf16, 3.35 TB/s）===
+  ridge = 295 FLOP/字节：算术强度高于它受算力限制，低于它受带宽限制
+  decode（batch 1）: 读 16.1 GB 权重做 16.1 GFLOP → 强度 ≈ 1 → 时间下限 4.8 ms/token ≈ 209 token/s
+    batch    1: 带宽时间 4.8 ms, 算力时间 0.0 ms → memory-bound, 209 token/s
+    batch   32: 带宽时间 4.8 ms, 算力时间 0.5 ms → memory-bound, 6675 token/s
+    batch  128: 带宽时间 4.8 ms, 算力时间 2.1 ms → memory-bound, 26700 token/s
+    batch  512: 带宽时间 4.8 ms, 算力时间 8.3 ms → compute-bound, 61582 token/s
+  prefill 4096 token: 66 TFLOP → 67 ms；强度是 decode 的 4096 倍 → compute-bound
+
+=== 2. torch.profiler：一步训练的前几个算子 ===
+  模型 0.84 M 参数, batch 32 × seq 128; 一步 44 ms（CPU）
+----------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                    Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+----------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                aten::mm        25.30%      13.504ms        25.31%      13.508ms     314.134us            43  
+aten::_scaled_dot_product_flash_atten...        15.82%       8.443ms        16.69%       8.907ms       2.227ms             4  
+                     aten::gelu_backward        10.43%       5.566ms        10.43%       5.566ms       1.392ms             4  
+                             aten::addmm        10.15%       5.416ms        11.41%       6.091ms     761.385us             8  
+aten::_scaled_dot_product_flash_atten...         9.79%       5.227ms         9.87%       5.268ms       1.317ms             4  
+                              aten::gelu         7.10%       3.788ms         7.10%       3.788ms     946.890us             4  
+        aten::native_layer_norm_backward         2.85%       1.519ms         2.89%       1.543ms     171.461us             9  
+                 aten::native_layer_norm         1.68%     894.552us         1.73%     922.360us     102.484us             9  
+----------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 53.377ms
+
+  前三个算子占比: aten::mm 25%, aten::_scaled_dot_product_flash_attention_for_cpu_backward 16%, aten::gelu_backward 10%
+  读法：矩阵乘（mm / addmm / bmm）与 attention 应占大头；如果 copy_ / to / 小算子占大头，就是形状转换或 launch 开销在吃时间
+
+=== 3. 一次实验的最小记录 + seed 复现 ===
+  seed 0 两次: 3.237898 vs 3.237898 → 一致
+  seed 1:      3.378334 → 与 seed 0 差 0.1404，这就是'单个数字不算结论'的原因
+  记录写到 /Users/argan/Code/ai-learning-labs/algorithm-tooling/out/run-20260914-205033.json：run id · commit · 配置 · 数据版本 · seed · 环境 · 指标 —— 七项齐了才谈复现
+  {"run_id": "20260914-205033", "commit": "a9531a3", "metrics": {"loss_seed0": 3.2378978729248047, "loss_seed1": 3.378333806991577}}

@@ -18,6 +18,24 @@ public class P10Strings {
         return new int[]{l + 1, r - 1};
     }
 
+    /** LC 5 的 O(n) 解：Manacher。插 '#' 统一奇偶，镜像复用回文半径。 */
+    static String manacher(String s) {
+        StringBuilder tb = new StringBuilder("#");
+        for (char c : s.toCharArray()) tb.append(c).append('#');
+        String t = tb.toString();
+        int n = t.length();
+        int[] p = new int[n];
+        int center = 0, right = 0, bestLen = 0, bestCenter = 0;
+        for (int i = 0; i < n; i++) {
+            if (i < right) p[i] = Math.min(right - i, p[2 * center - i]);
+            while (i - p[i] - 1 >= 0 && i + p[i] + 1 < n && t.charAt(i - p[i] - 1) == t.charAt(i + p[i] + 1)) p[i]++;
+            if (i + p[i] > right) { center = i; right = i + p[i]; }
+            if (p[i] > bestLen) { bestLen = p[i]; bestCenter = i; }
+        }
+        int start = (bestCenter - bestLen) / 2;
+        return s.substring(start, start + bestLen);
+    }
+
     /** LC 647. */
     static int countSubstrings(String s) {
         int n = s.length(), total = 0;
@@ -133,6 +151,7 @@ public class P10Strings {
 
     public static void main(String[] args) {
         assert longestPalindrome("cbbd").equals("bb");
+        assert manacher("babad").equals("bab") && manacher("cbbd").equals("bb") && manacher("abacdfgdcaba").equals("aba");
         assert countSubstrings("aaa") == 6;
         assert Arrays.equals(buildLps("aabaaab"), new int[]{0, 1, 0, 1, 2, 2, 3});
         assert strStr("mississippi", "issip") == 4 && strStr("leetcode", "leeto") == -1;

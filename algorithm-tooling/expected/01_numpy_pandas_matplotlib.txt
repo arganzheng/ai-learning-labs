@@ -32,6 +32,7 @@ number_theory    0.610    100     0.640 -0.030  0.096
 退化最多的类别: {'algebra': 12, 'geometry': 7, 'combinatorics': 5, 'number_theory': 4}
 
 === 4. Matplotlib：多 seed 画均值与阴影带，对数 x 轴看早期 ===
-曲线形状 (5, 1000)；step 10 / 100 / 1000 的均值 loss: 6.49 / 4.39 / 1.88，seed 间标准差 0.066
+曲线形状 (5, 1000)；method A step 10 / 100 / 1000 的均值 loss: 6.87 / 4.47 / 1.80，seed 间标准差 0.179
+step 1000：A − B = 0.300，约 1.7 个标准差
 已保存 /Users/argan/Code/ai-learning-labs/algorithm-tooling/out/loss_curves.png
 

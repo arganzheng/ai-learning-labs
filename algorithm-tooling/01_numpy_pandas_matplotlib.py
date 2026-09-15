@@ -114,28 +114,37 @@ def exp_plot():
 
     print("=== 4. Matplotlib：多 seed 画均值与阴影带，对数 x 轴看早期 ===")
     steps = np.arange(1, 1001)
-    curves = []
-    for seed in range(5):
+
+    def run(method, seed):
+        """合成一条训练曲线：ln V 起步、warmup 期间先慢后快、随机游走噪声。method B 略好。"""
         rng = np.random.default_rng(seed)
-        noise = rng.standard_normal(len(steps)).cumsum() * 0.002
-        curves.append(4.8 * np.exp(-steps / 150) + 1.9 + 0.3 / np.sqrt(steps) + noise)
-    curves = np.array(curves)                       # [5, 1000]
-    mean, std = curves.mean(0), curves.std(0)
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.5))
+        warmup = 1 - np.exp(-steps / 20)                      # 前 20 步学习率线性升，loss 先慢后快
+        floor = 1.9 if method == "A" else 1.6
+        noise = rng.standard_normal(len(steps)).cumsum() * 0.006 + rng.standard_normal(len(steps)) * 0.04
+        return 5.0 * np.exp(-steps * warmup / 150) + floor + 0.3 / np.sqrt(steps) + noise
+
+    curves = {m: np.array([run(m, s) for s in range(5)]) for m in "AB"}    # 各 [5, 1000]
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
     for ax, xscale in zip(axes, ["linear", "log"]):
-        ax.plot(steps, mean, label="mean of 5 seeds")
-        ax.fill_between(steps, mean - std, mean + std, alpha=0.3, label="±1 std")
-        ax.plot(steps, curves[0], lw=0.6, alpha=0.6, label="seed 0 alone")
+        for m, color in zip("AB", ["tab:blue", "tab:orange"]):
+            mean, std = curves[m].mean(0), curves[m].std(0)
+            ax.plot(steps, mean, color=color, label=f"method {m}: mean of 5 seeds")
+            ax.fill_between(steps, mean - std, mean + std, color=color, alpha=0.25, label=f"method {m}: ±1 std")
+        ax.plot(steps, curves["A"][0], color="tab:blue", lw=0.6, alpha=0.7, ls="--", label="method A, seed 0 alone")
         ax.set_xscale(xscale)
         ax.set_xlabel("step" + (" (log)" if xscale == "log" else ""))
         ax.set_ylabel("loss")
-        ax.legend()
+        ax.set_title("linear x: the first 100 steps are squeezed left" if xscale == "linear" else "log x: the first 100 steps get half the width", fontsize=9)
+        ax.legend(fontsize=8)
     OUT.mkdir(exist_ok=True)
     path = OUT / "loss_curves.png"
     fig.tight_layout()
     fig.savefig(path, dpi=110)
-    print(f"曲线形状 {curves.shape}；step 10 / 100 / 1000 的均值 loss: "
-          f"{mean[9]:.2f} / {mean[99]:.2f} / {mean[999]:.2f}，seed 间标准差 {std[999]:.3f}")
+    mean_a, std_a = curves["A"].mean(0), curves["A"].std(0)
+    mean_b = curves["B"].mean(0)
+    print(f"曲线形状 {curves['A'].shape}；method A step 10 / 100 / 1000 的均值 loss: "
+          f"{mean_a[9]:.2f} / {mean_a[99]:.2f} / {mean_a[999]:.2f}，seed 间标准差 {std_a[999]:.3f}")
+    print(f"step 1000：A − B = {mean_a[999] - mean_b[999]:.3f}，约 {(mean_a[999] - mean_b[999]) / std_a[999]:.1f} 个标准差")
     print(f"已保存 {path}")
     print()
 

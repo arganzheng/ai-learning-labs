@@ -1,6 +1,6 @@
 # 扩散模型推理基础设施：从一次去噪到一个生成服务 — 配套代码
 
-博客系列：[《扩散模型推理基础设施：从一次去噪到一个生成服务》](https://arganzheng.life/diffusion-model-inference-infrastructure.html)（九篇，Infra 地图选修 12）。贯穿脚本 `diffusion_ledger.py` 是"一次生成的账本"：第一篇建立三段（文本编码器 / DiT × 步数 × CFG / VAE 解码）的 FLOPs、显存与时间账，后面各篇（单卡优化、跨步缓存、稀疏 attention、多卡并行、少步蒸馏、serving）都在这张账上做交换，用公式与表格记账，不再单独给脚本。
+博客系列：[《扩散模型推理基础设施：从一次去噪到一个生成服务》](https://arganzheng.life/diffusion-model-inference-infrastructure.html)（九篇，Infra 地图 10）。贯穿脚本 `diffusion_ledger.py` 是"一次生成的账本"：第一篇建立三段（文本编码器 / DiT × 步数 × CFG / VAE 解码）的 FLOPs、显存与时间账，后面各篇（单卡优化、跨步缓存、稀疏 attention、多卡并行、少步蒸馏、serving）都在这张账上做交换，用公式与表格记账，不再单独给脚本。
 
 | 文件 | 文章 | 内容 | 依赖 |
 |---|---|---|---|

@@ -41,6 +41,11 @@ jobs:
         working-directory: deep-learning-foundations
         run: |
           for f in 0*.py; do echo "== $f"; python "$f" --quick; done
+      - name: coding-interview (python + ai)
+        working-directory: coding-interview
+        run: |
+          python -m unittest discover -s python -p 'p*.py'
+          for f in ai/*.py; do echo "== $f"; python "$f" --check; done
 
   cpp:
     runs-on: ubuntu-latest
@@ -53,3 +58,19 @@ jobs:
           make -j
           make run
           make ex04 2>&1 | grep -q "error" && echo "ex04 fails to compile as intended"
+      - name: coding-interview infra (python + c++)
+        working-directory: coding-interview/infra
+        run: make run
+
+  java:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: coding-interview java
+        working-directory: coding-interview/java
+        run: make test JAVA_HOME=$JAVA_HOME

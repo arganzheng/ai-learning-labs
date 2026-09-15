@@ -1,0 +1,151 @@
+===== attention.py
+== 形状推演（B=2, T=5, D=8, H=2, d=4）
+x (2, 5, 8) @ w_qkv (8, 24) -> qkv (2, 5, 24)
+split_heads: (B,T,D) -> reshape (B,T,H,d) -> transpose -> (2, 2, 5, 4)
+scores = q @ k^T: (2, 2, 5, 5)；mask (5, 5)
+merge_heads @ w_o -> (2, 5, 8)
+
+== softmax 数值稳定性
+naive exp(1000..1002)/sum -> [nan nan nan]（上溢成 nan）
+stable                     -> [0.09003057 0.24472847 0.66524096]
+
+== causal mask 的效果（第 0 行只看得到自己）
+[[1.    0.    0.   ]
+ [0.5   0.5   0.   ]
+ [0.333 0.333 0.333]]
+
+== KV cache 增量解码 == 一次性全序列 attention
+max |full - incremental| = 8.88e-16
+
+== online softmax（block=2）== 普通 attention
+max diff = 1.67e-16
+
+== RoPE：旋转后内积只依赖相对位置
+q 在位置 t、k 在 t+2，t=0,3,6 的内积：[3.720483 3.720483 3.720483]（三者相等）
+----- --check
+attention.py: all checks passed
+===== transformer_block.py
+== GPT-2 small 参数量口算（vocab=50257, D=768, L=12, ctx=1024, tied）
+  per_layer      7,087,872
+  layers        85,054,464
+  embedding     39,383,808
+  final_ln           1,536
+  head                   0
+  total        124,439,808
+  每层 ≈ 12·D² = 7,077,888（bias 与 LN 只占 0.14%）
+
+== 每 token 前向 FLOPs（D=768, L=12, T=1024）
+  线性 169,869,312  attention 37,748,736  合计 207,618,048
+  ≈ 2·N_非嵌入 = 170,108,928（线性项）；attention 占 18.2%
+
+== micrograd：f(a, b) = (a·b + a²).relu() / b，在 a=2, b=3 处的梯度
+  f = 3.3333, df/da = 2.3333（解析 (b+2a)/b = 7/3）, df/db = -0.4444（解析 -a²/b² = -4/9）
+
+== NumPy 两层 MLP 在玩具数据上训练（loss 应单调下降）
+  loss @ step 0/50/100/200/299: 0.796 0.131 0.091 0.064 0.053
+----- --check
+transformer_block.py: all checks passed
+===== tokenizer_decoding.py
+== BPE：在小语料上训练 10 次合并
+  merge 0: 't' + '</w>' -> 't</w>'
+  merge 1: 's' + 't</w>' -> 'st</w>'
+  merge 2: 'e' + 'st</w>' -> 'est</w>'
+  merge 3: 'o' + 'w' -> 'ow'
+  merge 4: 'l' + 'ow' -> 'low'
+  merge 5: 'w' + 'est</w>' -> 'west</w>'
+  merge 6: 'n' + 'e' -> 'ne'
+  merge 7: 'ne' + 'west</w>' -> 'newest</w>'
+  merge 8: 'low' + '</w>' -> 'low</w>'
+  merge 9: 'w' + 'i' -> 'wi'
+  encode 'lowest'   -> ['low', 'est</w>']
+  encode 'newer'    -> ['ne', 'w', 'e', 'r', '</w>']
+  encode 'wide'     -> ['wi', 'd', 'e', '</w>']
+
+== 采样：同一行 logits 在不同策略下的分布（10000 次统计）
+  T=1        ['0.465', '0.279', '0.173', '0.060', '0.023']
+  T=0.5      ['0.650', '0.249', '0.087', '0.013', '0.001']
+  top_k=2    ['0.626', '0.373', '0.000', '0.000', '0.000']
+  top_p=0.8  ['0.500', '0.317', '0.184', '0.000', '0.000']
+  min_p=0.3  ['0.511', '0.302', '0.187', '0.000', '0.000']
+  softmax(logits) = [0.463, 0.281, 0.17, 0.063, 0.023]
+
+== beam search 在一个玩具 LM 上（V=4，eos=3）
+  beam=1: seq=[1, 0, 3], log p=-1.897, p=0.150
+  beam=2: seq=[2, 3], log p=-0.968, p=0.380
+
+== 蓄水池抽样：k=3，流长 10，每个元素被选中的频率（20000 次）
+   ['0.303', '0.299', '0.298', '0.300', '0.299', '0.301', '0.300', '0.303', '0.300', '0.297'] （理论 0.3）
+
+== 投机解码：接受-拒绝后 token 分布应等于目标分布 p
+   最终分布 ['0.205', '0.300', '0.495']（目标 p = [0.2, 0.3, 0.5]）；接受率 0.702（理论 1 - TV(p,q) = 0.700）
+----- --check
+tokenizer_decoding.py: all checks passed
+===== losses_training.py
+== 交叉熵与 label smoothing（N=4, C=5）
+  ε=0.0: CE = 1.8169
+  ε=0.1: CE = 1.8788
+  KL(p || p) = 0.0e+00；KL(p || uniform) = 0.5311
+
+== InfoNCE：正样本相似度越高、损失越低（N=8, d=16, τ=0.07）
+  noise=1.0: loss = 2.1093（随机基线 ln 8 = 2.0794）
+  noise=0.3: loss = 0.1056（随机基线 ln 8 = 2.0794）
+  noise=0.05: loss = 0.0008（随机基线 ln 8 = 2.0794）
+
+== DPO：chosen 相对 ref 提升越多、损失越低（β=0.1）
+  Δchosen=+0, Δrejected=+0: loss = 0.6931
+  Δchosen=+5, Δrejected=-5: loss = 0.3133
+  Δchosen=+20, Δrejected=-20: loss = 0.0181
+
+== GAE（γ=0.99, λ=0.95）在一条 5 步轨迹上
+  δ 由后往前累积，adv = [0.4168, 0.3432, 0.266, 0.185, 0.1]
+  returns = adv + V     = [0.9168, 0.9432, 0.966, 0.985, 1.0]
+
+== PPO clip：ratio 超出 [0.8, 1.2] 后梯度被截断
+  ratio=1.000: loss = -1.0000
+  ratio=1.105: loss = -1.1052
+  ratio=1.350: loss = -1.2000
+  ratio=1.649: loss = -1.2000
+
+== GRPO 组内优势：rewards [1, 0, 0, 1, 0] → [1.2247, -0.8165, -0.8165, 1.2247, -0.8165]
+
+== AdamW 在 f(x) = (x-3)² 上 200 步（lr=0.1）
+  x = 3.0001（最优 3）
+
+== cosine + warmup（warmup 3, total 10, lr_max 1）
+   ['0.333', '0.667', '1.000', '1.000', '0.950', '0.812', '0.611', '0.389', '0.188', '0.050']
+
+== LoRA：初始 ΔW = 0，训练 B 后 merge 与不 merge 结果一致
+  初始 |y_lora - y_base| = 0.0e+00
+  merge 后 |x W' - forward| = 1.8e-15；额外参数 28 vs 全量 48
+----- --check
+losses_training.py: all checks passed
+===== classical_ml_metrics.py
+== k-means：三团高斯点，k=3
+  centers ≈ [[-0.01, 0.18], [2.65, 5.08], [5.87, 0.03]] （真值 [0,0] [3,5] [6,0]）
+
+== 逻辑回归：线性可分数据，训练准确率
+  w ≈ [5.4, 5.29]（方向应 ≈ [1, 1]），acc = 0.990
+
+== KNN（k=5）在同一数据上的留一预测
+  前 50 个点的留一准确率 0.90
+
+== PCA：二维数据主方向
+  第一主成分 [0.833, -0.553]（≈ ±[cos 0.6, −sin 0.6] = ±[0.825, −0.565]），方差解释 [0.975, 0.025]
+
+== 指标
+  阈值 0.5：P=0.600 R=0.750 F1=0.667
+  AUC（秩法）=0.6875  AUC（定义式）=0.6875
+  NDCG@5 of rel [3,2,3,0,1,2] = 0.8756（理想排序 [3,3,2,2,1] → 1.0）
+
+== conv2d via im2col：(1,1,4,4) 输入、3×3 核、pad 1
+  核 = 中心 1、右 −1（水平差分），输出：
+[[-1. -1. -1.  3.]
+ [-1. -1. -1.  7.]
+ [-1. -1. -1. 11.]
+ [-1. -1. -1. 15.]]
+  im2col 形状：(16, 9)（16 个位置 × 9 个权重）
+
+== NMS：三个重叠框 + 一个远处的框，阈值 0.5
+  IoU(框0, 框1) = 0.681，保留下标 [0, 2, 3]
+----- --check
+classical_ml_metrics.py: all checks passed

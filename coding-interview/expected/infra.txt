@@ -1,0 +1,12 @@
+1 LRU: 1600 次访问，命中 1208，未命中 392，实际计算 392 次，表大小 8
+2 有界队列（容量 8）：3 生产者 × 500 → 2 消费者，和 = 1124250 ✓
+3 线程池：20 个任务结果正确，异常正确传回 Future ✓
+4 ring allreduce（N=4）：每 rank 发送 6 块 = 2(N−1)；总量 2(N−1)/N ≈ 1.50 倍向量大小，与 N 无关 ✓
+5 paged KV：6 token 占 2 块；fork 共享（引用计数 2）；子序列追加触发 COW 多用 1 块；释放后全部回收 ✓
+6 token bucket（rate 10/s, cap 5）：突发通过 5，0.25 s 后再通过 2 ✓
+memory_pool: 4 blocks x 64B, alloc/free O(1), LIFO reuse OK
+topk_lru: topk/nth_element OK, LRU OK, 8 threads x 20000 ops, size=64 <= 64
+n=512  FLOPs=2.68e+08  max|diff|=0.0e+00
+  ijk      :     93.1 ms    2.88 GFLOP/s
+  ikj      :      8.3 ms   32.24 GFLOP/s  (11.2x)
+  blocked64:     12.0 ms   22.39 GFLOP/s  (7.8x)

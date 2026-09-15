@@ -14,6 +14,7 @@
 | [`deep-learning-foundations/`](deep-learning-foundations/) | 深度学习基础：从反向传播到残差 | 算法 L3 | NumPy；05 / 06 需 PyTorch（CPU） |
 | [`post-training/`](post-training/) | 后训练：从 SFT 到可验证奖励 | 算法 L5 | PyTorch + transformers / trl / peft；MPS 或 CUDA |
 | [`rl-post-training-infra/`](rl-post-training-infra/) | RL 后训练基础设施：rollout 与训练如何共享一组 GPU | Infra L4（09） | 纯 Python（账本）；后续实验需 verl + 8 卡 |
+| [`diffusion-inference-infra/`](diffusion-inference-infra/) | 扩散模型推理基础设施：从一次去噪到一个生成服务 | Infra 选修（12） | 纯 Python（账本） |
 
 尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、大规模训练、vLLM、AI 平台工程、开源贡献、算法地图 L0 数学、应用地图）会在有可运行示例时按同样方式加目录。
 

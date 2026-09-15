@@ -1,9 +1,10 @@
 # 算法工程师的工具箱：从一个想法到一次能跑的实验 — 配套脚本
 
-博客系列：[总纲](https://arganzheng.life/tooling-for-ai-algorithm-engineers.html)（算法地图 L1）。五篇文章各配一个脚本，文中引用的数字由这些脚本跑出来。全部在 CPU 上可跑。
+博客系列：[总纲](https://arganzheng.life/tooling-for-ai-algorithm-engineers.html)（算法地图 L1）。六篇文章各配一个脚本，文中引用的数字由这些脚本跑出来。全部在 CPU 上可跑。
 
 | 脚本 | 文章 | 依赖 | 运行时间（8 核笔记本 CPU） |
 |---|---|---|---|
+| `00_python_in_use.py` | [Python 使用层](https://arganzheng.life/python-in-use-for-algorithm-engineers.html) | 只用标准库 | 几秒；合成 10 万行语料到 `out/corpus.jsonl`（19 MB） |
 | `01_numpy_pandas_matplotlib.py` | [科学计算栈](https://arganzheng.life/numpy-pandas-matplotlib-for-algorithm-engineers.html) | numpy、torch（对数值）、pandas、matplotlib | 几秒；图存到 `out/loss_curves.png` |
 | `02_train_loop.py` | [PyTorch 使用层（上）](https://arganzheng.life/pytorch-in-use-five-objects-and-a-training-loop.html) | torch | 1000 步约 1 分钟；`--quick` 100 步 |
 | `03_memory_ledger.py` | [PyTorch 使用层（下）](https://arganzheng.life/pytorch-in-use-mixed-precision-memory-ledger-and-multi-gpu.html) | torch | 1 秒；有 CUDA 时多一节实测对账 |
@@ -16,6 +17,7 @@
 
 ```bash
 pip install -r ../requirements.txt        # numpy torch pandas matplotlib（04 还要 transformers peft trl datasets）
+python 00_python_in_use.py                # 只用标准库
 python 01_numpy_pandas_matplotlib.py      # 全部子实验
 python 01_numpy_pandas_matplotlib.py attention pandas
 python 02_train_loop.py --quick

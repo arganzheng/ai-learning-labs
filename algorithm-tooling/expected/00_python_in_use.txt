@@ -1,0 +1,45 @@
+=== 1. 流式过一遍语料：生成器 vs 一次读进内存 ===
+语料 corpus.jsonl: 100,000 行, 19.4 MB
+一次读进 list: 100,000 条, 峰值内存 102.9 MB  （≈ 文件大小 × 5.3）
+生成器流式:   峰值内存 11.5 MB  （只有去重的哈希集合在涨）
+过滤 + 去重后保留 92,867 / 100,000 条; 按来源: {'book': 30964, 'code': 31155, 'web': 30748}
+按长度分桶(词数下界): 0+: 8339, 10+: 16465, 20+: 16754, 30+: 16550, 40+: 16529, 50+: 18230
+
+=== 2. dataclass 配置：默认值、覆盖、序列化 ===
+默认: TrainConfig(model='Qwen/Qwen2.5-0.5B', lr=2e-05, batch_size=8, max_steps=1000, warmup=50, lora_targets=['q_proj', 'v_proj'])
+覆盖后: 0.0001 200 | 原来的: 2e-05 1000
+存进 run 目录的 config.json: {"model": "Qwen/Qwen2.5-0.5B", "lr": 0.0001, "batch_size": 8, "max_steps": 200, "warmup": 50, "lora_targets": ["q_proj", "v_proj"]}
+两个默认对象的 lora_targets 是否同一个 list: False
+非法配置在构造时就报错: warmup 500 > max_steps 200
+
+=== 3. 训练代码里的协议方法：__len__/__getitem__、生成器、__call__、装饰器、with ===
+len(ds) = 9; ds[0] = {'input_ids': [97, 116, 116, 101, 110, 116, 105, 111, 110, 32, 105, 115, 32, 97, 108, 108, 32, 121, 111, 117, 32, 110, 101, 101, 100], 'label': 1}
+第一个 batch: input_ids 形状 [4, 25], labels = [1, 0, 1, 0]
+  [one_epoch 用时 0.000s]
+一个 epoch 看了 9 个样本, model 被调用 3 次 (= ceil(9 / 4))
+seeded(42) 两次得到相同的数: True; 退出后随机状态已恢复
+
+=== 4. 多进程预处理：串行 vs 线程池 vs 进程池 ===
+100,000 行, 共 3,146,454 个 token; 8 个 worker
+串行:   0.46s
+线程池: 0.46s  （1.0×，GIL 让 CPU 密集的线程几乎不并行）
+进程池: 0.15s  （3.1×，进程各有一个解释器，代价是启动与序列化）
+
+=== 5. 读 traceback：从下往上 ===
+Traceback (most recent call last):
+  File "/Users/argan/Code/ai-learning-labs/algorithm-tooling/00_python_in_use.py", line 286, in exp_traceback
+    train_step([[1.0, 2.0, 3.0], [4.0, 5.0]])         # 第二行只有 2 个特征
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/argan/Code/ai-learning-labs/algorithm-tooling/00_python_in_use.py", line 279, in train_step
+    return forward(batch)
+           ^^^^^^^^^^^^^^
+  File "/Users/argan/Code/ai-learning-labs/algorithm-tooling/00_python_in_use.py", line 274, in forward
+    h = project(batch, [[0.1] * 4 for _ in range(3)])   # w: [3, 4]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/argan/Code/ai-learning-labs/algorithm-tooling/00_python_in_use.py", line 269, in project
+    assert len(row) == d_in, f"shape mismatch: x row has {len(row)} features, w expects {d_in}"
+           ^^^^^^^^^^^^^^^^
+AssertionError: shape mismatch: x row has 2 features, w expects 3
+
+共 4 层调用; 最后一行是错误本身, 往上第一帧是出错的位置, 再往上是它怎么被调到的
+

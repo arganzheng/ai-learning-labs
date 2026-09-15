@@ -45,6 +45,17 @@ cd infra && make run
 | 12 | 动态规划（二）：背包、区间、状态机、树形 | `p12_dp_knapsack_interval_state.py` | `P12DpKnapsackIntervalState.java` |
 | 13 | 设计题与数据结构实现 | `p13_design.py` | `P13Design.java` |
 
+| 篇 | 文章 | 文件 | 运行 |
+|---|---|---|---|
+| 14 | 手撕 attention 家族 | `ai/attention.py` | `python attention.py [--check]` |
+| 15 | 手撕 Transformer block 与反向传播 | `ai/transformer_block.py` | 同上 |
+| 16 | 手撕 tokenizer 与解码 | `ai/tokenizer_decoding.py` | 同上 |
+| 17 | 手撕损失函数与训练算法 | `ai/losses_training.py` | 同上 |
+| 18 | 手撕经典 ML 与评测指标 | `ai/classical_ml_metrics.py` | 同上（NMS 对拍需要 torchvision，可选） |
+| 19 | Infra 岗手撕：并发与系统 | `infra/concurrency.py`、`infra/memory_pool.cpp`、`infra/blocked_gemm.cpp`、`infra/topk_lru.cpp` | `make run` |
+
+`ai/*.py` 不带参数打印文章里引用的数值示例（形状推演、参数量、采样分布…），`--check` 用 float64 与 torch 的参考实现对拍（`F.scaled_dot_product_attention`、`nn.MultiheadAttention`、`F.layer_norm` 的 autograd、`F.cross_entropy(label_smoothing, ignore_index)`、`torch.optim.AdamW`、`clip_grad_norm_`、`F.conv2d` 等），容差 1e-10。`infra/blocked_gemm` 的计时随机器变化，`expected/infra.txt` 是 Apple M 系列 `-O2` 的结果——在这台机器上简单分块**慢于** ikj，文章据实报告并解释了原因。
+
 ## 选题打分表
 
 每篇的主讲题按三条打分（各 0–2 分）：**高频**（LeetCode Hot 100 / 剑指 Offer / CodeTop 近一年大厂频次表可查）、**模板代表性**（一道题逼出该模式的全部要点，而不是模式的特例）、**follow-up 空间**（面试官能顺着追问一到两层）。5–6 分主讲，3–4 分进题单给一句提示，更低的不收。

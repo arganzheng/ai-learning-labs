@@ -58,7 +58,10 @@ public class P12DpKnapsackIntervalState {
         for (int i = n - 1; i >= 0; i--) {
             f[i][i] = 1;
             for (int j = i + 1; j < n; j++)
-                f[i][j] = s.charAt(i) == s.charAt(j) ? f[i + 1][j - 1] + 2 : Math.max(f[i + 1][j], f[i][j - 1]);
+                f[i][j] =
+                        s.charAt(i) == s.charAt(j)
+                                ? f[i + 1][j - 1] + 2
+                                : Math.max(f[i + 1][j], f[i][j - 1]);
         }
         return f[0][n - 1];
     }
@@ -66,7 +69,10 @@ public class P12DpKnapsackIntervalState {
     /** LC 121. */
     static int maxProfitOne(int[] prices) {
         int lo = Integer.MAX_VALUE, best = 0;
-        for (int p : prices) { lo = Math.min(lo, p); best = Math.max(best, p - lo); }
+        for (int p : prices) {
+            lo = Math.min(lo, p);
+            best = Math.max(best, p - lo);
+        }
         return best;
     }
 
@@ -93,7 +99,9 @@ public class P12DpKnapsackIntervalState {
         int hold = Integer.MIN_VALUE / 2, sold = 0, rest = 0;
         for (int p : prices) {
             int nh = Math.max(hold, rest - p), ns = hold + p, nr = Math.max(rest, sold);
-            hold = nh; sold = ns; rest = nr;
+            hold = nh;
+            sold = ns;
+            rest = nr;
         }
         return Math.max(sold, rest);
     }
@@ -103,22 +111,33 @@ public class P12DpKnapsackIntervalState {
         int hold = Integer.MIN_VALUE / 2, free = 0;
         for (int p : prices) {
             int nh = Math.max(hold, free - p), nf = Math.max(free, hold + p - fee);
-            hold = nh; free = nf;
+            hold = nh;
+            free = nf;
         }
         return free;
     }
 
     static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int v, TreeNode l, TreeNode r) { val = v; left = l; right = r; }
+        int val;
+        TreeNode left, right;
+
+        TreeNode(int v, TreeNode l, TreeNode r) {
+            val = v;
+            left = l;
+            right = r;
+        }
     }
 
     /** LC 337. 返回 {偷, 不偷}。 */
-    static int robTree(TreeNode root) { int[] r = dfs(root); return Math.max(r[0], r[1]); }
+    static int robTree(TreeNode root) {
+        int[] r = dfs(root);
+        return Math.max(r[0], r[1]);
+    }
+
     private static int[] dfs(TreeNode n) {
-        if (n == null) return new int[]{0, 0};
+        if (n == null) return new int[] {0, 0};
         int[] l = dfs(n.left), r = dfs(n.right);
-        return new int[]{n.val + l[1] + r[1], Math.max(l[0], l[1]) + Math.max(r[0], r[1])};
+        return new int[] {n.val + l[1] + r[1], Math.max(l[0], l[1]) + Math.max(r[0], r[1])};
     }
 
     /** LC 10. 自底向上：f[i][j] = s[i:] 与 p[j:] 匹配。 */
@@ -129,7 +148,8 @@ public class P12DpKnapsackIntervalState {
         for (int i = m; i >= 0; i--)
             for (int j = n - 1; j >= 0; j--) {
                 boolean first = i < m && (p.charAt(j) == s.charAt(i) || p.charAt(j) == '.');
-                if (j + 1 < n && p.charAt(j + 1) == '*') f[i][j] = f[i][j + 2] || (first && f[i + 1][j]);
+                if (j + 1 < n && p.charAt(j + 1) == '*')
+                    f[i][j] = f[i][j + 2] || (first && f[i + 1][j]);
                 else f[i][j] = first && f[i + 1][j + 1];
             }
         return f[0][0];
@@ -151,16 +171,21 @@ public class P12DpKnapsackIntervalState {
     }
 
     public static void main(String[] args) {
-        assert canPartition(new int[]{1, 5, 11, 5}) && !canPartition(new int[]{1, 2, 3, 5});
-        assert findTargetSumWays(new int[]{1, 1, 1, 1, 1}, 3) == 5;
-        assert change(5, new int[]{1, 2, 5}) == 4;
-        assert maxCoins(new int[]{3, 1, 5, 8}) == 167;
+        assert canPartition(new int[] {1, 5, 11, 5}) && !canPartition(new int[] {1, 2, 3, 5});
+        assert findTargetSumWays(new int[] {1, 1, 1, 1, 1}, 3) == 5;
+        assert change(5, new int[] {1, 2, 5}) == 4;
+        assert maxCoins(new int[] {3, 1, 5, 8}) == 167;
         assert longestPalindromeSubseq("bbbab") == 4;
-        assert maxProfitOne(new int[]{7, 1, 5, 3, 6, 4}) == 5;
-        assert maxProfitK(2, new int[]{3, 3, 5, 0, 0, 3, 1, 4}) == 6 && maxProfitK(2, new int[]{3, 2, 6, 5, 0, 3}) == 7;
-        assert maxProfitCooldown(new int[]{1, 2, 3, 0, 2}) == 3;
-        assert maxProfitFee(new int[]{1, 3, 2, 8, 4, 9}, 2) == 8;
-        TreeNode t = new TreeNode(3, new TreeNode(2, null, new TreeNode(3, null, null)), new TreeNode(3, null, new TreeNode(1, null, null)));
+        assert maxProfitOne(new int[] {7, 1, 5, 3, 6, 4}) == 5;
+        assert maxProfitK(2, new int[] {3, 3, 5, 0, 0, 3, 1, 4}) == 6
+                && maxProfitK(2, new int[] {3, 2, 6, 5, 0, 3}) == 7;
+        assert maxProfitCooldown(new int[] {1, 2, 3, 0, 2}) == 3;
+        assert maxProfitFee(new int[] {1, 3, 2, 8, 4, 9}, 2) == 8;
+        TreeNode t =
+                new TreeNode(
+                        3,
+                        new TreeNode(2, null, new TreeNode(3, null, null)),
+                        new TreeNode(3, null, new TreeNode(1, null, null)));
         assert robTree(t) == 7;
         assert isMatchRegex("aab", "c*a*b") && !isMatchRegex("mississippi", "mis*is*p*.");
         assert isMatchWildcard("adceb", "*a*b") && !isMatchWildcard("acdcb", "a*c?b");

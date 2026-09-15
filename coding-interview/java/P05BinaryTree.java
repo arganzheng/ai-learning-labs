@@ -4,8 +4,12 @@ import java.util.*;
 public class P05BinaryTree {
 
     static class TreeNode {
-        int val; TreeNode left, right;
-        TreeNode(int v) { val = v; }
+        int val;
+        TreeNode left, right;
+
+        TreeNode(int v) {
+            val = v;
+        }
     }
 
     /** LeetCode 风格层序数组建树，null 为空。 */
@@ -16,9 +20,15 @@ public class P05BinaryTree {
         int i = 1;
         while (!q.isEmpty() && i < vals.length) {
             TreeNode n = q.poll();
-            if (i < vals.length && vals[i] != null) { n.left = new TreeNode(vals[i]); q.add(n.left); }
+            if (i < vals.length && vals[i] != null) {
+                n.left = new TreeNode(vals[i]);
+                q.add(n.left);
+            }
             i++;
-            if (i < vals.length && vals[i] != null) { n.right = new TreeNode(vals[i]); q.add(n.right); }
+            if (i < vals.length && vals[i] != null) {
+                n.right = new TreeNode(vals[i]);
+                q.add(n.right);
+            }
             i++;
         }
         return root;
@@ -30,7 +40,10 @@ public class P05BinaryTree {
         Deque<TreeNode> stack = new ArrayDeque<>();
         TreeNode cur = root;
         while (cur != null || !stack.isEmpty()) {
-            while (cur != null) { stack.push(cur); cur = cur.left; }
+            while (cur != null) {
+                stack.push(cur);
+                cur = cur.left;
+            }
             cur = stack.pop();
             out.add(cur.val);
             cur = cur.right;
@@ -57,7 +70,9 @@ public class P05BinaryTree {
     }
 
     /** LC 104. */
-    static int maxDepth(TreeNode r) { return r == null ? 0 : 1 + Math.max(maxDepth(r.left), maxDepth(r.right)); }
+    static int maxDepth(TreeNode r) {
+        return r == null ? 0 : 1 + Math.max(maxDepth(r.left), maxDepth(r.right));
+    }
 
     /** LC 226. */
     static TreeNode invertTree(TreeNode r) {
@@ -69,7 +84,10 @@ public class P05BinaryTree {
     }
 
     /** LC 101. */
-    static boolean isSymmetric(TreeNode r) { return r == null || mirror(r.left, r.right); }
+    static boolean isSymmetric(TreeNode r) {
+        return r == null || mirror(r.left, r.right);
+    }
+
     private static boolean mirror(TreeNode a, TreeNode b) {
         if (a == null || b == null) return a == b;
         return a.val == b.val && mirror(a.left, b.right) && mirror(a.right, b.left);
@@ -77,7 +95,13 @@ public class P05BinaryTree {
 
     /** LC 543. 后序返回向下最长链，路径在合并处更新。 */
     static int diameter;
-    static int diameterOfBinaryTree(TreeNode root) { diameter = 0; depth(root); return diameter; }
+
+    static int diameterOfBinaryTree(TreeNode root) {
+        diameter = 0;
+        depth(root);
+        return diameter;
+    }
+
     private static int depth(TreeNode n) {
         if (n == null) return 0;
         int l = depth(n.left), r = depth(n.right);
@@ -87,7 +111,13 @@ public class P05BinaryTree {
 
     /** LC 124. 同一模板，负贡献截断为 0。 */
     static int best;
-    static int maxPathSum(TreeNode root) { best = Integer.MIN_VALUE; gain(root); return best; }
+
+    static int maxPathSum(TreeNode root) {
+        best = Integer.MIN_VALUE;
+        gain(root);
+        return best;
+    }
+
     private static int gain(TreeNode n) {
         if (n == null) return 0;
         int l = Math.max(gain(n.left), 0), r = Math.max(gain(n.right), 0);
@@ -98,19 +128,22 @@ public class P05BinaryTree {
     /** LC 236. */
     static TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         if (root == null || root == p || root == q) return root;
-        TreeNode l = lowestCommonAncestor(root.left, p, q), r = lowestCommonAncestor(root.right, p, q);
+        TreeNode l = lowestCommonAncestor(root.left, p, q),
+                r = lowestCommonAncestor(root.right, p, q);
         if (l != null && r != null) return root;
         return l != null ? l : r;
     }
 
     /** LC 105. 前序 + 中序建树。 */
     static int preIdx;
+
     static TreeNode buildTree(int[] preorder, int[] inorder) {
         Map<Integer, Integer> pos = new HashMap<>();
         for (int i = 0; i < inorder.length; i++) pos.put(inorder[i], i);
         preIdx = 0;
         return rec(preorder, pos, 0, inorder.length);
     }
+
     private static TreeNode rec(int[] pre, Map<Integer, Integer> pos, int lo, int hi) {
         if (lo >= hi) return null;
         TreeNode n = new TreeNode(pre[preIdx++]);
@@ -121,7 +154,10 @@ public class P05BinaryTree {
     }
 
     /** LC 98. 上下界用 Long 避开 Integer 极值。 */
-    static boolean isValidBST(TreeNode r) { return check(r, Long.MIN_VALUE, Long.MAX_VALUE); }
+    static boolean isValidBST(TreeNode r) {
+        return check(r, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
     private static boolean check(TreeNode n, long lo, long hi) {
         if (n == null) return true;
         if (n.val <= lo || n.val >= hi) return false;
@@ -133,7 +169,10 @@ public class P05BinaryTree {
         Deque<TreeNode> stack = new ArrayDeque<>();
         TreeNode cur = root;
         while (true) {
-            while (cur != null) { stack.push(cur); cur = cur.left; }
+            while (cur != null) {
+                stack.push(cur);
+                cur = cur.left;
+            }
             cur = stack.pop();
             if (--k == 0) return cur.val;
             cur = cur.right;
@@ -146,19 +185,27 @@ public class P05BinaryTree {
         ser(root, sb);
         return sb.substring(0, sb.length() - 1);
     }
+
     private static void ser(TreeNode n, StringBuilder sb) {
-        if (n == null) { sb.append("#,"); return; }
+        if (n == null) {
+            sb.append("#,");
+            return;
+        }
         sb.append(n.val).append(',');
-        ser(n.left, sb); ser(n.right, sb);
+        ser(n.left, sb);
+        ser(n.right, sb);
     }
+
     static TreeNode deserialize(String data) {
         return des(new ArrayDeque<>(Arrays.asList(data.split(","))));
     }
+
     private static TreeNode des(Deque<String> toks) {
         String t = toks.poll();
         if (t.equals("#")) return null;
         TreeNode n = new TreeNode(Integer.parseInt(t));
-        n.left = des(toks); n.right = des(toks);
+        n.left = des(toks);
+        n.right = des(toks);
         return n;
     }
 
@@ -168,6 +215,7 @@ public class P05BinaryTree {
         count.put(0L, 1);
         return dfs(root, 0L, target, count);
     }
+
     private static int dfs(TreeNode n, long pre, int target, Map<Long, Integer> count) {
         if (n == null) return 0;
         pre += n.val;
@@ -203,7 +251,8 @@ public class P05BinaryTree {
         TreeNode lca = build(3, 5, 1, 6, 2, 0, 8, null, null, 7, 4);
         assert lowestCommonAncestor(lca, lca.left, lca.right) == lca;
         assert lowestCommonAncestor(lca, lca.left, lca.left.right.right) == lca.left;
-        assert levelOrder(buildTree(new int[]{3, 9, 20, 15, 7}, new int[]{9, 3, 15, 20, 7})).equals(levelOrder(t));
+        assert levelOrder(buildTree(new int[] {3, 9, 20, 15, 7}, new int[] {9, 3, 15, 20, 7}))
+                .equals(levelOrder(t));
         assert isValidBST(build(2, 1, 3)) && !isValidBST(build(5, 4, 6, null, null, 3, 7));
         assert isValidBST(build(Integer.MAX_VALUE));
         assert kthSmallest(build(5, 3, 6, 2, 4, null, null, 1), 3) == 3;
@@ -213,7 +262,10 @@ public class P05BinaryTree {
         TreeNode f = build(1, 2, 5, 3, 4, null, 6);
         flatten(f);
         List<Integer> vals = new ArrayList<>();
-        for (TreeNode c = f; c != null; c = c.right) { assert c.left == null; vals.add(c.val); }
+        for (TreeNode c = f; c != null; c = c.right) {
+            assert c.left == null;
+            vals.add(c.val);
+        }
         assert vals.equals(List.of(1, 2, 3, 4, 5, 6));
         System.out.println("P05BinaryTree OK");
     }

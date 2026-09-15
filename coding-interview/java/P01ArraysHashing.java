@@ -8,7 +8,7 @@ public class P01ArraysHashing {
         Map<Integer, Integer> seen = new HashMap<>();
         for (int i = 0; i < nums.length; i++) {
             Integer j = seen.get(target - nums[i]);
-            if (j != null) return new int[]{j, i};
+            if (j != null) return new int[] {j, i};
             seen.put(nums[i], i);
         }
         return new int[0];
@@ -96,11 +96,11 @@ public class P01ArraysHashing {
     static int[] singleNumberIII(int[] nums) {
         int xor = 0;
         for (int v : nums) xor ^= v;
-        int low = xor & -xor;                 // 注意：xor 为 Integer.MIN_VALUE 时 -xor 溢出，但 & 的结果仍正确
+        int low = xor & -xor; // 注意：xor 为 Integer.MIN_VALUE 时 -xor 溢出，但 & 的结果仍正确
         int a = 0;
         for (int v : nums) if ((v & low) != 0) a ^= v;
         int b = xor ^ a;
-        return new int[]{Math.min(a, b), Math.max(a, b)};
+        return new int[] {Math.min(a, b), Math.max(a, b)};
     }
 
     /** LC 287. Floyd 判环。O(n) / O(1)。 */
@@ -119,17 +119,19 @@ public class P01ArraysHashing {
     }
 
     public static void main(String[] args) {
-        assert Arrays.equals(twoSum(new int[]{2, 7, 11, 15}, 9), new int[]{0, 1});
-        assert subarraySum(new int[]{1, 1, 1}, 2) == 2;
-        assert subarraySum(new int[]{1, -1, 0}, 0) == 3;
-        assert longestConsecutive(new int[]{100, 4, 200, 1, 3, 2}) == 4;
-        assert firstMissingPositive(new int[]{3, 4, -1, 1}) == 2;
-        assert firstMissingPositive(new int[]{1, 1}) == 2;
-        assert Arrays.equals(productExceptSelf(new int[]{1, 2, 3, 4}), new int[]{24, 12, 8, 6});
-        assert Arrays.equals(corpFlightBookings(new int[][]{{1, 2, 10}, {2, 3, 20}, {2, 5, 25}}, 5), new int[]{10, 55, 45, 25, 25});
-        assert singleNumber(new int[]{4, 1, 2, 1, 2}) == 4;
-        assert Arrays.equals(singleNumberIII(new int[]{1, 2, 1, 3, 2, 5}), new int[]{3, 5});
-        assert findDuplicate(new int[]{1, 3, 4, 2, 2}) == 2;
+        assert Arrays.equals(twoSum(new int[] {2, 7, 11, 15}, 9), new int[] {0, 1});
+        assert subarraySum(new int[] {1, 1, 1}, 2) == 2;
+        assert subarraySum(new int[] {1, -1, 0}, 0) == 3;
+        assert longestConsecutive(new int[] {100, 4, 200, 1, 3, 2}) == 4;
+        assert firstMissingPositive(new int[] {3, 4, -1, 1}) == 2;
+        assert firstMissingPositive(new int[] {1, 1}) == 2;
+        assert Arrays.equals(productExceptSelf(new int[] {1, 2, 3, 4}), new int[] {24, 12, 8, 6});
+        assert Arrays.equals(
+                corpFlightBookings(new int[][] {{1, 2, 10}, {2, 3, 20}, {2, 5, 25}}, 5),
+                new int[] {10, 55, 45, 25, 25});
+        assert singleNumber(new int[] {4, 1, 2, 1, 2}) == 4;
+        assert Arrays.equals(singleNumberIII(new int[] {1, 2, 1, 3, 2, 5}), new int[] {3, 5});
+        assert findDuplicate(new int[] {1, 3, 4, 2, 2}) == 2;
         System.out.println("P01ArraysHashing OK");
     }
 }

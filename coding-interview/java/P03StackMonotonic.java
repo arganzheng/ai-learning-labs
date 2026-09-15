@@ -22,8 +22,14 @@ public class P03StackMonotonic {
             switch (t) {
                 case "+" -> stack.push(stack.pop() + stack.pop());
                 case "*" -> stack.push(stack.pop() * stack.pop());
-                case "-" -> { int b = stack.pop(), a = stack.pop(); stack.push(a - b); }
-                case "/" -> { int b = stack.pop(), a = stack.pop(); stack.push(a / b); }
+                case "-" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a - b);
+                }
+                case "/" -> {
+                    int b = stack.pop(), a = stack.pop();
+                    stack.push(a / b);
+                }
                 default -> stack.push(Integer.parseInt(t));
             }
         }
@@ -39,8 +45,10 @@ public class P03StackMonotonic {
         for (char c : s.toCharArray()) {
             if (Character.isDigit(c)) num = num * 10 + (c - '0');
             else if (c == '[') {
-                counts.push(num); prefixes.push(cur);
-                cur = new StringBuilder(); num = 0;
+                counts.push(num);
+                prefixes.push(cur);
+                cur = new StringBuilder();
+                num = 0;
             } else if (c == ']') {
                 StringBuilder prev = prefixes.pop();
                 int k = counts.pop();
@@ -125,7 +133,8 @@ public class P03StackMonotonic {
                     case '*' -> stack.push(stack.pop() * num);
                     default -> stack.push(stack.pop() / num);
                 }
-                num = 0; op = c;
+                num = 0;
+                op = c;
             }
         }
         int sum = 0;
@@ -136,23 +145,50 @@ public class P03StackMonotonic {
     /** LC 155. 辅助栈存当前最小。 */
     static class MinStack {
         private final Deque<Integer> stack = new ArrayDeque<>(), mins = new ArrayDeque<>();
-        void push(int v) { stack.push(v); mins.push(mins.isEmpty() ? v : Math.min(v, mins.peek())); }
-        void pop() { stack.pop(); mins.pop(); }
-        int top() { return stack.peek(); }
-        int getMin() { return mins.peek(); }
+
+        void push(int v) {
+            stack.push(v);
+            mins.push(mins.isEmpty() ? v : Math.min(v, mins.peek()));
+        }
+
+        void pop() {
+            stack.pop();
+            mins.pop();
+        }
+
+        int top() {
+            return stack.peek();
+        }
+
+        int getMin() {
+            return mins.peek();
+        }
     }
 
     public static void main(String[] args) {
         assert isValid("()[]{}") && !isValid("(]") && !isValid("(");
-        assert evalRPN(new String[]{"4", "13", "5", "/", "+"}) == 6;
+        assert evalRPN(new String[] {"4", "13", "5", "/", "+"}) == 6;
         assert decodeString("3[a2[c]]").equals("accaccacc");
-        assert Arrays.equals(dailyTemperatures(new int[]{73, 74, 75, 71, 69, 72, 76, 73}), new int[]{1, 1, 4, 2, 1, 1, 0, 0});
-        assert largestRectangleArea(new int[]{2, 1, 5, 6, 2, 3}) == 10;
-        assert maximalRectangle(new char[][]{"10100".toCharArray(), "10111".toCharArray(), "11111".toCharArray(), "10010".toCharArray()}) == 6;
-        assert Arrays.equals(maxSlidingWindow(new int[]{1, 3, -1, -3, 5, 3, 6, 7}, 3), new int[]{3, 3, 5, 5, 6, 7});
+        assert Arrays.equals(
+                dailyTemperatures(new int[] {73, 74, 75, 71, 69, 72, 76, 73}),
+                new int[] {1, 1, 4, 2, 1, 1, 0, 0});
+        assert largestRectangleArea(new int[] {2, 1, 5, 6, 2, 3}) == 10;
+        assert maximalRectangle(
+                        new char[][] {
+                            "10100".toCharArray(),
+                            "10111".toCharArray(),
+                            "11111".toCharArray(),
+                            "10010".toCharArray()
+                        })
+                == 6;
+        assert Arrays.equals(
+                maxSlidingWindow(new int[] {1, 3, -1, -3, 5, 3, 6, 7}, 3),
+                new int[] {3, 3, 5, 5, 6, 7});
         assert calculate("3+2*2") == 7 && calculate(" 3+5 / 2 ") == 5 && calculate("14-3/2") == 13;
         MinStack ms = new MinStack();
-        ms.push(-2); ms.push(0); ms.push(-3);
+        ms.push(-2);
+        ms.push(0);
+        ms.push(-3);
         assert ms.getMin() == -3;
         ms.pop();
         assert ms.top() == 0 && ms.getMin() == -2;

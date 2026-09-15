@@ -4,14 +4,25 @@ import java.util.*;
 public class P04LinkedList {
 
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+
+        ListNode(int v) {
+            val = v;
+        }
+
+        ListNode(int v, ListNode n) {
+            val = v;
+            next = n;
+        }
     }
 
     static ListNode build(int... vals) {
         ListNode dummy = new ListNode(0), cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+        for (int v : vals) {
+            cur.next = new ListNode(v);
+            cur = cur.next;
+        }
         return dummy.next;
     }
 
@@ -79,7 +90,10 @@ public class P04LinkedList {
     /** LC 876. */
     static ListNode middleNode(ListNode head) {
         ListNode slow = head, fast = head;
-        while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
         return slow;
     }
 
@@ -87,10 +101,14 @@ public class P04LinkedList {
     static ListNode detectCycle(ListNode head) {
         ListNode slow = head, fast = head;
         while (fast != null && fast.next != null) {
-            slow = slow.next; fast = fast.next.next;
+            slow = slow.next;
+            fast = fast.next.next;
             if (slow == fast) {
                 ListNode p = head;
-                while (p != slow) { p = p.next; slow = slow.next; }
+                while (p != slow) {
+                    p = p.next;
+                    slow = slow.next;
+                }
                 return p;
             }
         }
@@ -111,8 +129,13 @@ public class P04LinkedList {
     static ListNode mergeTwoLists(ListNode a, ListNode b) {
         ListNode dummy = new ListNode(0), tail = dummy;
         while (a != null && b != null) {
-            if (a.val <= b.val) { tail.next = a; a = a.next; }
-            else { tail.next = b; b = b.next; }
+            if (a.val <= b.val) {
+                tail.next = a;
+                a = a.next;
+            } else {
+                tail.next = b;
+                b = b.next;
+            }
             tail = tail.next;
         }
         tail.next = a != null ? a : b;
@@ -126,7 +149,8 @@ public class P04LinkedList {
         ListNode dummy = new ListNode(0), tail = dummy;
         while (!pq.isEmpty()) {
             ListNode n = pq.poll();
-            tail.next = n; tail = n;
+            tail.next = n;
+            tail = n;
             if (n.next != null) pq.offer(n.next);
         }
         return dummy.next;
@@ -136,7 +160,10 @@ public class P04LinkedList {
     static ListNode removeNthFromEnd(ListNode head, int n) {
         ListNode dummy = new ListNode(0, head), fast = dummy, slow = dummy;
         for (int i = 0; i <= n; i++) fast = fast.next;
-        while (fast != null) { fast = fast.next; slow = slow.next; }
+        while (fast != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
         slow.next = slow.next.next;
         return dummy.next;
     }
@@ -145,7 +172,10 @@ public class P04LinkedList {
     static ListNode sortList(ListNode head) {
         if (head == null || head.next == null) return head;
         ListNode slow = head, fast = head.next;
-        while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
         ListNode mid = slow.next;
         slow.next = null;
         return mergeTwoLists(sortList(head), sortList(mid));
@@ -154,17 +184,28 @@ public class P04LinkedList {
     /** LC 234. 反转后半比较后恢复。 */
     static boolean isPalindrome(ListNode head) {
         ListNode slow = head, fast = head;
-        while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
         ListNode second = reverseList(slow);
         boolean ok = true;
-        for (ListNode p = head, q = second; q != null; p = p.next, q = q.next) if (p.val != q.val) { ok = false; break; }
+        for (ListNode p = head, q = second; q != null; p = p.next, q = q.next)
+            if (p.val != q.val) {
+                ok = false;
+                break;
+            }
         reverseList(second);
         return ok;
     }
 
     static class RandomNode {
-        int val; RandomNode next, random;
-        RandomNode(int v) { val = v; }
+        int val;
+        RandomNode next, random;
+
+        RandomNode(int v) {
+            val = v;
+        }
     }
 
     /** LC 138. 哈希两趟。 */
@@ -188,15 +229,18 @@ public class P04LinkedList {
         c.next.next.next.next = c.next;
         assert detectCycle(c) == c.next;
         ListNode common = build(8, 4, 5), a = build(4, 1), b = build(5, 6, 1);
-        a.next.next = common; b.next.next.next = common;
+        a.next.next = common;
+        b.next.next.next = common;
         assert getIntersectionNode(a, b) == common;
-        assert toList(mergeKLists(new ListNode[]{build(1, 4, 5), build(1, 3, 4), build(2, 6)})).equals(List.of(1, 1, 2, 3, 4, 4, 5, 6));
+        assert toList(mergeKLists(new ListNode[] {build(1, 4, 5), build(1, 3, 4), build(2, 6)}))
+                .equals(List.of(1, 1, 2, 3, 4, 4, 5, 6));
         assert toList(removeNthFromEnd(build(1), 1)).isEmpty();
         assert toList(sortList(build(-1, 5, 3, 4, 0))).equals(List.of(-1, 0, 3, 4, 5));
         ListNode p = build(1, 2, 2, 1);
         assert isPalindrome(p) && toList(p).equals(List.of(1, 2, 2, 1));
         RandomNode r1 = new RandomNode(7), r2 = new RandomNode(13);
-        r1.next = r2; r2.random = r1;
+        r1.next = r2;
+        r2.random = r1;
         RandomNode cp = copyRandomList(r1);
         assert cp.next.random == cp && cp != r1;
         System.out.println("P04LinkedList OK");

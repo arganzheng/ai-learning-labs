@@ -8,7 +8,10 @@ public class P08HeapIntervalsGreedy {
         PriorityQueue<Integer> pq = new PriorityQueue<>();
         for (int x : nums) {
             if (pq.size() < k) pq.offer(x);
-            else if (x > pq.peek()) { pq.poll(); pq.offer(x); }
+            else if (x > pq.peek()) {
+                pq.poll();
+                pq.offer(x);
+            }
         }
         return pq.peek();
     }
@@ -30,7 +33,12 @@ public class P08HeapIntervalsGreedy {
             else return pivot;
         }
     }
-    private static void swap(int[] a, int i, int j) { int t = a[i]; a[i] = a[j]; a[j] = t; }
+
+    private static void swap(int[] a, int i, int j) {
+        int t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+    }
 
     /** LC 347. 桶排序。 */
     static int[] topKFrequent(int[] nums, int k) {
@@ -38,22 +46,27 @@ public class P08HeapIntervalsGreedy {
         for (int x : nums) count.merge(x, 1, Integer::sum);
         List<List<Integer>> buckets = new ArrayList<>();
         for (int i = 0; i <= nums.length; i++) buckets.add(new ArrayList<>());
-        for (Map.Entry<Integer, Integer> e : count.entrySet()) buckets.get(e.getValue()).add(e.getKey());
+        for (Map.Entry<Integer, Integer> e : count.entrySet())
+            buckets.get(e.getValue()).add(e.getKey());
         int[] out = new int[k];
         int idx = 0;
-        for (int c = nums.length; c > 0 && idx < k; c--) for (int x : buckets.get(c)) if (idx < k) out[idx++] = x;
+        for (int c = nums.length; c > 0 && idx < k; c--)
+            for (int x : buckets.get(c)) if (idx < k) out[idx++] = x;
         return out;
     }
 
     /** LC 295. 两个堆。 */
     static class MedianFinder {
-        private final PriorityQueue<Integer> small = new PriorityQueue<>(Collections.reverseOrder());
+        private final PriorityQueue<Integer> small =
+                new PriorityQueue<>(Collections.reverseOrder());
         private final PriorityQueue<Integer> large = new PriorityQueue<>();
+
         void addNum(int num) {
             small.offer(num);
             large.offer(small.poll());
             if (large.size() > small.size()) small.offer(large.poll());
         }
+
         double findMedian() {
             return small.size() > large.size() ? small.peek() : (small.peek() + large.peek()) / 2.0;
         }
@@ -66,7 +79,7 @@ public class P08HeapIntervalsGreedy {
         for (int[] iv : intervals) {
             if (!out.isEmpty() && iv[0] <= out.get(out.size() - 1)[1])
                 out.get(out.size() - 1)[1] = Math.max(out.get(out.size() - 1)[1], iv[1]);
-            else out.add(new int[]{iv[0], iv[1]});
+            else out.add(new int[] {iv[0], iv[1]});
         }
         return out.toArray(new int[0][]);
     }
@@ -76,8 +89,12 @@ public class P08HeapIntervalsGreedy {
         List<int[]> out = new ArrayList<>();
         int i = 0, n = intervals.length, s = nw[0], e = nw[1];
         while (i < n && intervals[i][1] < s) out.add(intervals[i++]);
-        while (i < n && intervals[i][0] <= e) { s = Math.min(s, intervals[i][0]); e = Math.max(e, intervals[i][1]); i++; }
-        out.add(new int[]{s, e});
+        while (i < n && intervals[i][0] <= e) {
+            s = Math.min(s, intervals[i][0]);
+            e = Math.max(e, intervals[i][1]);
+            i++;
+        }
+        out.add(new int[] {s, e});
         while (i < n) out.add(intervals[i++]);
         return out.toArray(new int[0][]);
     }
@@ -87,7 +104,11 @@ public class P08HeapIntervalsGreedy {
         Arrays.sort(intervals, (a, b) -> Integer.compare(a[1], b[1]));
         int kept = 0;
         long end = Long.MIN_VALUE;
-        for (int[] iv : intervals) if (iv[0] >= end) { kept++; end = iv[1]; }
+        for (int[] iv : intervals)
+            if (iv[0] >= end) {
+                kept++;
+                end = iv[1];
+            }
         return intervals.length - kept;
     }
 
@@ -96,7 +117,11 @@ public class P08HeapIntervalsGreedy {
         Arrays.sort(points, (a, b) -> Integer.compare(a[1], b[1]));
         int arrows = 0;
         long end = Long.MIN_VALUE;
-        for (int[] p : points) if (p[0] > end) { arrows++; end = p[1]; }
+        for (int[] p : points)
+            if (p[0] > end) {
+                arrows++;
+                end = p[1];
+            }
         return arrows;
     }
 
@@ -136,7 +161,10 @@ public class P08HeapIntervalsGreedy {
         int steps = 0, end = 0, farthest = 0;
         for (int i = 0; i < nums.length - 1; i++) {
             farthest = Math.max(farthest, i + nums[i]);
-            if (i == end) { steps++; end = farthest; }
+            if (i == end) {
+                steps++;
+                end = farthest;
+            }
         }
         return steps;
     }
@@ -146,33 +174,44 @@ public class P08HeapIntervalsGreedy {
         int total = 0, tank = 0, start = 0;
         for (int i = 0; i < gas.length; i++) {
             int d = gas[i] - cost[i];
-            total += d; tank += d;
-            if (tank < 0) { start = i + 1; tank = 0; }
+            total += d;
+            tank += d;
+            if (tank < 0) {
+                start = i + 1;
+                tank = 0;
+            }
         }
         return total >= 0 ? start : -1;
     }
 
     public static void main(String[] args) {
-        assert findKthLargestHeap(new int[]{3, 2, 1, 5, 6, 4}, 2) == 5;
-        assert findKthLargestQuickselect(new int[]{3, 2, 3, 1, 2, 4, 5, 5, 6}, 4) == 4;
-        int[] tk = topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2);
+        assert findKthLargestHeap(new int[] {3, 2, 1, 5, 6, 4}, 2) == 5;
+        assert findKthLargestQuickselect(new int[] {3, 2, 3, 1, 2, 4, 5, 5, 6}, 4) == 4;
+        int[] tk = topKFrequent(new int[] {1, 1, 1, 2, 2, 3}, 2);
         Arrays.sort(tk);
-        assert Arrays.equals(tk, new int[]{1, 2});
+        assert Arrays.equals(tk, new int[] {1, 2});
         MedianFinder mf = new MedianFinder();
-        mf.addNum(1); mf.addNum(2);
+        mf.addNum(1);
+        mf.addNum(2);
         assert mf.findMedian() == 1.5;
         mf.addNum(3);
         assert mf.findMedian() == 2.0;
-        assert Arrays.deepEquals(mergeIntervals(new int[][]{{1, 3}, {2, 6}, {8, 10}, {15, 18}}), new int[][]{{1, 6}, {8, 10}, {15, 18}});
-        assert Arrays.deepEquals(insertInterval(new int[][]{{1, 2}, {3, 5}, {6, 7}, {8, 10}, {12, 16}}, new int[]{4, 8}), new int[][]{{1, 2}, {3, 10}, {12, 16}});
-        assert eraseOverlapIntervals(new int[][]{{1, 2}, {2, 3}, {3, 4}, {1, 3}}) == 1;
-        assert findMinArrowShots(new int[][]{{10, 16}, {2, 8}, {1, 6}, {7, 12}}) == 2;
-        assert findMinArrowShots(new int[][]{{-2147483646, -2147483645}, {2147483646, 2147483647}}) == 2;
-        assert minMeetingRooms(new int[][]{{0, 30}, {5, 10}, {15, 20}}) == 2;
+        assert Arrays.deepEquals(
+                mergeIntervals(new int[][] {{1, 3}, {2, 6}, {8, 10}, {15, 18}}),
+                new int[][] {{1, 6}, {8, 10}, {15, 18}});
+        assert Arrays.deepEquals(
+                insertInterval(
+                        new int[][] {{1, 2}, {3, 5}, {6, 7}, {8, 10}, {12, 16}}, new int[] {4, 8}),
+                new int[][] {{1, 2}, {3, 10}, {12, 16}});
+        assert eraseOverlapIntervals(new int[][] {{1, 2}, {2, 3}, {3, 4}, {1, 3}}) == 1;
+        assert findMinArrowShots(new int[][] {{10, 16}, {2, 8}, {1, 6}, {7, 12}}) == 2;
+        assert findMinArrowShots(new int[][] {{-2147483646, -2147483645}, {2147483646, 2147483647}})
+                == 2;
+        assert minMeetingRooms(new int[][] {{0, 30}, {5, 10}, {15, 20}}) == 2;
         assert leastInterval("AAABBB".toCharArray(), 2) == 8;
-        assert canJump(new int[]{2, 3, 1, 1, 4}) && !canJump(new int[]{3, 2, 1, 0, 4});
-        assert jump(new int[]{2, 3, 1, 1, 4}) == 2;
-        assert canCompleteCircuit(new int[]{1, 2, 3, 4, 5}, new int[]{3, 4, 5, 1, 2}) == 3;
+        assert canJump(new int[] {2, 3, 1, 1, 4}) && !canJump(new int[] {3, 2, 1, 0, 4});
+        assert jump(new int[] {2, 3, 1, 1, 4}) == 2;
+        assert canCompleteCircuit(new int[] {1, 2, 3, 4, 5}, new int[] {3, 4, 5, 1, 2}) == 3;
         System.out.println("P08HeapIntervalsGreedy OK");
     }
 }

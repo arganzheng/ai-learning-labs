@@ -19,6 +19,8 @@ python -m unittest discover -s python -p 'p*.py'
 
 # Java（需要 JDK 21+；Makefile 默认找 /opt/homebrew/opt/openjdk，否则用 PATH 里的 javac）
 cd java && make test
+# Java 代码风格：google-java-format --aosp（4 空格缩进、一行一句、成员间空行）
+java -jar google-java-format-all-deps.jar --aosp --replace java/P*.java
 
 # AI 篇（numpy + torch，CPU）
 cd ai && python attention.py --check

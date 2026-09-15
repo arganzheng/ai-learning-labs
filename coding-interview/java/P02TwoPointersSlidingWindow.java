@@ -26,7 +26,10 @@ public class P02TwoPointersSlidingWindow {
             if (need[s.charAt(right)]-- > 0) missing--;
             if (missing == 0) {
                 while (need[s.charAt(left)] < 0) need[s.charAt(left++)]++;
-                if (right - left < bestR - bestL) { bestL = left; bestR = right; }
+                if (right - left < bestR - bestL) {
+                    bestL = left;
+                    bestR = right;
+                }
                 need[s.charAt(left++)]++;
                 missing++;
             }
@@ -72,7 +75,8 @@ public class P02TwoPointersSlidingWindow {
                 else if (s > 0) hi--;
                 else {
                     out.add(Arrays.asList(nums[i], nums[lo], nums[hi]));
-                    lo++; hi--;
+                    lo++;
+                    hi--;
                     while (lo < hi && nums[lo] == nums[lo - 1]) lo++;
                     while (lo < hi && nums[hi] == nums[hi + 1]) hi--;
                 }
@@ -86,7 +90,8 @@ public class P02TwoPointersSlidingWindow {
         int lo = 0, hi = h.length - 1, best = 0;
         while (lo < hi) {
             best = Math.max(best, Math.min(h[lo], h[hi]) * (hi - lo));
-            if (h[lo] < h[hi]) lo++; else hi--;
+            if (h[lo] < h[hi]) lo++;
+            else hi--;
         }
         return best;
     }
@@ -110,14 +115,19 @@ public class P02TwoPointersSlidingWindow {
     static boolean checkInclusion(String s1, String s2) {
         if (s1.length() > s2.length()) return false;
         int[] diff = new int[26];
-        for (int i = 0; i < s1.length(); i++) { diff[s1.charAt(i) - 'a']++; diff[s2.charAt(i) - 'a']--; }
+        for (int i = 0; i < s1.length(); i++) {
+            diff[s1.charAt(i) - 'a']++;
+            diff[s2.charAt(i) - 'a']--;
+        }
         int mismatch = 0;
         for (int d : diff) if (d != 0) mismatch++;
         if (mismatch == 0) return true;
         for (int i = s1.length(); i < s2.length(); i++) {
             int in = s2.charAt(i) - 'a', out = s2.charAt(i - s1.length()) - 'a';
-            if (diff[in]-- == 0) mismatch++; else if (diff[in] == 0) mismatch--;
-            if (diff[out]++ == 0) mismatch++; else if (diff[out] == 0) mismatch--;
+            if (diff[in]-- == 0) mismatch++;
+            else if (diff[in] == 0) mismatch--;
+            if (diff[out]++ == 0) mismatch++;
+            else if (diff[out] == 0) mismatch--;
             if (mismatch == 0) return true;
         }
         return false;
@@ -128,7 +138,9 @@ public class P02TwoPointersSlidingWindow {
         int slow = 0;
         for (int fast = 0; fast < nums.length; fast++) {
             if (nums[fast] != 0) {
-                int t = nums[slow]; nums[slow] = nums[fast]; nums[fast] = t;
+                int t = nums[slow];
+                nums[slow] = nums[fast];
+                nums[fast] = t;
                 slow++;
             }
         }
@@ -140,14 +152,15 @@ public class P02TwoPointersSlidingWindow {
         assert minWindow("ADOBECODEBANC", "ABC").equals("BANC");
         assert minWindow("a", "aa").equals("");
         assert characterReplacement("AABABBA", 1) == 4;
-        assert minSubArrayLen(7, new int[]{2, 3, 1, 2, 4, 3}) == 2;
-        assert threeSum(new int[]{-1, 0, 1, 2, -1, -4}).equals(List.of(List.of(-1, -1, 2), List.of(-1, 0, 1)));
-        assert maxArea(new int[]{1, 8, 6, 2, 5, 4, 8, 3, 7}) == 49;
-        assert trap(new int[]{0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}) == 6;
+        assert minSubArrayLen(7, new int[] {2, 3, 1, 2, 4, 3}) == 2;
+        assert threeSum(new int[] {-1, 0, 1, 2, -1, -4})
+                .equals(List.of(List.of(-1, -1, 2), List.of(-1, 0, 1)));
+        assert maxArea(new int[] {1, 8, 6, 2, 5, 4, 8, 3, 7}) == 49;
+        assert trap(new int[] {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}) == 6;
         assert checkInclusion("ab", "eidbaooo") && !checkInclusion("ab", "eidboaoo");
         int[] a = {0, 1, 0, 3, 12};
         moveZeroes(a);
-        assert Arrays.equals(a, new int[]{1, 3, 12, 0, 0});
+        assert Arrays.equals(a, new int[] {1, 3, 12, 0, 0});
         System.out.println("P02TwoPointersSlidingWindow OK");
     }
 }

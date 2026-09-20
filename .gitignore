@@ -14,3 +14,4 @@ build/
 a.out
 
 .DS_Store
+multimodal/out/

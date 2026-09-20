@@ -11,6 +11,7 @@
 | [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值（8 篇）+ 预训练：从 tokenizer 到训练配方（4 篇，`llm_cost_09`–`_12` 及配套实验） | Infra L2 · 算法 L4（成本表两张地图共享；预训练只在算法地图） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
 | [`algorithm-tooling/`](algorithm-tooling/) | 算法工程师的工具箱：从一个想法到一次能跑的实验 | 算法 L1 | numpy、torch（CPU）、pandas、matplotlib；04 需 transformers / peft / trl + 下载 Qwen2.5-0.5B |
 | [`classical-ml/`](classical-ml/) | LLM 时代的经典机器学习：只讲它在哪里重现（10 篇） | 算法 L2 | numpy、scikit-learn、scipy、matplotlib；07 / 08 / 09 的句向量需 transformers + 本地缓存的 Qwen2.5-0.5B |
+| [`multimodal/`](multimodal/) | 多模态：从视觉编码器到扩散模型（9 篇正文各一个 toy） | 算法 L7 | numpy、scikit-learn、matplotlib、torch（CPU）；不下载模型 |
 | [`deep-learning-foundations/`](deep-learning-foundations/) | 深度学习基础：从反向传播到残差 | 算法 L3 | NumPy；05 / 06 需 PyTorch（CPU） |
 | [`post-training/`](post-training/) | 后训练：从 SFT 到可验证奖励 | 算法 L5 | PyTorch + transformers / trl / peft；MPS 或 CUDA |
 | [`rl-post-training-infra/`](rl-post-training-infra/) | RL 后训练基础设施：rollout 与训练如何共享一组 GPU | Infra L4（09） | 纯 Python（账本）；后续实验需 verl + 8 卡 |

@@ -12,13 +12,14 @@
 | [`algorithm-tooling/`](algorithm-tooling/) | 算法工程师的工具箱：从一个想法到一次能跑的实验 | 算法 L1 | numpy、torch（CPU）、pandas、matplotlib；04 需 transformers / peft / trl + 下载 Qwen2.5-0.5B |
 | [`classical-ml/`](classical-ml/) | LLM 时代的经典机器学习：只讲它在哪里重现（10 篇） | 算法 L2 | numpy、scikit-learn、scipy、matplotlib；07 / 08 / 09 的句向量需 transformers + 本地缓存的 Qwen2.5-0.5B |
 | [`multimodal/`](multimodal/) | 多模态：从视觉编码器到扩散模型（9 篇正文各一个 toy） | 算法 L7 | numpy、scikit-learn、matplotlib、torch（CPU）；不下载模型 |
+| [`large-scale-training/`](large-scale-training/) | 大规模训练工程：从并行策略到容错恢复（02 并行篇：4 个 CPU 进程真跑 ZeRO / TP / CP / PP / EP） | Infra L4（07） | torch（CPU，gloo 后端） |
 | [`deep-learning-foundations/`](deep-learning-foundations/) | 深度学习基础：从反向传播到残差 | 算法 L3 | NumPy；05 / 06 需 PyTorch（CPU） |
 | [`post-training/`](post-training/) | 后训练：从 SFT 到可验证奖励 | 算法 L5 | PyTorch + transformers / trl / peft；MPS 或 CUDA |
 | [`rl-post-training-infra/`](rl-post-training-infra/) | RL 后训练基础设施：rollout 与训练如何共享一组 GPU | Infra L4（09） | 纯 Python（账本）；后续实验需 verl + 8 卡 |
 | [`diffusion-inference-infra/`](diffusion-inference-infra/) | 扩散模型推理基础设施：从一次去噪到一个生成服务 | Infra L4（10） | 纯 Python（账本） |
 | [`coding-interview/`](coding-interview/) | 面试手撕代码：从 LeetCode 中等题到 Transformer 组件（19 篇） | 独立系列，不属于三张地图 | `python/` 标准库；`java/` JDK 21；`ai/` numpy + torch（CPU）；`infra/` C++17 + make |
 
-尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、大规模训练、vLLM、AI 平台工程、开源贡献、算法地图 L0 数学、应用地图）会在有可运行示例时按同样方式加目录。
+尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、vLLM、AI 平台工程、开源贡献、算法地图 L0 数学、应用地图）会在有可运行示例时按同样方式加目录。
 
 ## 需要什么硬件
 

@@ -2,7 +2,7 @@
 
 博客系列：[总纲](https://arganzheng.life/python-for-ai-infra.html)。这些脚本是写文章时用来验证每个结论的最小实验，只依赖标准库，`python3 xxx.py` 直接跑；输出就是文章里引用的行为。
 
-## 01 [语言机制与运行时内幕](https://arganzheng.life/python-language-mechanisms-and-runtime-internals.html)
+## 01 语言机制与运行时内幕：[上·代码如何被执行](https://arganzheng.life/python-execution-model-scopes-imports-and-exceptions.html) · [下·对象如何工作](https://arganzheng.life/python-object-model-protocols-decorators-and-generators.html)
 
 | 脚本 | 内容 |
 |---|---|

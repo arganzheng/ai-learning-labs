@@ -65,8 +65,8 @@ if __name__ == "__main__":
         print(f"{cfg.name:12s} params={r['params']/1e9:7.2f}B  "
               f"{r['per_param_bytes']:>2} B/param  state={r['total_bytes']/1e9:9.1f} GB  "
               f"H100(80GB) >= {r['total_bytes']/80e9:6.1f} 张")
-    # DeepSeek-V3 报告的变体: FP8 权重副本, BF16 梯度, FP32 master, BF16 m/v
-    r = training_state_bytes(DEEPSEEK_V3, weight_dtype="fp8_e4m3", optim_dtype="bf16")
+    # DeepSeek-V3 报告 3.3.3 的变体: FP8 权重副本, FP32 梯度(用于 batch 累积), FP32 master, BF16 m/v
+    r = training_state_bytes(DEEPSEEK_V3, weight_dtype="fp8_e4m3", grad_dtype="fp32", optim_dtype="bf16")
     print(f"{'V3-fp8-recipe':12s} {r['per_param_bytes']} B/param  state={r['total_bytes']/1e12:.2f} TB  {r['breakdown']}")
     # 全 FP32 对照: 同样 16 B/param
     r = training_state_bytes(LLAMA3_8B, mixed=False)

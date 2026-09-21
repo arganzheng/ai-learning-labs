@@ -46,7 +46,8 @@ def param_count(cfg):
 
 def forward_flops_per_token(cfg, ctx=0):
     # embedding 查表不算 GEMM；lm_head 算
-    gemm_params = param_count(cfg)["total"] - cfg.vocab * cfg.hidden
+    # 输入 embedding 是查表不算 GEMM；tied 模型那张表兼作 lm_head，仍要算
+    gemm_params = param_count(cfg)["total"] - (0 if cfg.tie_embeddings else cfg.vocab * cfg.hidden)
     return 2 * gemm_params + 4 * cfg.hidden * ctx * cfg.layers
 
 def kv_bytes_per_token(cfg, dtype_bytes=2):
@@ -71,7 +72,9 @@ def roofline_step_time(cfg, gpu, rows, weight_bytes, mfu=1.0):
 
 def speculative_speedup(alpha, gamma, c, batch, cfg, gpu, mfu=1.0):
     """投机解码相对普通 decode 的加速比；返回 (speedup, E[tokens])。"""
-    exp_tokens = (1 - alpha ** (gamma + 1)) / (1 - alpha)
+    assert 0.0 <= alpha <= 1.0
+    # alpha == 1 时几何级数的闭式是 0/0，极限是 gamma + 1（全部接受 + bonus）
+    exp_tokens = gamma + 1 if alpha == 1.0 else (1 - alpha ** (gamma + 1)) / (1 - alpha)
     w = param_count(cfg)["total"] * 2              # BF16 目标模型
     t_base = roofline_step_time(cfg, gpu, batch, w, mfu)
     t_verify = roofline_step_time(cfg, gpu, batch * (gamma + 1), w, mfu)

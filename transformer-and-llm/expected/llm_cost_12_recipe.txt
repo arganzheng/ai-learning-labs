@@ -29,9 +29,9 @@ DeepSeek-V3 671B   1.34 TB      9.39 TB               2.61 GB/s                 
   完整状态 = 14 B/参数（第六篇：BF16 权重 + FP32 主权重 + Adam 两个矩）。数据读 9 MB/s，checkpoint 写 GB/s——训练的 I/O 在这里。
 
 === loss spike 的回滚代价（PaLM 的做法：回退约 100 步，跳过 200–500 个 batch）===
-  Llama-3 405B 规格：跳过 200 个 batch = 3.2B token，重算 300 步 ≈ 30 分钟 × 16K 卡 = 8,190 GPU 小时
-  Llama-3 405B 规格：跳过 500 个 batch = 8B token，重算 600 步 ≈ 60 分钟 × 16K 卡 = 16,380 GPU 小时
-  一次 spike 的直接代价是几千到上万 GPU 小时；间接代价是人盯着曲线的时间。
+  Llama-3 405B 规格：跳过 200 个 batch = 3.2B token（放弃的数据），重算回退的 100 步 ≈ 10 分钟 × 16K 卡 = 2,730 GPU 小时
+  Llama-3 405B 规格：跳过 500 个 batch = 8B token（放弃的数据），重算回退的 100 步 ≈ 10 分钟 × 16K 卡 = 2,730 GPU 小时
+  一次 spike 的直接代价是几千 GPU 小时的重算 + 几 B token 的数据被跳过；间接代价是人盯着曲线的时间。
 
 === 长上下文阶段：attention 在每 token FLOPs 里的占比（Llama-3 405B：d=16384，126 层）===
   seq    8192：attention 占 4%

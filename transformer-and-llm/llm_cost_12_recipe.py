@@ -54,9 +54,10 @@ def checkpoint_bytes(N, mode="full"):
 
 
 def rollback_cost(r, gpus, skipped_batches, rewind_steps, mfu=0.4):
-    """PaLM 式处理 spike：回退到 rewind_steps 前的 checkpoint，跳过 skipped_batches 个 batch；代价按重算的步数计。"""
+    """PaLM 式处理 spike：回退到 rewind_steps 前的 checkpoint，跳过 skipped_batches 个 batch。
+    重算的只有回退的那 rewind_steps 步；跳过的 batch 不重算，是放弃了那部分数据（另一笔代价）。"""
     t = step_time(r, gpus, mfu)
-    return (rewind_steps + skipped_batches) * t, skipped_batches * r.batch_tokens
+    return rewind_steps * t, skipped_batches * r.batch_tokens
 
 
 def attention_share(N, d, L, seq):
@@ -111,8 +112,8 @@ def main():
     r = RECIPES[3]
     for skipped in [200, 500]:
         t, toks = rollback_cost(r, 16384, skipped, 100)
-        print(f"  Llama-3 405B 规格：跳过 {skipped} 个 batch = {fmt(toks)} token，重算 {100 + skipped} 步 ≈ {t / 60:.0f} 分钟 × 16K 卡 = {t / 3600 * 16384:,.0f} GPU 小时")
-    print("  一次 spike 的直接代价是几千到上万 GPU 小时；间接代价是人盯着曲线的时间。")
+        print(f"  Llama-3 405B 规格：跳过 {skipped} 个 batch = {fmt(toks)} token（放弃的数据），重算回退的 100 步 ≈ {t / 60:.0f} 分钟 × 16K 卡 = {t / 3600 * 16384:,.0f} GPU 小时")
+    print("  一次 spike 的直接代价是几千 GPU 小时的重算 + 几 B token 的数据被跳过；间接代价是人盯着曲线的时间。")
 
     print("\n=== 长上下文阶段：attention 在每 token FLOPs 里的占比（Llama-3 405B：d=16384，126 层）===")
     for seq in [8192, 32768, 131072]:

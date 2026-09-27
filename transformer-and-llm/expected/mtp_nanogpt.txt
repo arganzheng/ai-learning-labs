@@ -1,0 +1,26 @@
+== 不带 MTP（基线）：4 层 4 头 d=128，2000 步，cpu
+  step    0: 主头 val loss 4.1682
+  step  250: 主头 val loss 2.4476
+  step  500: 主头 val loss 2.3182
+  step  750: 主头 val loss 2.1626
+  step 1000: 主头 val loss 2.0748
+  step 1250: 主头 val loss 2.0364
+  step 1500: 主头 val loss 1.9758
+  step 1750: 主头 val loss 1.9489
+  step 2000: 主头 val loss 1.9375
+== 带 MTP（D=1，λ=0.3）
+  step    0: 主头 val loss 4.1675  MTP 头 val loss 4.1827  t+2 top-1 命中 1.7%
+  step  250: 主头 val loss 2.4517  MTP 头 val loss 2.2061  t+2 top-1 命中 36.2%
+  step  500: 主头 val loss 2.2959  MTP 头 val loss 2.0894  t+2 top-1 命中 38.5%
+  step  750: 主头 val loss 2.1844  MTP 头 val loss 1.9888  t+2 top-1 命中 41.0%
+  step 1000: 主头 val loss 2.0926  MTP 头 val loss 1.9329  t+2 top-1 命中 42.6%
+  step 1250: 主头 val loss 2.0057  MTP 头 val loss 1.8812  t+2 top-1 命中 43.5%
+  step 1500: 主头 val loss 1.9822  MTP 头 val loss 1.8606  t+2 top-1 命中 44.0%
+  step 1750: 主头 val loss 1.9654  MTP 头 val loss 1.8376  t+2 top-1 命中 44.8%
+  step 2000: 主头 val loss 1.9364  MTP 头 val loss 1.8149  t+2 top-1 命中 45.3%
+
+== 汇总
+  参数量：基线 804,096，带 MTP 1,033,984（多 229,888，+29%：一个 block + 2d→d 投影 + 两个 norm）
+  每步耗时：基线 10 ms，带 MTP 13 ms（+38%）
+  最终主头 val loss：基线 1.9375，带 MTP 1.9364
+  MTP 头对 t+2：val loss 1.8149，top-1 命中率 45.3%（投机解码时 draft 被接受的大致比例）

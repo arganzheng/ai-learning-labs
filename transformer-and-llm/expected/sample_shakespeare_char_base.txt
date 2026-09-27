@@ -1,0 +1,24 @@
+Overriding: compile = False
+Overriding: num_samples = 2
+Overriding: max_new_tokens = 300
+Overriding: seed = 7
+number of parameters: 0.80M
+Loading meta from data/shakespeare_char/meta.pkl...
+
+
+DUKE:
+How that the thee when tyrants, do loge,
+And in you to let this games, knee,
+I bet some mee to state, he within's the you love to count
+For yet cousin shakes a bid such of England's fie,
+What I can a won the doof did so live!
+We are fire your father, there may he reper and were of Oxforve som
+---------------
+
+A with shave heaven to the sheeep, and because
+Not him the born lose stome of love her is a--tit it a fair,
+sink and take tingreator upon Tybalty
+We we must be hear thee, his mack, and been my even it hell play
+As be a seem to mine in and something and made to a God,
+To life it thank none should sha
+---------------

@@ -1,0 +1,58 @@
+
+== 1. 训练侧前向的形状：B=2 句、T=5 个 token、d=8、V=16、2 层 2 头
+输入 idx: (2, 5)  目标 targets: (2, 5)
+  wte 查表                                 (2, 5, 8)
+  wpe 查表                                 (5, 8)
+  block0.attn.c_attn（QKV 合在一起）           (2, 5, 24)
+  block0.attn 输出                         (2, 5, 8)
+  block0.mlp.c_fc（放大 4 倍）                (2, 5, 32)
+  block0.mlp 输出                          (2, 5, 8)
+  block0 输出（残差流）                         (2, 5, 8)
+  block1.attn.c_attn（QKV 合在一起）           (2, 5, 24)
+  block1.attn 输出                         (2, 5, 8)
+  block1.mlp.c_fc（放大 4 倍）                (2, 5, 32)
+  block1.mlp 输出                          (2, 5, 8)
+  block1 输出（残差流）                         (2, 5, 8)
+  ln_f                                   (2, 5, 8)
+  lm_head → logits                       (2, 5, 16)
+loss（标量）: 2.7805   ≈ ln(16) = 2.7726（随机初始化时每个位置在 16 个 token 里乱猜）
+
+== 2. teacher forcing：T 个位置同时各预测自己的下一个 token
+第 0 句的输入 : [5, 3, 8, 10, 14]
+第 0 句的目标 : [3, 8, 10, 14, 12] （就是输入右移一位）
+  位置 0: 看到 [5] → 预测第 1 个 token，正确答案  3，模型给它的概率 0.068，loss 2.693
+  位置 1: 看到 [5, 3] → 预测第 2 个 token，正确答案  8，模型给它的概率 0.065，loss 2.734
+  位置 2: 看到 [5, 3, 8] → 预测第 3 个 token，正确答案 10，模型给它的概率 0.062，loss 2.783
+  位置 3: 看到 [5, 3, 8, 10] → 预测第 4 个 token，正确答案 14，模型给它的概率 0.062，loss 2.778
+  位置 4: 看到 [5, 3, 8, 10, 14] → 预测第 5 个 token，正确答案 12，模型给它的概率 0.061，loss 2.803
+T 个 loss 的平均 = 2.7583（就是上面的 loss；两句话一起平均）
+
+== 3. 反向传播：每个参数都拿到一份和自己同形状的梯度
+  wte.weight                   参数 (16, 8)      梯度范数 1.0940
+  wpe.weight                   参数 (8, 8)       梯度范数 0.6659
+  blocks.0.ln_1.weight         参数 (8,)         梯度范数 0.0009
+  blocks.0.ln_1.bias           参数 (8,)         梯度范数 0.0012
+  blocks.0.attn.c_attn.weight  参数 (24, 8)      梯度范数 0.0493
+  blocks.0.attn.c_attn.bias    参数 (24,)        梯度范数 0.0220
+  ……共 28 个参数张量、1,952 个数，每个都有 .grad
+  为了算这些梯度，前向时每层要存下：LayerNorm 的输入、Q/K/V、attention 权重 [B,h,T,T]、FFN 的 4d 维中间量……
+  这就是「激活值」显存：与 B × T 成正比，训练长上下文时它比参数本身还大（第十篇算账）
+
+== 4. AdamW 走一步：同一个 batch 的 loss 下降
+  更新前 2.7805 → 更新后 2.6832（同一 batch；真实训练每步换一个新 batch）
+
+== 5. 推理：prefill 一次算完 prompt，decode 每步只算一个新 token
+  prefill：输入 (1, 3)，每层 cache 里 K 的形状 (1, 2, 3, 4)  [B, h, 已有 token 数, d_h]
+  decode 第 1 步：输入形状 (1, 1)，cache 里 K 变成 (1, 2, 4, 4)，新 token 14
+  decode 第 2 步：输入形状 (1, 1)，cache 里 K 变成 (1, 2, 5, 4)，新 token 0
+  decode 第 3 步：输入形状 (1, 1)，cache 里 K 变成 (1, 2, 6, 4)，新 token 0
+  decode 第 4 步：输入形状 (1, 1)，cache 里 K 变成 (1, 2, 7, 4)，新 token 0
+  decode 第 5 步：输入形状 (1, 1)，cache 里 K 变成 (1, 2, 8, 4)，新 token 0
+  无 cache 生成: [3, 7, 1, 14, 0, 0, 0, 0]
+  有 cache 生成: [3, 7, 1, 14, 0, 0, 0, 0]
+  两者一致: True
+
+== 6. 计时：T=512、d=64、4 层 4 头，生成 256 个 token（CPU）
+  无 cache（每步重算整段，长度 256→512）: 0.73 s
+  有 cache（每步只算 1 个 token）       : 0.09 s   快 7.9 倍
+  代价：cache 里存着 4 层 × K、V × 512 token × 64 维 × 4 B = 1024 KiB；Llama-3-8B 每个 token 的 KV 是 128 KiB（第六篇）

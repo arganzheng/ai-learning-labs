@@ -1,0 +1,11 @@
+number of parameters: 0.40M
+step 0: train loss 4.2149, val loss 4.2179
+iter 0: loss 4.2383, time 576.26ms, mfu -100.00%
+step 250: train loss 2.8785, val loss 2.8795
+step 500: train loss 2.4307, val loss 2.4375
+step 750: train loss 2.2586, val loss 2.2759
+step 1000: train loss 2.0551, val loss 2.1084
+iter 1000: loss 2.0914, time 422.76ms, mfu 0.11%
+step 1250: train loss 1.9100, val loss 1.9794
+step 1500: train loss 1.7683, val loss 1.9391
+step 1750: train loss 1.7092, val loss 1.8224

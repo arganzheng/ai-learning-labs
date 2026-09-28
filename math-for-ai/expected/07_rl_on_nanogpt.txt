@@ -1,0 +1,39 @@
+设备 mps；策略 = 莎士比亚 nanoGPT 0.80M 参数；每步 16 条 × 63 字符；奖励 = 元音占字母的比例
+参考：英文文本的元音比例约 0.38；莎士比亚原文样本约 0.388
+
+--- β = 0.0（KL 惩罚系数）---
+  step  mean R  val loss  KL/token  样本
+     0   0.378     1.721     0.000  'We hath been that ign you speak with in leased o'
+    10   0.972     3.983     4.700  'LeaoueouuiooueouaeiiouuiouaiaioUeouuoueeouaiouau'
+    20   0.998     5.324     5.930  'eiiiioiiouiiiiiiiiiuiuiiiiieeeouioeiuiiioouiieii'
+    30   0.999     5.747     6.468  'iiiiiiiiiiiiiiiiieiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+    40   0.997     6.379     6.541  'iiiiiiiiiiiiiiiiiiieeiiiiiiiiiiieeieiiiiieeeieie'
+    50   0.997     6.911     6.695  'iiiiiiiiiiiiiiiieieieieieiieieieieiieieeeeeiieee'
+    60   0.998     7.285     6.470  'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiieiiiii'
+    70   1.000     7.205     6.545  'iiiiiiiiiiiieiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+    80   1.000     6.799     6.534  'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+
+--- β = 0.5（KL 惩罚系数）---
+  step  mean R  val loss  KL/token  样本
+     0   0.378     1.721     0.000  'We hath been that ign you speak with in leased o'
+    10   0.537     2.365     0.719  'He oar our one foe in time a,\nOUpor old;\nOur I h'
+    20   0.544     2.495     0.793  'I rige or a a thou a uple,\nAnd are a to me!\nWe h'
+    30   0.549     2.718     0.905  'The bey you toued you se thed: a a woul to me.\nM'
+    40   0.582     2.898     0.907  'I de to a will, mak hove,\nI ame: me be a I wat w'
+    50   0.630     3.010     1.144  'A too it it man, too wo\nI soof, ouow fool, I ame'
+    60   0.633     3.066     0.962  'I a to: you a I nea to:\nI la me, your to ae is m'
+    70   0.580     3.104     0.778  'e tou: lo, rea no me-it\nI too, is it too, yo,\nI '
+    80   0.608     3.188     0.827  'As have too rago is a soo hit how?\nI am is a you'
+
+β = 0.0：奖励 0.378 → 1.000，val loss 1.721 → 6.799，KL/token 6.534
+  最后一步的三条样本：
+    'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii'
+    'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiieiiiiiiiiiiiiiiiiiiiiiiiiii'
+    'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiieiiiiiiiiiiiiiiiieiiiiiiiiiiiiiii'
+
+β = 0.5：奖励 0.378 → 0.608，val loss 1.721 → 3.188，KL/token 0.827
+  最后一步的三条样本：
+    'As have too rago is a soo hit how?\nI am is a you soo a so so yo'
+    'I hiss agoar a too have too wou you,\nI: sea, I have I wam.\nI ha'
+    'I too too soo I have me too have lo a you wes ye,\nI you,\nI have'
+  图已保存 out/07-rl-nanogpt.svg

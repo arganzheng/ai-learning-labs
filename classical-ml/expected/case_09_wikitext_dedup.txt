@@ -1,0 +1,32 @@
+语料：wikitext-2 训练集里长度 > 200 字符的 14,313 段，平均 137 个词
+注入 500 个近重复（改 2% / 5% / 10% / 20% 的词各 125 个）→ 14,813 段
+
+=== 1. shingle：每段变成一个词级 5-gram 集合（0.4s，平均 132 个 shingle）===
+  改 2% 的词 → 与原文的 Jaccard 中位数 0.87（词级 5-gram 很敏感：改一个词毁掉 5 个 shingle）
+  改 5% 的词 → 与原文的 Jaccard 中位数 0.68（词级 5-gram 很敏感：改一个词毁掉 5 个 shingle）
+  改 10% 的词 → 与原文的 Jaccard 中位数 0.46（词级 5-gram 很敏感：改一个词毁掉 5 个 shingle）
+  改 20% 的词 → 与原文的 Jaccard 中位数 0.24（词级 5-gram 很敏感：改一个词毁掉 5 个 shingle）
+
+=== 2. 暴力两两比较 ===
+  14,813 段有 109,705,078 对；实测每对 Jaccard 8 µs → 全部要 15 分钟
+
+=== 3. MinHash（128 个 hash）+ LSH（b=16 段 × r=8，阈值 ≈ (1/b)^(1/r) = 0.71）===
+  签名 1.2s，分桶 + 收集候选 0.26s → 213 个候选对（全部对的 0.000194%）；对候选精确算 Jaccard 0.00s
+  Jaccard ≥ 0.7 的 160 对判为重复
+
+  注入的 500 对里成为候选的 207；按改动比例：
+    改  2%：Jaccard 中位 0.87，召回 98%
+    改  5%：Jaccard 中位 0.68，召回 61%
+    改 10%：Jaccard 中位 0.46，召回 6%
+    改 20%：Jaccard 中位 0.24，召回 0%
+  解读：改 2% 的词（Jaccard 0.87）几乎全找到；改 5% 的 Jaccard 中位 0.68 正卡在阈值 0.71 上，召回 61%——S 曲线在阈值附近就是一半一半；改 10%（0.46）只剩 6%，改 20% 全漏。这不是 bug，是阈值的定义：词级 5-gram 下，改 10% 的词已经不算'近重复'。要抓更松的，调 b / r 或换更短的 shingle。
+
+  语料自带的重复：候选里 Jaccard ≥ 0.7 且两段都是原文的有 3 对，例如：
+    J = 0.77  段 8274: After Winslow 's August 1915 commissioning , she sailed off the east c...
+             段 8280: After Cushing 's August 1915 commissioning , she sailed off the east c...
+    J = 0.73  段 8269: After returning to the United States in January 1919 , O 'Brien return...
+             段 9300: After returning to the United States in January 1919 , O 'Brien revisi...
+    J = 0.72  段 4862: Katrina Kerns – backing vocals on " Concerning the UFO Sighting Near H...
+             段 4863: Shara Worden – backing vocals on " Concerning the UFO Sighting Near Hi...
+  同一系列条目（同型军舰、同一位作者的多篇）常有整段套模板改名字的写法，这是真实语料里去重会碰到的东西。
+  图已保存 out/case-09-lsh-wikitext.svg

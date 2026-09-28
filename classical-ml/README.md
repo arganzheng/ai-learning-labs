@@ -25,6 +25,10 @@
 | `case_04_nb_knn_tree.py` | 04 三个分类器 | `nb` 朴素贝叶斯做垃圾短信；`knn` KNN 做 MNIST（全量 2.95%）；`tree` 决策树做泰坦尼克（整棵画出 + boat 泄漏陷阱） | SMS Spam；MNIST（复用 ../deep-learning-foundations/data，12 MB）；Titanic openml #40945 |
 | `case_05_svm_mnist.py` | 05 SVM | 重跑 LeCun 1998 的表：线性 / KNN / RBF-SVM（60k 全量 1.43%，约 4 分钟）；`grid` C×γ 网格 | MNIST |
 | `case_06_adult_income.py` | 06 集成 | 人口普查收入预测：逻辑回归 → 树 → 随机森林 → 梯度提升；permutation 重要性；学习率 × 轮数 | Adult openml #1590（4 MB） |
+| `case_07_customer_segments.py` | 07 聚类 | `rfm` 54 万行交易 → RFM → K-Means 4 群画像；`colors` 照片颜色量化 | UCI Online Retail（23 MB xlsx，需 `openpyxl`）；sklearn 自带 china.jpg |
+| `case_08_eigenfaces.py` | 08 降维 | Eigenfaces：平均脸 / 特征脸 / 重建 / PCA + 分类器认人 | Olivetti_Faces openml #41083（4 MB） |
+| `case_09_wikitext_dedup.py` | 09 去重 | wikitext-2 14,813 段 + 注入 500 近重复：MinHash-LSH vs 暴力 | HF `Salesforce/wikitext`（4 MB，需 `datasets`） |
+| `case_10_bank_marketing.py` | 10 评估 | 银行营销：泄漏特征、AUC/AP、按成本定阈值、校准、5 折配对检验 | bank-marketing openml #1461（1 MB） |
 
 公共文件：`_data.py`（数据下载与缓存：openml / UCI），`_plot.py`（中文字体、博客列宽、SVG 输出）、`_sentences.py`（07 / 08 / 09 共用的 78 句小语料与 Qwen2.5-0.5B 句向量，缓存在 `out/sentence_embeddings.npz`）。
 

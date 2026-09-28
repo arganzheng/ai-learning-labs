@@ -81,3 +81,51 @@ def mnist(kind="train"):
     sys.path.insert(0, os.path.join(os.path.dirname(DATA), "..", "deep-learning-foundations"))
     from dlf.data import load_mnist
     return load_mnist(kind)
+
+
+BANK_COLS = ["age", "job", "marital", "education", "default", "balance", "housing", "loan", "contact", "day",
+             "month", "duration", "campaign", "pdays", "previous", "poutcome", "y"]
+
+
+def bank_marketing():
+    """UCI Bank Marketing（openml #1461，Moro 等 2014）：葡萄牙银行 45,211 次电话营销，目标：客户是否订了定期存款（11.7%）。
+    duration（通话时长）只有打完电话才知道——用它预测就是泄漏，脚本里默认去掉。CC BY 4.0。"""
+    df = _openml(1461, "bank_marketing")
+    df.columns = BANK_COLS
+    df["y"] = (df["y"].astype(str) == "2").astype(int)
+    for c in df.columns:
+        if str(df[c].dtype) == "category":
+            df[c] = df[c].astype(str)
+    return df
+
+
+def olivetti_faces():
+    """Olivetti / AT&T 人脸（openml #41083）：40 个人 × 10 张 = 400 张 64×64 灰度图。返回 X [400, 4096] ∈ [0, 1]，y [400]。"""
+    import numpy as np
+    df = _openml(41083, "olivetti_faces")
+    X = df.iloc[:, :-1].to_numpy(dtype="float32")
+    y = df.iloc[:, -1].astype(int).to_numpy()
+    return X, y
+
+
+def online_retail():
+    """UCI Online Retail（Chen 2012）：一家英国网店 2010-12 到 2011-12 的 541,909 行交易记录（发票号、商品、数量、单价、客户号、国家）。
+    首次运行下载 23 MB 的 xlsx，转成 parquet 缓存。CC BY 4.0。"""
+    os.makedirs(DATA, exist_ok=True)
+    path = os.path.join(DATA, "online_retail.parquet")
+    if not os.path.exists(path):
+        xlsx = _uci_zip("https://archive.ics.uci.edu/static/public/352/online+retail.zip", "Online Retail.xlsx", "Online Retail.xlsx")
+        print("  读取 xlsx（约一分钟）...")
+        df = pd.read_excel(xlsx)
+        df.columns = ["invoice", "stock_code", "description", "quantity", "invoice_date", "unit_price", "customer_id", "country"]
+        for c in ["invoice", "stock_code", "description", "country"]:
+            df[c] = df[c].astype(str)
+        df.to_parquet(path)
+    return pd.read_parquet(path)
+
+
+def wikitext2(split="train"):
+    """wikitext-2-raw 的段落列表（本地 HF 缓存 Salesforce/wikitext；没有缓存时用 datasets 下载约 4 MB）。"""
+    from datasets import load_dataset
+    ds = load_dataset("Salesforce/wikitext", "wikitext-2-raw-v1", split=split)
+    return [t.strip() for t in ds["text"] if len(t.strip()) > 200 and not t.strip().startswith("=")]

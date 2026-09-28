@@ -1,0 +1,27 @@
+  [精确去重] 0.0s
+精确去重：11,295 → 11,126，删掉 169 篇逐字相同的文档
+   例：http://climate.unist.ac.kr/research/globalClimateModel.sko;jsessionid=  ==  http://climate.unist.ac.kr/research/globalClimateModel.sko;jsessionid=
+   例：http://erickiel.com/?c=glen-keith-distillery-edition-single-malt-whisk  ==  http://erickiel.com/jp.php?c=98-286-1
+  [MinHash 签名] 4.2s
+签名：11,126 篇 × 128 个哈希；平均每篇 587 个 5-gram
+  [LSH 分桶 + 候选对验证] 0.2s
+LSH：2,515 个候选对（暴力要比 61,888,375 对），其中 Jaccard ≥ 0.7 的近重复 1,782 对
+近重复去重：11,126 → 10,815（删 311 篇）
+   例 Jaccard 1.00：
+     https://south.tours/2021/11/09/
+     https://tuneliveradio.net/country/eutin/
+     A: 'We use cookies on our website to give you the most relevant experience by remembering your preferences and repeat visits'
+     B: 'We use cookies on our website to give you the most relevant experience by remembering your preferences and repeat visits'
+   例 Jaccard 0.99：
+     https://www.canyoudancelive.com/block/hammond/
+     https://www.canyoudancelive.com/block/freestyle-intro/3-73/
+     A: 'Hammond - Can You Dance?\nCan You Dance?\nCan You Dance?\nWhat is CYD?\nCYD? TV is now… LIVE!\nThank you! You have successful'
+     B: '3 - Can You Dance?\nCan You Dance?\nCan You Dance?\nWhat is CYD?\nCYD? TV is now… LIVE!\nThank you! You have successfully sub'
+   例 Jaccard 0.99：
+     https://baseballsavant.mlb.com/gamefeed?game_pk=634368&game_date=2021-04-27
+     https://baseballsavant.mlb.com/player-scroll/game?gamePk=718247&player_id=607359
+     A: 'How fast, in miles per hour, a ball was hit by a batter.\nHow high/low, in degrees, a ball was hit by a batter.\nStatcast '
+     B: 'Loading Data, Please Wait...\nHow fast, in miles per hour, a ball was hit by a batter.\nHow high/low, in degrees, a ball w'
+
+最终语料：10,815 篇，38,451,020 字符
+  图已保存 out/e2e-3-dedup.svg

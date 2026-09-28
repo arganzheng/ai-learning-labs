@@ -1,0 +1,35 @@
+训练集 10,880,981 个 token；预算 C = 6·N·D，N 取全部参数（含 embedding）；batch 64 × 256 = 16K token/步
+
+=== 预算 C = 1e+13 FLOPs ===
+  1 层 × 32 宽  N =  0.15M  D =  10.99M token（1.0 epoch，670 步 × bs 64）  val loss 5.722
+  1 层 × 48 宽  N =  0.24M  D =   7.04M token（0.6 epoch，429 步 × bs 64）  val loss 6.033
+  1 层 × 64 宽  N =  0.33M  D =   5.08M token（0.5 epoch，310 步 × bs 64）  val loss 6.158
+  2 层 × 96 宽  N =  0.64M  D =   2.61M token（0.2 epoch，159 步 × bs 64）  val loss 6.209
+  2 层 × 128 宽  N =  0.95M  D =   1.75M token（0.2 epoch，106 步 × bs 64）  val loss 6.456
+  3 层 × 160 宽  N =  1.62M  D =   1.03M token（0.1 epoch，62 步 × bs 64）  val loss 6.691
+  4 层 × 192 宽  N =  2.61M  D =   0.64M token（0.1 epoch，39 步 × bs 64）  val loss 6.806
+  6 层 × 256 宽  N =  5.84M  D =   0.29M token（0.0 epoch，17 步 × bs 64）  val loss 7.013
+  → 这个预算下最优：1 层 × 32 宽（N = 0.15M，D/N = 72）
+
+=== 预算 C = 3e+13 FLOPs ===
+  1 层 × 32 宽  N =  0.15M  D =  32.97M token（3.0 epoch，2012 步 × bs 64）  val loss 5.305
+  1 层 × 48 宽  N =  0.24M  D =  21.12M token（1.9 epoch，1289 步 × bs 64）  val loss 5.240
+  1 层 × 64 宽  N =  0.33M  D =  15.25M token（1.4 epoch，930 步 × bs 64）  val loss 5.323
+  2 层 × 96 宽  N =  0.64M  D =   7.82M token（0.7 epoch，477 步 × bs 64）  val loss 5.624
+  2 层 × 128 宽  N =  0.95M  D =   5.26M token（0.5 epoch，320 步 × bs 64）  val loss 5.774
+  3 层 × 160 宽  N =  1.62M  D =   3.09M token（0.3 epoch，188 步 × bs 64）  val loss 6.078
+  4 层 × 192 宽  N =  2.61M  D =   1.92M token（0.2 epoch，117 步 × bs 64）  val loss 6.338
+  6 层 × 256 宽  N =  5.84M  D =   0.86M token（0.1 epoch，52 步 × bs 64）  val loss 6.677
+  → 这个预算下最优：1 层 × 48 宽（N = 0.24M，D/N = 89）
+
+=== 预算 C = 1e+14 FLOPs ===
+  1 层 × 32 宽  N =  0.15M  D = 109.90M token（10.1 epoch，6707 步 × bs 64）  val loss 5.144
+  1 层 × 48 宽  N =  0.24M  D =  70.42M token（6.5 epoch，4297 步 × bs 64）  val loss 5.001
+  1 层 × 64 宽  N =  0.33M  D =  50.83M token（4.7 epoch，3102 步 × bs 64）  val loss 4.916
+  2 层 × 96 宽  N =  0.64M  D =  26.06M token（2.4 epoch，1590 步 × bs 64）  val loss 4.966
+  2 层 × 128 宽  N =  0.95M  D =  17.53M token（1.6 epoch，1069 步 × bs 64）  val loss 5.039
+  3 层 × 160 宽  N =  1.62M  D =  10.29M token（0.9 epoch，628 步 × bs 64）  val loss 5.335
+  4 层 × 192 宽  N =  2.61M  D =   6.39M token（0.6 epoch，390 步 × bs 64）  val loss 5.631
+  6 层 × 256 宽  N =  5.84M  D =   2.86M token（0.3 epoch，174 步 × bs 64）  val loss 6.004
+  → 这个预算下最优：1 层 × 64 宽（N = 0.33M，D/N = 155）
+  图已保存 out/e2e-6-isoflop.svg

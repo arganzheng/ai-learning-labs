@@ -24,3 +24,8 @@ transformer-and-llm/nanogpt/data/shakespeare_char/meta.pkl
 
 # datasets downloaded by classical-ml/_data.py
 classical-ml/data/
+
+# pretrain_e2e: Common Crawl WET 文件与中间产物（约 1.8 GB）
+transformer-and-llm/pretrain_e2e/data/
+# 论文 PDF（tools/paper_figures.py 下载）
+transformer-and-llm/data/

@@ -8,7 +8,7 @@
 |---|---|---|---|
 | [`python-for-ai-infra/`](python-for-ai-infra/) | Python 在 AI-Infra：从语言机制到生产交付 | Infra L1 | Python 3.10+ 标准库 |
 | [`cpp-for-ai-infra/`](cpp-for-ai-infra/) | C++ 在 AI-Infra：从对象模型到算子扩展 | Infra L1 | C++17 编译器 + make |
-| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、算量与数值（8 篇）+ 预训练：从 tokenizer 到训练配方（4 篇，`llm_cost_09`–`_12` 及配套实验） | Infra L2 · 算法 L4（成本表两张地图共享；预训练只在算法地图） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
+| [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、实现与算量（13 篇）+ 预训练：从 tokenizer 到训练配方（5 篇：`pretrain_e2e/` 端到端流水线、`llm_cost_09`–`_12` 及配套实验） | Infra L2 · 算法 L4（成本表两张地图共享；预训练只在算法地图） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
 | [`algorithm-tooling/`](algorithm-tooling/) | 算法工程师的工具箱：从一个想法到一次能跑的实验 | 算法 L1 | numpy、torch（CPU）、pandas、matplotlib；04 需 transformers / peft / trl + 下载 Qwen2.5-0.5B |
 | [`classical-ml/`](classical-ml/) | LLM 时代的经典机器学习：只讲它在哪里重现（10 篇） | 算法 L2 | numpy、scikit-learn、scipy、matplotlib；07 / 08 / 09 的句向量需 transformers + 本地缓存的 Qwen2.5-0.5B |
 | [`multimodal/`](multimodal/) | 多模态：从视觉编码器到扩散模型（9 篇正文各一个 toy） | 算法 L7 | numpy、scikit-learn、matplotlib、torch（CPU）；不下载模型 |

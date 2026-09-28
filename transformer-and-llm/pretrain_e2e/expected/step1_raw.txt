@@ -1,0 +1,15 @@
+  [读 WET] 4.2s
+2 个 WET 文件：CC-MAIN-2024-10-00000.warc.wet.gz, CC-MAIN-2024-10-00001.warc.wet.gz
+文档数 68,834，共 485,501,322 字符（486 MB 文本）
+每篇长度：中位数 3654 字符，均值 7053，最长 927,123；10% 的文档不到 759 字符，10% 超过 13262
+Common Crawl 自己标的语言（前 10）： eng 31749 (46%), rus 4225 (6%), deu 3788 (6%), jpn 3561 (5%), spa 3410 (5%), fra 3077 (4%), zho 3001 (4%), ita 1914 (3%), por 1379 (2%), nld 1346 (2%)
+
+随机三篇（各取前 300 字符）：
+--- https://featherandquill.co/products/love-you-mean-it-crewneck-long-sleeve-sweatshirt  [eng]  3840 字符
+   LOVE YOU MEAN IT Crewneck Long Sleeve Sweatshirt – Feather & Quill Boutique ⏎ Scroll down to see more. We offer Sezzle! ⏎ Shop by Price ⏎ Under $25 ⏎ Under $50 ⏎ Clothes ⏎ Tops ⏎ Tank Tops ⏎ Sweaters ⏎ All Tops ⏎ Bottoms ⏎ Jeans ⏎ Shorts ⏎ Skirts ⏎ Layering Pieces ⏎ Bras & Bralettes ⏎ Kimonos ⏎ Sweaters ⏎ Shackets ⏎ Swimwear ⏎ Curvy Sizes
+--- http://images.google.az/url?q=https%3A%2F%2Fwonderfulios.com%2F  [eng]  170 字符
+   Redirect Notice ⏎ Redirect Notice ⏎ The previous page is sending you to https://wonderfulios.com/. ⏎ If you do not want to visit that page, you can return to the previous page.
+--- https://www.crescentharbor.com/framburg-9125.html  [eng]  4624 字符
+   Framburg 9125 Jamestown 5-Light Dining Chandelier ⏎ Home ⏎ About Us ⏎ Contact Us ⏎ Shipping Policy ⏎ Testimonials ⏎ Customer Service ⏎ 1.888.355.9525 ⏎ Chandeliers ⏎ Miniature Chandeliers ⏎ Small Chandeliers ⏎ Medium Chandeliers ⏎ Large Chandeliers ⏎ Grand and Custom Chandeliers ⏎ Bath Lighting ⏎ One Light Bath Fixtures ⏎ Two Ligh
+  [写 raw.jsonl] 2.1s
+  图已保存 out/e2e-1-raw.svg

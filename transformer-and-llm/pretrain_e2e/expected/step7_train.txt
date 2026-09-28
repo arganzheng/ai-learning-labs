@@ -1,0 +1,52 @@
+number of parameters: 2.56M
+
+配方：4 层 × 192 宽，N = 1.77M（含 embedding 2.61M）
+      数据 10,880,981 token × 3.0 epoch = 32,636,928 token；batch 64 × 256 = 16,384 token/步；1992 步
+      AdamW β=(0.9, 0.95) wd 0.1 clip 1.0；峰值 lr 1.15e-03，warmup 59 步（3%），cosine 衰减到 10%
+      算力 6ND ≈ 3.5e+14 FLOPs；设备 mps
+
+    step     0  tok   0.02M  train 8.353  val 8.340  lr 1.95e-05  |g|  1.36  |θ|   50.1  max qk   0.4   18.1K tok/s      1s
+    step    49  tok   0.82M  train 6.898  val 6.785  lr 9.75e-04  |g|  0.53  |θ|   51.3  max qk   3.0   34.5K tok/s     24s
+    step    98  tok   1.62M  train 6.103  val 6.119  lr 1.15e-03  |g|  0.40  |θ|   53.9  max qk   2.6   34.5K tok/s     47s
+    step   147  tok   2.42M  train 5.930  val 5.918  lr 1.14e-03  |g|  0.39  |θ|   56.2  max qk   4.8   34.8K tok/s     71s
+    step   196  tok   3.23M  train 5.499  val 5.759  lr 1.14e-03  |g|  0.51  |θ|   58.1  max qk   6.5   34.7K tok/s     94s
+    step   245  tok   4.03M  train 5.601  val 5.677  lr 1.13e-03  |g|  0.60  |θ|   60.0  max qk   6.5   35.0K tok/s    117s
+    step   294  tok   4.83M  train 5.613  val 5.527  lr 1.11e-03  |g|  0.51  |θ|   62.0  max qk   6.2   35.5K tok/s    139s
+    step   343  tok   5.64M  train 4.755  val 5.470  lr 1.10e-03  |g|  2.03  |θ|   64.0  max qk   5.5   34.7K tok/s    162s
+    step   392  tok   6.44M  train 5.287  val 5.383  lr 1.08e-03  |g|  0.46  |θ|   65.8  max qk   8.4   35.2K tok/s    185s
+    step   441  tok   7.24M  train 5.261  val 5.278  lr 1.05e-03  |g|  0.51  |θ|   67.4  max qk   9.5   34.6K tok/s    208s
+    step   490  tok   8.04M  train 5.153  val 5.272  lr 1.03e-03  |g|  0.39  |θ|   68.9  max qk  10.8   34.6K tok/s    232s
+    step   539  tok   8.85M  train 5.184  val 5.261  lr 1.00e-03  |g|  0.45  |θ|   70.2  max qk  11.4   35.1K tok/s    254s
+    step   588  tok   9.65M  train 5.085  val 5.184  lr 9.70e-04  |g|  0.43  |θ|   71.3  max qk  14.0   34.4K tok/s    278s
+    step   637  tok  10.45M  train 5.028  val 5.117  lr 9.38e-04  |g|  0.47  |θ|   72.4  max qk  18.9   43.7K tok/s    296s
+    step   686  tok  11.26M  train 5.093  val 5.099  lr 9.04e-04  |g|  0.50  |θ|   73.4  max qk  24.5   54.1K tok/s    311s
+    step   735  tok  12.06M  train 5.011  val 5.076  lr 8.68e-04  |g|  0.60  |θ|   74.4  max qk  32.3   55.8K tok/s    325s
+    step   784  tok  12.86M  train 5.053  val 5.016  lr 8.30e-04  |g|  0.51  |θ|   75.4  max qk  41.4   55.0K tok/s    340s
+    step   833  tok  13.66M  train 5.645  val 5.017  lr 7.92e-04  |g|  6.99  |θ|   76.4  max qk  23.6   56.0K tok/s    354s
+    step   882  tok  14.47M  train 5.060  val 4.936  lr 7.52e-04  |g|  0.54  |θ|   76.9  max qk  45.1   55.9K tok/s    369s
+    step   931  tok  15.27M  train 4.900  val 4.946  lr 7.12e-04  |g|  0.59  |θ|   77.6  max qk  54.8   56.3K tok/s    383s
+    step   980  tok  16.07M  train 4.803  val 4.889  lr 6.71e-04  |g|  0.47  |θ|   78.2  max qk  53.6   56.3K tok/s    397s
+    step  1029  tok  16.88M  train 4.718  val 4.896  lr 6.30e-04  |g|  0.55  |θ|   78.8  max qk  57.7   56.5K tok/s    411s
+    step  1078  tok  17.68M  train 4.709  val 4.829  lr 5.88e-04  |g|  0.54  |θ|   79.3  max qk  60.7   55.6K tok/s    426s
+    step  1127  tok  18.48M  train 4.567  val 4.831  lr 5.48e-04  |g|  0.53  |θ|   79.7  max qk  61.9   56.4K tok/s    440s
+    step  1176  tok  19.28M  train 4.770  val 4.821  lr 5.07e-04  |g|  0.71  |θ|   80.1  max qk  64.3   56.7K tok/s    454s
+    step  1225  tok  20.09M  train 4.746  val 4.833  lr 4.68e-04  |g|  0.57  |θ|   80.3  max qk  65.4   56.4K tok/s    468s
+    step  1274  tok  20.89M  train 4.519  val 4.761  lr 4.29e-04  |g|  0.68  |θ|   80.6  max qk  58.5   56.5K tok/s    483s
+    step  1323  tok  21.69M  train 4.611  val 4.766  lr 3.92e-04  |g|  0.70  |θ|   80.9  max qk  62.3   55.5K tok/s    497s
+    step  1372  tok  22.50M  train 4.657  val 4.796  lr 3.56e-04  |g|  0.74  |θ|   81.2  max qk  67.3   56.4K tok/s    511s
+    step  1421  tok  23.30M  train 4.515  val 4.716  lr 3.22e-04  |g|  0.62  |θ|   81.4  max qk  66.5   55.8K tok/s    526s
+    step  1470  tok  24.10M  train 4.542  val 4.710  lr 2.90e-04  |g|  0.65  |θ|   81.6  max qk  70.4   56.0K tok/s    540s
+    step  1519  tok  24.90M  train 4.486  val 4.699  lr 2.61e-04  |g|  0.74  |θ|   81.8  max qk  70.9   55.4K tok/s    555s
+    step  1568  tok  25.71M  train 4.543  val 4.691  lr 2.33e-04  |g|  0.63  |θ|   81.9  max qk  71.1   56.7K tok/s    569s
+    step  1617  tok  26.51M  train 4.616  val 4.649  lr 2.08e-04  |g|  1.13  |θ|   82.1  max qk  73.4   56.6K tok/s    583s
+    step  1666  tok  27.31M  train 4.494  val 4.671  lr 1.86e-04  |g|  0.60  |θ|   82.2  max qk  71.3   54.8K tok/s    598s
+    step  1715  tok  28.11M  train 4.357  val 4.629  lr 1.67e-04  |g|  0.70  |θ|   82.3  max qk  69.9   55.7K tok/s    612s
+    step  1764  tok  28.92M  train 4.472  val 4.628  lr 1.50e-04  |g|  0.70  |θ|   82.4  max qk  71.0   56.3K tok/s    626s
+    step  1813  tok  29.72M  train 4.421  val 4.673  lr 1.37e-04  |g|  0.67  |θ|   82.4  max qk  69.0   56.2K tok/s    641s
+    step  1862  tok  30.52M  train 4.477  val 4.619  lr 1.27e-04  |g|  1.71  |θ|   82.5  max qk  70.5   56.6K tok/s    655s
+    step  1911  tok  31.33M  train 4.275  val 4.613  lr 1.19e-04  |g|  0.75  |θ|   82.6  max qk  73.4   55.8K tok/s    669s
+    step  1960  tok  32.13M  train 4.453  val 4.608  lr 1.16e-04  |g|  0.68  |θ|   82.6  max qk  70.8   56.6K tok/s    683s
+    step  1992  tok  32.65M  train 4.609  val 4.625  lr 1.15e-04  |g|  0.69  |θ|   82.7  max qk  77.6   55.7K tok/s    693s
+
+最终 train loss 4.609，val loss 4.625（PPL 102.0）；ln V = 8.32
+  图已保存 out/e2e-7-curves.svg

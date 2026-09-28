@@ -1,0 +1,21 @@
+模型：4 层 × 192 宽，N = 1.77M；val 216 篇文档
+
+我们的模型：4.514 nats/token（PPL 91.3），1.879 bits/byte，共 37,739 token
+  参照：随机猜 = ln 4096 = 8.32 nats/token；训练前的 val loss 就是它
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1171 > 1024). Running this sequence through the model will result in indexing errors
+GPT-2 small（124M，WebText 40 GB 训的）：3.362 nats/token（PPL 28.8，它的 token 更长所以 PPL 不可直接比），1.062 bits/byte，共 28,643 token
+  同一批文本，bits/byte 才可比：我们 1.879 vs GPT-2 1.062——每个字节多花 0.82 bit；参数少 48 倍、数据少约 1034 倍
+
+生成样本（τ = 0.8，top-k 40）：
+  'The city council announced' → ' that one and the MSFBE with the National PMS is the PCMA, and it has the only the NFLAABS to be an international GPI and the CRS. The company is the first towap the next step in'
+  'In this tutorial we will' → ' be able to make a clear one.\nSince we have a lot of dyzzer thank. The other handp are also good of psychic and tooth the blue at the last few people are not soiled. The dusty of the two c'
+  'The best way to' → ' connect in the Hubi Microso.\nThe Full of Goroatthemiant is a significant part of the Menojo Monday and the Gelonana Raenom. The Aestona Linkednament T'
+
+试着当助手用：
+  'Q: What is the capital of France?\nA:'
+    → ' “Sureror a festic, Specialiskar Sweettech?\nSimal: Theme: The Octimulation and Mette Laser, is a grandmenial that'
+  'Write a short poem about the sea.\n'
+    → 'This will come up with the most length. Duar the Topla for Toper, the folder is a hurt and the most unlamic pandemic that has been the highest quality of the C'
+
+它学到的是「网页文本的下一个 token 是什么」，不是「怎么回答问题」——这就是后训练要做的事（后训练系列第一篇）。
+ALLDONE

@@ -1,6 +1,24 @@
 # Transformer 与 LLM：结构、实现与算量 — 配套代码
 
-博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十三篇：01–04 结构与实现、05–09 结构的演进、10–13 成本账）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（四篇）。
+博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十三篇：01–04 结构与实现、05–09 结构的演进、10–13 成本账）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
+
+## 预训练 01：一次预训练是怎么跑起来的（`pretrain_e2e/`）
+
+[文章](https://arganzheng.life/pretraining-end-to-end-from-web-pages-to-a-model.html)在一台 MacBook 上把一次预训练从原始网页走到一个会续写英文的模型，八步各一个脚本，`run_all.sh` 一键跑完（MPS 上约一小时，纯 CPU 更久）：
+
+| 文件 | 步 | 内容 | 依赖 |
+|---|---|---|---|
+| `step1_raw.py` | 1 原料 | 下载两个 Common Crawl WET 文件（约 215 MB，断点续传），读出 68,834 篇网页；长度与语言分布 | 无 |
+| `step2_filter.py` | 2 过滤 | 语言识别（功能词比例）→ Gopher 文档级 → C4 行级 → Gopher 重复度，每道筛子的进出数与被删的例子 | 无 |
+| `step3_dedup.py` | 3 去重 | 精确去重 + MinHash（128 哈希）/ LSH（16 × 8），候选对数、Jaccard 分布、近重复的例子 | NumPy |
+| `step4_tokenizer.py` | 4 tokenizer | 在清洗后的语料上训 byte-level BPE（词表 4096）；样本切分；词表 264 → 16384 的压缩率扫描；与 GPT-2 对照 | tokenizers, tiktoken |
+| `step5_pack.py` | 5 打包 | tokenize → `<\|endoftext\|>` → 按文档 98/2 切 → `train.bin` / `val.bin`（uint16）；文档长度与每条序列的边界数 | NumPy |
+| `step6_isoflop.py` | 6 选尺寸 | 迷你 iso-FLOP：三个算力预算 × 八个模型尺寸，固定 C = 6ND 看 val loss（`--quick` 预算缩小 4 倍） | PyTorch |
+| `step7_train.py` | 7 训练 | 按配方训一个小 GPT，一路记录七条曲线，画成一张图 | PyTorch |
+| `step8_eval.py` | 8 评 | val loss → PPL → bits/byte；与 GPT-2 small 在同一批 val 文档上比 bits/byte；生成样本；试当助手用 | PyTorch, transformers（本地缓存 gpt2） |
+| `trainer.py` / `common.py` / `_plot.py` / `download.py` | — | 训练循环（记录七条曲线）、语料读写与语言识别、画图设置、断点续传下载 | — |
+
+`data/` 下的下载文件与中间产物（约 1.8 GB）不入库；`expected/` 是每步的完整输出，`out/` 是文中的七张图。
 
 ## 第一段：结构与实现（01–04）
 
@@ -28,7 +46,7 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 
 ## 第二、三段：结构的演进与成本账（05–13，原 01–08）
 
-两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，每篇加几个函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 01–04）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里按篇保存为十二个文件，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号。
+两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，每篇加几个函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 02–05）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里按篇保存为十二个文件，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号。
 
 | 文件 | 文章 | 内容 | 依赖 |
 |---|---|---|---|
@@ -47,16 +65,16 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 | `llm_cost_08_multimodal.py` | [13 多模态成本](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
 | `vlm_cost_numbers.py` | 同上 | 文章里多模态各表的理论数字（BF16，H100 SXM） | 无 |
 | `tools/gen_patch_merge_svg.py` | 同上 | 生成文中 patch → merge → token 的示意图 | 无 |
-| `bpe_from_scratch.py` | [预训练 01 分词与词表](https://arganzheng.life/tokenizer-vocabulary-and-token-efficiency.html) | 从零实现 byte-level BPE；玩具例子；词表大小 → bytes/token 扫描（约 2 分钟，`--quick` 10 秒） | 无 |
+| `bpe_from_scratch.py` | [预训练 02 分词与词表](https://arganzheng.life/tokenizer-vocabulary-and-token-efficiency.html) | 从零实现 byte-level BPE；玩具例子；词表大小 → bytes/token 扫描（约 2 分钟，`--quick` 10 秒） | 无 |
 | `tokenizer_compare.py` | 同上 | GPT-2 / cl100k / o200k / Qwen2.5 / DeepSeek-V3 在英文、中文、代码、数字上的 token 效率 | tiktoken, tokenizers（联网下载词表） |
 | `llm_cost_09_vocab.py` | 同上 | 词表参数与 lm_head 占比、logits 显存、每字符成本（复用第七版） | 无 |
-| `scaling_law_fit.py` | [预训练 02 Scaling law](https://arganzheng.life/scaling-laws-and-compute-optimal-training.html) | CPU 上训 7 个字符级小模型，拟合 L(N) 并外推；常数 lr 下拟合 L(D)（约 10 分钟，`--quick` 1.5 分钟） | PyTorch |
+| `scaling_law_fit.py` | [预训练 03 Scaling law](https://arganzheng.life/scaling-laws-and-compute-optimal-training.html) | CPU 上训 7 个字符级小模型，拟合 L(N) 并外推；常数 lr 下拟合 L(D)（约 10 分钟，`--quick` 1.5 分钟） | PyTorch |
 | `llm_cost_10_scaling.py` | 同上 | Chinchilla 参数化与最优 N/D、真实模型的 D/N 与 GPU 小时、过训练代价、推理感知最优点、有效 token | 无 |
 | `tools/gen_scaling_svg.py` | 同上 | 文中的两栏图（实验拟合 + IsoFLOP 曲线） | 无 |
-| `minhash_lsh.py` | [预训练 03 预训练数据工程](https://arganzheng.life/pretraining-data-pipeline-dedup-filtering-and-mixture.html) | MinHash + LSH 从零实现（FineWeb 配置），S 曲线验证，近重复文档演示 | 无 |
+| `minhash_lsh.py` | [预训练 04 预训练数据工程](https://arganzheng.life/pretraining-data-pipeline-dedup-filtering-and-mixture.html) | MinHash + LSH 从零实现（FineWeb 配置），S 曲线验证，近重复文档演示 | 无 |
 | `quality_filters.py` | 同上 | Gopher 文档级 / 重复度规则与 C4 行级规则，对典型网页文本逐条判定 | 无 |
 | `llm_cost_11_data.py` | 同上 | 漏斗刻度、管线 CPU 小时、存储与训练读带宽、配比 → epoch | 无 |
-| `training_recipe_lab.py` | [预训练 04 训练配方与稳定性](https://arganzheng.life/pretraining-recipe-and-training-stability.html) | 四个子实验：`schedule` / `batch_lr` / `spike` / `zloss`（约 7 分钟，`--quick` 1 分钟） | PyTorch |
+| `training_recipe_lab.py` | [预训练 05 训练配方与稳定性](https://arganzheng.life/pretraining-recipe-and-training-stability.html) | 四个子实验：`schedule` / `batch_lr` / `spike` / `zloss`（约 7 分钟，`--quick` 1 分钟） | PyTorch |
 | `llm_cost_12_recipe.py` | 同上 | 公开配方的超参表与步数、DeepSeek 的 lr/batch 经验律、checkpoint 字节与写带宽、spike 回滚代价 | 无 |
 | `tools/gen_schedule_svg.py` | 同上 | 文中的调度 / batch ramp 图 | 无 |
 

@@ -1,0 +1,19 @@
+语料：10,815 篇，38,451,020 字符
+  [训 BPE 词表 4096] 1.9s
+最早学到的 30 个合并（256 个字节之后的词表项，Ġ 表示前面有空格）： Ġt Ġa in he re on er Ġthe Ġs ou at or Ġc Ġw nd es it en is Ġp ing Ġf Ġb Ġo an Ġto al ed Ġm Ġand
+最长的词表项： Ġfunctionalities Ġresponsibility Ġcomprehensive Ġautomatically Ġunderstanding Ġopportunities Ġorganizations Ġcommunication Ġprofessionals ĠInternational Ġinternational Ġapplications
+
+一段样本（215 字符）→ 103 个 token，2.09 字符/token：
+   The | ␣board | ␣requires | ␣you | ␣to | ␣be | ␣registered | ␣and | ␣log | ged | ␣in | ␣to | ␣view | ␣prof | iles | . | ␣Res | idential | ␣and | ␣commercial | ␣roof | ing | ␣contract | ors | ␣in | ␣P | enn | sy | l | v | an | ia | ␣offer | ␣free | ␣est | im | ates | . | ⏎ | de | f | ␣to | ken | ize | ( | text | ) | : | ⏎ | ␣ | ␣ | ␣ | ␣return | ␣text | . | s | pl | it | ( | ) | ⏎ | å | Į | Ĺ | ä | º | ¬ | æ | ĺ | ¯ | ä | ¸ | Ń | å | į | İ | ä | º | º | æ | ° | ĳ | å | ħ | ± | å | Ĵ | Į | å | Ľ | ½ | ç | ļ | Ħ | é | ¦ | ĸ | é | ĥ | ½ | ã | Ģ | Ĥ
+   中文部分：每个汉字是 3 个字节，语料里几乎没有中文、词表没学过它们的合并 → 退回字节级，一个字要 3 个 token
+
+词表大小 → 字符/token（在语料的一个子集上）：
+   V =    264: 1.10 字符/token，6,811,853 个 token
+   V =    512: 2.02 字符/token，3,720,355 个 token
+   V =   1024: 2.53 字符/token，2,967,138 个 token
+   V =   2048: 3.00 字符/token，2,503,214 个 token
+   V =   4096: 3.46 字符/token，2,165,955 个 token
+   V =   8192: 3.90 字符/token，1,922,287 个 token
+   V =  16384: 4.27 字符/token，1,757,737 个 token
+   GPT-2 tokenizer（V = 50257，在 WebText 上训的）：4.53 字符/token
+  图已保存 out/e2e-4-tokenizer.svg

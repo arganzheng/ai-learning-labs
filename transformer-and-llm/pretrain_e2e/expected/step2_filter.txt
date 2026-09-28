@@ -1,0 +1,31 @@
+  [语言识别] 37.6s
+语言识别：68,834 → 20,792 篇英文（30%）；与 Common Crawl 自己标的语言一致率 93%
+  [Gopher 质量规则] 38.2s
+Gopher 质量规则：20,792 → 17,960（删 14%）。每条规则首次击中的文档数：
+   含字母的词 >= 80%             1,865   例：[0.54] 'The Fourth Frog Blog: A catch up haiku ⏎ skip to main | skip to sidebar ⏎ Tuesday, November 22, 2011 ⏎ A catch up ha'
+   词数 50–100k                 633   例：[22] 'Internet Archive: Digital Library of Free & Borrowable Books, Movies, Music & Wayback Machine ⏎ Redirecting you '
+   平均词长 3–10                  272   例：[10.9] '8成民衆不忍了！張善政備詢8字受辱 最新網路民調太驚人 « 夙芷書卷 ⏎ 夙芷書卷 ⏎ 選單 ⏎ Skip to content ⏎ 首頁 ⏎ 範例頁面 ⏎ 8成民衆不忍了！張善政備詢8字受辱 最新網路民調太驚人 ⏎ 8成民衆不忍了！張善政備詢8字'
+   停用词 >= 2 个                  30   例：[0] 'Glosario Técnico Multimedia ⏎ Glosario Técnico Multimedia ⏎ Recurso educativo de apoyo a la Formación Profesional ⏎ '
+   #/… 与词数之比 < 0.1             20   例：[0.144] 'Lola Tung Archives - Brief Take ⏎ Top Posts ⏎ The Taste of Things Review ⏎ The Promised Land Review ⏎ Suncoast Review ⏎ '
+   以省略号结尾的行 < 30%              12   例：[0.34] '~ Israel Newswire ⏎ Home ⏎ skip to main | skip to sidebar ⏎ World News ⏎ The Associated Press ⏎ CNN ⏎ BBC News ⏎ @breakingne'
+  [C4 行级规则] 8.1s
+C4 行级规则：字符 122,875,312 → 61,481,547（删 50% 的字符）；文档 17,960 → 15,264
+   被删得最多的行（跨文档重复出现，典型的导航 / 页脚）：
+     13396 ×  'Home'
+      9362 ×  'Search'
+      8635 ×  'Contact Us'
+      7613 ×  'Contact'
+      6597 ×  'About Us'
+      6553 ×  'About'
+      5629 ×  'News'
+      5538 ×  'Privacy Policy'
+  [Gopher 重复度规则] 67.8s
+Gopher 重复度规则：15,264 → 11,295（删 26%）：
+   重复 5-gram 字符占比 <= 0.15      1,962   例：[0.35] 'Remember, everyone: the official reason Hillary says she set up her own server was for "convenience." ⏎ Top Hill'
+   重复行比例 <= 0.30               1,445   例：[0.4] 'Since 1999, A1 Professional Roofing has been specializing in full re-roofing replacements in the Ottawa and su'
+   重复行字符比例 <= 0.20               261   例：[0.21] 'Why Choose Self-publishing? ⏎ We appreciate your support of online literacy with your eLibrary Card Membership. '
+   重复 10-gram 字符占比 <= 0.1        222   例：[0.1] 'EXCITING NAUTICAL FICTION WITH ENOUGH TWISTS AND TURNS TO KEEP YOU GUESSING! ⏎ Spring 1748. Captain Jon Swift at'
+
+漏斗：原始 68,834 → 英文（功能词比例 ≥ 0.12） 20,792 → Gopher 质量规则 17,960 → C4 行级清理后仍 ≥ 50 词 15,264 → Gopher 重复度规则 11,295
+最终 11,295 篇，39,517,443 字符（39.5 MB），是原始文档数的 16.4%
+  图已保存 out/e2e-2-filter-funnel.svg

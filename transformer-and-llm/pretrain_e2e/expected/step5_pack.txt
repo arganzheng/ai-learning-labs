@@ -1,0 +1,10 @@
+  [tokenize] 1.6s
+10,815 篇 → 11,104,216 个 token（不含 eos），3.46 字符/token
+每篇 token 数：中位数 607，均值 1027，最短 60，最长 52,253；22% 的文档不到 256 个 token
+  [打包] 0.4s
+train.bin：10,880,981 个 token（10599 篇，21.8 MB）；val.bin：234,050 个 token（216 篇）
+按 block_size = 256 切：train 有 42,503 条不重叠的序列；一条序列平均含 0.25 个文档边界（跨过边界时 attention 会看到上一篇无关的内容——文中「文档掩码」的取舍）
+前 781 条训练序列里 eos 的个数：0 个的占 77%，1 个 21%，≥ 2 个 2%
+打包示例（第 3 条序列，解码回文本，⏎ 是换行，<|endoftext|> 是文档边界）：
+   12×1220 resolution and 120Hz refresh rate. There’s also an 8MP ultra-wide camera, a 2MP macro and a 20MP selfie shooter, plus a 5,000mAh battery and 150W of wired fast charging carried over from the 11T Pro. ⏎ According to leaker @_snoopytech_ on Twitter, the 12T will be priced starting from €649 (RM2,947), with the Pro version retailing at €849 (RM3,856). Do you think the price is reasonable for the specs on offer? Sound off in the comments below. ⏎ Berjaya to challenge YTL for MLFF highway tol
+  图已保存 out/e2e-5-pack.svg

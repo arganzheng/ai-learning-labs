@@ -20,6 +20,9 @@
 | `case_01_mnist_mlp.py` | 01 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
 | `case_02_deep_mlp.py` | 02 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
 | `case_03_optimizers_mnist.py` | 03 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
+| `case_04_regularization_plots.py` | 04 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
+| `case_05_lenet5.py` | 05 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
+| `case_06_char_lstm_and_alignment.py` | 06 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |
 | `tools/paper_figures.py` | 02–06 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
 
 `_plot.py` 是画图的公共设置（与 `classical-ml/_plot.py` 相同）。

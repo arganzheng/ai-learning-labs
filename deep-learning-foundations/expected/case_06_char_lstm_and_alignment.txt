@@ -1,0 +1,42 @@
+=== A. 字符级 LSTM 写莎士比亚（mps）===
+  语料 1,115,394 字符，词表 65；模型 2 层 LSTM × 256，1.09M 参数（nanoGPT 4 层 128 维是 0.80M）
+  预算与 nanoGPT README 小配置相同：batch 12 × 64 字符 × 2000 步 = 1.54M 字符（不到语料的 1.5 遍）
+  step 0     train loss 4.1720, val loss 4.1725
+  step 250   train loss 2.0774, val loss 2.1227
+  step 500   train loss 1.8452, val loss 1.9372
+  step 750   train loss 1.7370, val loss 1.8495
+  step 1000  train loss 1.6703, val loss 1.7976
+  step 1250  train loss 1.6350, val loss 1.7612
+  step 1500  train loss 1.6066, val loss 1.7365
+  step 1750  train loss 1.5906, val loss 1.7226
+  step 2000  train loss 1.5800, val loss 1.7102
+  2000 步 27s
+  对照 nanoGPT 同预算（Transformer 系列第四篇）：step 0 4.17 → step 2000 val 1.66（train 1.50）。LSTM：4.17 → 1.71（train 1.58）。
+  解读：同一份数据、同样多的参数、同样多的步数，字符级 LSTM 与 4 层小 Transformer 落在同一量级——1 MB 的莎士比亚上看不出 Transformer 的优势。差别在两处：（一）LSTM 每步只能看一个字符、状态是 256 个数，上下文再长也只能靠这 256 个数记；Transformer 直接看 64 个字符；（二）时间：LSTM 的 64 步是顺序的，Transformer 的 64 个位置是并行的一次矩阵乘——第七章的两个致命缺点，在这个规模上还不致命，规模上去就是。
+
+  生成 400 字符（temperature 0.8）：
+  
+  Well be to the cheept to put till to the well,
+  Thou will voited and breon fortiend?
+  And I the fair to sentration to that be him the country
+  As your king lead it, sife on the netter'd they goes--
+  A shall come to may she so condice at the sholied, to meated of my heaven,
+  His is our heaven as pition are their.
+  
+  FARIANA:
+  As I have the less to beon the muts be made
+  Then you do hath the destion and stri
+  图已保存 out/case-06-char-lstm.svg
+
+=== B. seq2seq「把序列倒过来」：GRU + Bahdanau attention 学到的对齐 ===
+  T=8，2000 步后整句正确率 91.3%；一个例子的对齐矩阵（行 = 输出第 t 步，列 = 输入位置，值 = 注意力权重 α_tj）：
+   0.00 0.00 0.00 0.00 0.00 0.01 0.09 0.89
+   0.00 0.00 0.00 0.00 0.00 0.01 0.07 0.92
+   0.00 0.00 0.00 0.00 0.00 0.02 0.98 0.00
+   0.00 0.00 0.00 0.00 0.01 0.90 0.08 0.00
+   0.00 0.00 0.02 0.01 0.95 0.01 0.00 0.00
+   0.00 0.01 0.07 0.86 0.06 0.00 0.00 0.00
+   0.00 0.01 0.98 0.00 0.00 0.00 0.00 0.00
+   0.00 0.81 0.12 0.02 0.03 0.01 0.01 0.00
+  解读：一条反对角线——输出第 1 个字符时几乎全部注意力在输入最后一个位置，第 2 个看倒数第 2 个……没有人告诉模型'倒序'意味着什么，对齐是从数据里学出来的。Bahdanau 等 2015 论文里英法翻译的对齐图是同一个东西，只是那条线大体沿对角线、局部有交叉（形容词后置）。
+  图已保存 out/case-06-alignment.svg

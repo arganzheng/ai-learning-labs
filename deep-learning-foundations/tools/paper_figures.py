@@ -20,6 +20,22 @@ FIGS = {
     # name: (source, page, clip or None, dpi)
     "xiong-preln": ("https://arxiv.org/pdf/2002.04745", 2, None, 220),                     # Fig.1 Post-LN vs Pre-LN（嵌入位图）
     "adam-alg1": ("https://arxiv.org/pdf/1412.6980", 2, (105, 105, 507, 362), 220),        # Algorithm 1
+    # DL 04 正则化
+    "dropout-fig1": ("https://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf", 2, (130, 85, 495, 258), 220),   # 标准网 vs 丢弃后的稀疏网
+    "double-descent-fig1": ("https://arxiv.org/pdf/1912.02292", 1, (105, 388, 527, 506), 220),                          # Nakkiran 等：测试误差随宽度先降后升再降
+    # DL 05 CNN
+    "lenet5-fig2": ("http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf", 7, (45, 50, 580, 210), 220),                  # LeNet-5 结构（扫描件）
+    "alexnet-fig2": ("https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf", 5, (95, 55, 535, 208), 220),  # 原图顶部本来就被裁掉了
+    "vgg-table1": ("https://arxiv.org/pdf/1409.1556", 3, (145, 125, 470, 455), 220),                                    # A–E 五种配置
+    "resnet-fig2": ("https://arxiv.org/pdf/1512.03385", 2, (95, 70, 265, 158), 260),                                    # 残差块
+    "resnet-fig5": ("https://arxiv.org/pdf/1512.03385", 6, (300, 55, 575, 155), 260),                                   # 基本块 vs bottleneck
+    "vit-fig1": ("https://arxiv.org/pdf/2010.11929", 3, (100, 65, 510, 245), 220),                                      # ViT 总览
+    # DL 06 RNN / attention
+    "graves-fig1": ("https://arxiv.org/pdf/1308.0850", 3, (150, 115, 475, 350), 220),                                   # 深层 RNN 沿时间展开
+    "graves-fig2": ("https://arxiv.org/pdf/1308.0850", 5, (150, 105, 460, 350), 220),                                   # LSTM 细胞
+    "seq2seq-fig1": ("https://arxiv.org/pdf/1409.3215", 2, (95, 315, 520, 405), 220),                                   # 编码器–解码器
+    "bahdanau-fig1": ("https://arxiv.org/pdf/1409.0473", 3, (375, 340, 525, 520), 260),                                 # attention 结构
+    "bahdanau-fig3a": ("https://arxiv.org/pdf/1409.0473", 6, (105, 82, 302, 278), 260),                                # 对齐矩阵
 }
 
 

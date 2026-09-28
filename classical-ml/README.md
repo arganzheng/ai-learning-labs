@@ -22,6 +22,9 @@
 | `case_01_housing_split.py` | 01 什么是学习 | 同一个 KNN，随机划分 vs 按地区划分，RMSE 差 65% | 加州房价 openml #43939（1 MB） |
 | `case_02_housing_regression.py` | 02 线性回归 | 从猜均值到 Ridge / Lasso 十步，每步误差降多少 | 同上 |
 | `case_03_sms_spam.py` | 03 逻辑回归 | 垃圾短信识别：TF-IDF + 逻辑回归，阈值与权重 | UCI SMS Spam Collection（200 KB） |
+| `case_04_nb_knn_tree.py` | 04 三个分类器 | `nb` 朴素贝叶斯做垃圾短信；`knn` KNN 做 MNIST（全量 2.95%）；`tree` 决策树做泰坦尼克（整棵画出 + boat 泄漏陷阱） | SMS Spam；MNIST（复用 ../deep-learning-foundations/data，12 MB）；Titanic openml #40945 |
+| `case_05_svm_mnist.py` | 05 SVM | 重跑 LeCun 1998 的表：线性 / KNN / RBF-SVM（60k 全量 1.43%，约 4 分钟）；`grid` C×γ 网格 | MNIST |
+| `case_06_adult_income.py` | 06 集成 | 人口普查收入预测：逻辑回归 → 树 → 随机森林 → 梯度提升；permutation 重要性；学习率 × 轮数 | Adult openml #1590（4 MB） |
 
 公共文件：`_data.py`（数据下载与缓存：openml / UCI），`_plot.py`（中文字体、博客列宽、SVG 输出）、`_sentences.py`（07 / 08 / 09 共用的 78 句小语料与 Qwen2.5-0.5B 句向量，缓存在 `out/sentence_embeddings.npz`）。
 

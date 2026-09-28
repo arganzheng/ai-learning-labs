@@ -56,3 +56,28 @@ def sms_spam():
     path = _uci_zip("https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip",
                     "SMSSpamCollection", "SMSSpamCollection.tsv")
     return pd.read_csv(path, sep="\t", header=None, names=["label", "text"], quoting=3)
+
+
+def titanic():
+    """泰坦尼克 1,309 名乘客（openml #40945，Vanderbilt 版全量数据）。目标 survived。
+    注意 boat（救生艇号）与 body（遗体编号）是事后才知道的——放进特征就是泄漏。公有领域。"""
+    df = _openml(40945, "titanic")
+    df["survived"] = df["survived"].astype(int)
+    for c in ["sex", "embarked"]:
+        df[c] = df[c].astype(str)
+    return df
+
+
+def adult():
+    """UCI Adult / Census Income（openml #1590）：1994 年美国人口普查 48,842 人，14 个特征，目标：年收入是否 >50K（23.9%）。CC BY 4.0。"""
+    df = _openml(1590, "adult")
+    df["class"] = (df["class"].astype(str) == ">50K").astype(int)
+    return df
+
+
+def mnist(kind="train"):
+    """MNIST 手写数字：X [n, 784] float32 ∈ [0, 1]，y [n]。复用 deep-learning-foundations/dlf/data.py 的下载与缓存。"""
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(DATA), "..", "deep-learning-foundations"))
+    from dlf.data import load_mnist
+    return load_mnist(kind)

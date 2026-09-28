@@ -13,6 +13,17 @@
 
 时间是 8 核笔记本 CPU 上的量级，不需要 GPU。
 
+## 案例与图
+
+| 脚本 | 文章 | 产出 |
+|---|---|---|
+| `case_01_mnist_mlp.py` | 01 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
+| `case_02_deep_mlp.py` | 02 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
+| `case_03_optimizers_mnist.py` | 03 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
+| `tools/paper_figures.py` | 02–06 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
+
+`_plot.py` 是画图的公共设置（与 `classical-ml/_plot.py` 相同）。
+
 ## 运行
 
 ```bash

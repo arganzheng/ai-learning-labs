@@ -19,3 +19,4 @@ datasets>=3.0
 accelerate>=1.0
 openpyxl>=3.1
 pillow>=10.0
+pymupdf>=1.24

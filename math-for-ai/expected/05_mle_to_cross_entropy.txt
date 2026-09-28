@@ -1,0 +1,121 @@
+
+======== 硬币：抛 10 次 7 次正面，正面概率 p 是多少？ ========
+p 的候选值与「这 10 次结果出现的概率」（似然）：
+  p = 0.3   L(p) = 0.00022 × 0.34300 = 0.000075   log L = -9.498
+  p = 0.5   L(p) = 0.00781 × 0.12500 = 0.000977   log L = -6.931
+  p = 0.6   L(p) = 0.02799 × 0.06400 = 0.001792   log L = -6.325
+  p = 0.7   L(p) = 0.08235 × 0.02700 = 0.002224   log L = -6.109
+  p = 0.8   L(p) = 0.20972 × 0.00800 = 0.001678   log L = -6.390
+  p = 0.9   L(p) = 0.47830 × 0.00100 = 0.000478   log L = -7.645
+似然最大的 p = 0.700，log 似然最大的 p = 0.700（同一个点，= k/n = 0.7）
+  图已保存 out/05-coin-likelihood.svg
+
+======== 三个 token 的玩具语言模型：训练句子 'a b a c a b'，两个候选 θ 谁的似然大？ ========
+θ₁: 逐位概率 p(b|a)=0.80  p(a|b)=0.70  p(c|a)=0.10  p(a|c)=0.60  p(b|a)=0.80
+     乘积 = 0.026880    log 和 = -3.616    每 token 平均 −log = 0.723
+θ₂: 逐位概率 p(b|a)=0.30  p(a|b)=0.30  p(c|a)=0.30  p(a|c)=0.30  p(b|a)=0.30
+     乘积 = 0.002430    log 和 = -6.020    每 token 平均 −log = 1.204
+→ 最大似然选 θ₁：它让训练句子出现的概率大 11 倍。
+  图已保存 out/05-toy-lm-likelihood.svg
+
+======== 为什么取对数：1000 个 0.01 相乘 ========
+  直接相乘（float64）：0.0   ← 已经是 0，信息全丢
+  log 求和：1000 × log(0.01) = -4605.2   ← 正常的数
+  float64 能表示的最小正数约 2.2e-308，0.01^1000 = 1e-2000 远小于它
+  单调性：p 越大，log p 越大： 0.9→-0.11 0.5→-0.69 0.1→-2.30 0.01→-4.61 0.001→-6.91
+
+======== −log p：模型给真实 token 的概率 p 越小，惩罚越大 ========
+  p = 0.99   −ln p =  0.010 nat =  0.014 bit
+  p = 0.9    −ln p =  0.105 nat =  0.152 bit
+  p = 0.5    −ln p =  0.693 nat =  1.000 bit
+  p = 0.1    −ln p =  2.303 nat =  3.322 bit
+  p = 0.01   −ln p =  4.605 nat =  6.644 bit
+  p = 0.001  −ln p =  6.908 nat =  9.966 bit
+  图已保存 out/05-neg-log-curve.svg
+
+======== softmax：手算 vs PyTorch；三条性质；溢出 ========
+  logits [2.0, 1.0, 0.0] → e^z [7.389, 2.718, 1.0] 和 11.107 → p [0.665, 0.245, 0.09]
+  torch.softmax 给的：[0.665, 0.245, 0.09]
+  真实 token 是第 2 个：手算 −log p₂ = 1.4076；F.cross_entropy(z, y) = 1.4076
+  保序：p 的排序 [0, 1, 2] = logits 的排序 [0, 1, 2]
+  差值决定比值：p₁/p₂ = 2.718 = e^(2−1) = 2.718；p₁/p₃ = 7.389 = e² = 7.389
+  平移不变：softmax(z + 100) = [0.665, 0.245, 0.09]
+  溢出：直接算 e^[1000.0, 1001.0, 999.0] = [inf, inf, inf] → p = [nan, nan, nan]
+  先减最大值 1001：e^(z−m) = [0.368, 1.0, 0.135] → p = [0.245, 0.665, 0.09]
+  图已保存 out/05-exp-and-temperature.svg
+
+======== 初始 loss ≈ ln V：nanoGPT 的真实日志 + 三个 bug 各长什么样 ========
+  莎士比亚字符级：V = 65，ln V = 4.1744
+  Transformer 04 那次训练（0.80M 参数）的日志：step 0 train loss 4.1676，val 4.1649；最后 step 1750 val 1.6616
+  正常                     step 0 loss  4.188   step 50  2.833   step 149  2.491
+  输出层权重 ×20              step 0 loss 25.170   step 50  3.392   step 149  2.938
+  泄漏：输入 = 目标             step 0 loss  3.458   step 50  0.615   step 149  0.062
+  一半目标是 pad 且算进 loss     step 0 loss  4.218   step 50  1.767   step 149  1.386
+  图已保存 out/05-lnv-and-bugs.svg
+
+======== GPT-2 上的温度 / top-k / top-p：'The capital of France is' 的下一个 token ========
+  logits：共 50257 个，最大 -100.25，最小 -129.87，最大与第二大相差 0.57
+  τ=1 的前十名： ␣the:0.085  ␣now:0.048  ␣a:0.046  ␣France:0.032  ␣Paris:0.032  ␣in:0.027  ␣also:0.026  ␣not:0.024  ␣home:0.023  ␣still:0.016
+  前十名合计 0.359；其余 50247 个 token 合计 0.641
+  τ=0.5: ␣the:0.397  ␣now:0.128  ␣a:0.118  ␣France:0.058  ␣Paris:0.058  ␣in:0.039  ␣also:0.039  ␣not:0.032  ␣home:0.030  ␣still:0.013   前十合计 0.912
+  τ=1.0: ␣the:0.085  ␣now:0.048  ␣a:0.046  ␣France:0.032  ␣Paris:0.032  ␣in:0.027  ␣also:0.026  ␣not:0.024  ␣home:0.023  ␣still:0.016   前十合计 0.359
+  τ=2.0: ␣the:0.005  ␣now:0.004  ␣a:0.004  ␣France:0.003  ␣Paris:0.003  ␣in:0.003  ␣also:0.003  ␣not:0.003  ␣home:0.002  ␣still:0.002   前十合计 0.030
+  top-p 0.9 保留 1503 个 token；top-k 5 保留 5 个（合计概率 0.243）
+  对比一个「很确定」的位置：'The United States of' → 第一名 ' America' 概率 0.966，top-p 0.9 只保留 1 个 token
+  τ=0.0 三次续写：' the capital of the French Republic' | ' the capital of the French Republic' | ' the capital of the French Republic'
+  τ=0.7 三次续写：' a gritty bastion of French' | ' Rome, which is about 10' | ' the birthplace of the French philosopher'
+  τ=1.5 三次续写：' Carrequisite pre-publicad' | ' still `promised land82' | ' renowned ideologically for sailware wine'
+  图已保存 out/05-gpt2-sampling.svg
+
+======== SFT 的 loss mask：一条对话在 Qwen2.5 chat 模板下哪些 token 算 loss ========
+  共 26 个 token，其中 prompt 23 个（mask=0，不算 loss），回答 3 个（mask=1）
+    0  '<|im_start|>'
+    0  'system'
+    0  '\\n'
+    0  'You'
+    0  ' are'
+    0  ' a'
+    0  ' helpful'
+    0  ' assistant'
+    0  '.'
+    0  '<|im_end|>'
+    0  '\\n'
+    0  '<|im_start|>'
+    0  'user'
+    0  '\\n'
+    0  '1'
+    0  '+'
+    0  '1'
+    0  '=?'
+    0  '<|im_end|>'
+    0  '\\n'
+    0  '<|im_start|>'
+    0  'assistant'
+    0  '\\n'
+    1  '2'
+    1  '<|im_end|>'
+    1  '\\n'
+  loss = 只对 mask=1 的位置求 −log p 再除以 3，不是除以 26
+  图已保存 out/05-sft-loss-mask.svg
+
+======== 奖励模型的 loss：−log σ(r_w − r_l) ========
+  r_w − r_l = -2   P(好的 ≻ 差的) = σ = 0.119   loss = 2.127
+  r_w − r_l = +0   P(好的 ≻ 差的) = σ = 0.500   loss = 0.693
+  r_w − r_l = +2   P(好的 ≻ 差的) = σ = 0.881   loss = 0.127
+  r_w − r_l = +4   P(好的 ≻ 差的) = σ = 0.982   loss = 0.018
+  图已保存 out/05-reward-model-loss.svg
+
+======== 读一条训练日志 ========
+  原始日志（nanoGPT，字符级莎士比亚，V = 65）：
+    step 0: train loss 4.1676, val loss 4.1649
+    step 250: train loss 2.8491, val loss 2.8662
+    step 500: train loss 2.3961, val loss 2.4026
+      ...
+    step 1500: train loss 1.5555, val loss 1.7179
+    step 1750: train loss 1.4989, val loss 1.6616
+
+   step  val loss  PPL=e^loss  bits/char  含义
+      0    4.1649        64.4       6.01  ≈ ln 65 = 4.17：均匀乱猜，65 选 1
+    750    2.1655         8.7       3.12  
+   1750    1.6616         5.3       2.40  train 1.4989 < val 1.6616：开始轻微过拟合（差 0.16）
+  PPL 读法：模型在每个位置「像是在 e^loss 个等可能的字符里猜」；从 65 猜到约 5 个。

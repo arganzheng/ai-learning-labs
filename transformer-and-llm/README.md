@@ -66,10 +66,12 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 | `vlm_cost_numbers.py` | 同上 | 文章里多模态各表的理论数字（BF16，H100 SXM） | 无 |
 | `tools/gen_patch_merge_svg.py` | 同上 | 生成文中 patch → merge → token 的示意图 | 无 |
 | `bpe_from_scratch.py` | [预训练 02 分词与词表](https://arganzheng.life/tokenizer-vocabulary-and-token-efficiency.html) | 从零实现 byte-level BPE；玩具例子；词表大小 → bytes/token 扫描（约 2 分钟，`--quick` 10 秒） | 无 |
+| `tools/gen_tokenizer_svgs.py` | 同上 | 「先讲明白」一章的三张图：同一句话三种切法、BPE 八步合并、四个 tokenizer 并排切同一段中英文与代码 | tiktoken, tokenizers |
 | `tokenizer_compare.py` | 同上 | GPT-2 / cl100k / o200k / Qwen2.5 / DeepSeek-V3 在英文、中文、代码、数字上的 token 效率 | tiktoken, tokenizers（联网下载词表） |
 | `llm_cost_09_vocab.py` | 同上 | 词表参数与 lm_head 占比、logits 显存、每字符成本（复用第七版） | 无 |
 | `scaling_law_fit.py` | [预训练 03 Scaling law](https://arganzheng.life/scaling-laws-and-compute-optimal-training.html) | CPU 上训 7 个字符级小模型，拟合 L(N) 并外推；常数 lr 下拟合 L(D)（约 10 分钟，`--quick` 1.5 分钟） | PyTorch |
 | `llm_cost_10_scaling.py` | 同上 | Chinchilla 参数化与最优 N/D、真实模型的 D/N 与 GPU 小时、过训练代价、推理感知最优点、有效 token | 无 |
+| `tools/paper_figures.py` | 同上（及预训练 04） | 从原论文 PDF 裁出教学引用的图：Kaplan 图 1、Chinchilla 图 1/2/3、FineWeb 管线图；PDF 缓存在 `data/papers/` | pymupdf |
 | `tools/gen_scaling_svg.py` | 同上 | 文中的两栏图（实验拟合 + IsoFLOP 曲线） | 无 |
 | `minhash_lsh.py` | [预训练 04 预训练数据工程](https://arganzheng.life/pretraining-data-pipeline-dedup-filtering-and-mixture.html) | MinHash + LSH 从零实现（FineWeb 配置），S 曲线验证，近重复文档演示 | 无 |
 | `quality_filters.py` | 同上 | Gopher 文档级 / 重复度规则与 C4 行级规则，对典型网页文本逐条判定 | 无 |

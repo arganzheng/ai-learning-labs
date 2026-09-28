@@ -21,3 +21,6 @@ transformer-and-llm/nanogpt/out-*/
 transformer-and-llm/nanogpt/data/shakespeare_char/*.bin
 transformer-and-llm/nanogpt/data/shakespeare_char/*.txt
 transformer-and-llm/nanogpt/data/shakespeare_char/meta.pkl
+
+# datasets downloaded by classical-ml/_data.py
+classical-ml/data/

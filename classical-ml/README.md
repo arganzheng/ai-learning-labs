@@ -15,7 +15,15 @@
 | `09_minhash_lsh.py` | [去重：MinHash 与 LSH](https://arganzheng.life/deduplication-minhash-and-lsh-probabilities.html) | tiny estimate error scurve dedup semantic | 一分钟 |
 | `10_evaluation.py` | [评估](https://arganzheng.life/evaluation-from-confusion-matrix-to-judge-agreement.html) | metrics threshold imbalance calibration kappa cv bootstrap paired multiple | 半分钟 |
 
-公共文件：`_plot.py`（中文字体、博客列宽、SVG 输出）、`_sentences.py`（07 / 08 / 09 共用的 78 句小语料与 Qwen2.5-0.5B 句向量，缓存在 `out/sentence_embeddings.npz`）。
+## 案例脚本（每篇一个真实数据集的端到端案例）
+
+| 脚本 | 文章 | 案例 | 数据（首次运行自动下载到 `data/`） |
+|---|---|---|---|
+| `case_01_housing_split.py` | 01 什么是学习 | 同一个 KNN，随机划分 vs 按地区划分，RMSE 差 65% | 加州房价 openml #43939（1 MB） |
+| `case_02_housing_regression.py` | 02 线性回归 | 从猜均值到 Ridge / Lasso 十步，每步误差降多少 | 同上 |
+| `case_03_sms_spam.py` | 03 逻辑回归 | 垃圾短信识别：TF-IDF + 逻辑回归，阈值与权重 | UCI SMS Spam Collection（200 KB） |
+
+公共文件：`_data.py`（数据下载与缓存：openml / UCI），`_plot.py`（中文字体、博客列宽、SVG 输出）、`_sentences.py`（07 / 08 / 09 共用的 78 句小语料与 Qwen2.5-0.5B 句向量，缓存在 `out/sentence_embeddings.npz`）。
 
 ## 运行
 

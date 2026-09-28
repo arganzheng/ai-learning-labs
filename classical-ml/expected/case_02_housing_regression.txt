@@ -1,0 +1,45 @@
+数据：20640 个街区；训练 16512，测试 4128；目标均值 206,856，标准差 115,393 美元
+缺失：total_bedrooms 缺 207 个（用中位数补）；ocean_proximity 5 类：{'<1H OCEAN': 9136, 'INLAND': 6551, 'NEAR OCEAN': 2658, 'NEAR BAY': 2290, 'ISLAND': 5}
+长尾：total_rooms 中位数 2,127，最大 39,320；rooms_per_household 中位数 5.2，最大 142
+
+步骤                                         训练 RMSE   测试 RMSE     R²     耗时
+0 基线：永远猜训练集均值                              115,688   114,208 -0.000   0.0s
+1 线性回归：8 个原始数值特征                            69,619    69,833  0.626   0.0s
+2 + 离海距离 one-hot（5 列）                       68,719    68,697  0.638   0.0s
+3 + 三个人均量特征                                 67,923    67,953  0.646   0.0s
+4 + 长尾列取 log                                65,132    65,661  0.669   0.0s
+5 二次多项式（77 列）                               58,700    59,628  0.727   0.1s
+6 三次多项式（363 列），无正则                          55,076   102,265  0.198   0.2s
+7 三次多项式 + Ridge（α 交叉验证）                     58,787    59,777  0.726   0.4s  α=14.38
+8 三次多项式 + Lasso(α=100)                      59,750    60,630  0.718  13.5s
+9 对照：梯度提升树                                  31,936    43,542  0.855   1.4s
+
+第 3 步的系数（特征已标准化，单位：美元 / 标准差）：
+  cat__ocean_proximity_ISLAND           +129,801
+  num__median_income                     +77,875
+  cat__ocean_proximity_INLAND            -57,886
+  num__latitude                          -57,151
+  num__longitude                         -56,766
+  num__population                        -46,665
+  num__households                        +42,980
+  cat__ocean_proximity_NEAR BAY          -28,894
+  cat__ocean_proximity_<1H OCEAN         -24,071
+  cat__ocean_proximity_NEAR OCEAN        -18,949
+  num__bedrooms_per_room                 +15,217
+  num__housing_median_age                +13,701
+  num__rooms_per_household                +6,943
+  num__total_rooms                        +6,274
+  num__total_bedrooms                     +2,179
+  num__population_per_household           +1,891
+解读：收入每高一个标准差（约 1.9 万美元），房价高约 7 万；经度、纬度系数都是负的大数——它们合起来说的是'越往西北越贵'（旧金山、湾区），这是一条直线能表达'位置'的极限。
+
+第 4 步取 log 之后，log(population) − log(households) = log(population_per_household)，三列严格共线，系数变成：
+  num__population                       -402,135
+  num__households                       +331,306
+  num__population_per_household         +122,654
+三个巨大的数互相抵消，预测没变差（测试 RMSE 还降了），但系数不能再当'每个特征的价格'读——这是第五章说的共线。
+
+Lasso：368 列里 322 列系数恰好为 0，只留下 46 列；Ridge 的 368 列有 0 列为 0——它只把系数压小，不清零。
+  图已保存 out/case-02-rmse-steps.svg
+  图已保存 out/case-02-pred-vs-true.svg
+  图已保存 out/case-02-coefficients.svg

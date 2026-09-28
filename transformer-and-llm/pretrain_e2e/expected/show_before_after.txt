@@ -1,0 +1,78 @@
+URL：http://a1proroofing.ca/services/residential-commercial/
+
+=== 清洗前：WET 抽出的正文，61 行、1959 字符 ===
+✗ Residential and Commercial Roofing – A1 Pro Roofing Commercial and Residential
+✗ Skip to content
+✗ [email protected]
+✗ 09:00AM - 10:00PM
+✗ +1 (613) 816-7264
+✗ 6571 Bank Street, Ottawa, On
+✗ [email protected]
+✗ About Us
+  Since 1999, A1 Professional Roofing has been specializing in full re-roofing replacements in the Ott
+✗ Where to Find Us
+✗ 6571 Bank Street, Ottawa, On +1 (613) 816-7264 [email protected]
+✗ Home
+✗ About
+✗ Services
+✗ Residential & Commercial
+✗ Roof Repair
+✗ Snow & Ice Removal
+✗ Gutter Cleaning
+✗ Contact
+✗ Hot Line:
+✗ +1 (613) 816-7264
+✗ Free Estimate
+✗ Home
+✗ About
+✗ Services
+✗ Residential & Commercial
+✗ Roof Repair
+✗ Snow & Ice Removal
+✗ Gutter Cleaning
+✗ Contact
+✗ Residential and Commercial Roofing
+✗ A1 Pro Roofing Commercial and Residential - services - Residential - Residential and Commercial Roof
+✗ Get TO Know
+✗ RESIDENTIAL AND COMMERCIAL ROOFING
+  We specialize in residential re-roofing and have been servicing the Ottawa region for over 18 years.
+✗ 100% Satisfaction Guarantee
+✗ Highly Professional Staff
+✗ Professional and Qualified
+  A1 Pro Roofing guarantees an expert installation. Our team of experienced staff and skilled tradesme
+  We specialize in servicing single-family homes as well as semi-detached and townhouses.
+✗ Contact Us
+✗ Our Speciality
+✗ Ottawa Region
+✗ 01
+  Servicing the Ottawa Region for over 18 years.
+✗ Expert Installation
+✗ 02
+  A1 Pro Roofing guarantees an expert installation. Our team of experienced staff and skilled tradesme
+✗ Quality Assured
+✗ 03
+  We specialize in servicing single-family homes as well as semi-detached and townhouses.
+✗ Contact Form
+  Need Any Roofing Help?
+✗ Submit Now
+  Require Roofing Services?
+✗ Call Us: 613 816-7264
+  © Copyright A1 Pro Roofing 2021.
+✗ ×
+✗ X
+✗ {{{ data.variation.price_html }}}
+✗ {{{ data.variation.availability_html }}}
+
+=== 清洗后：C4 行级规则留下 10 行、953 字符（删掉 51 行）===
+  Since 1999, A1 Professional Roofing has been specializing in full re-roofing replacements in the Ott
+  We specialize in residential re-roofing and have been servicing the Ottawa region for over 18 years.
+  A1 Pro Roofing guarantees an expert installation. Our team of experienced staff and skilled tradesme
+  We specialize in servicing single-family homes as well as semi-detached and townhouses.
+  Servicing the Ottawa Region for over 18 years.
+  A1 Pro Roofing guarantees an expert installation. Our team of experienced staff and skilled tradesme
+  We specialize in servicing single-family homes as well as semi-detached and townhouses.
+  Need Any Roofing Help?
+  Require Roofing Services?
+  © Copyright A1 Pro Roofing 2021.
+
+✗ 的行被删：不以句末标点结尾、不足 3 个词、或含 javascript / cookie / lorem ipsum 之类的词——导航、按钮、页脚、版权行。

@@ -23,7 +23,8 @@ FIGS = {
     "chinchilla-fig2": ("https://arxiv.org/pdf/2203.15556", 5, (55, 60, 540, 208), 220),    # 方法 1：训练曲线包络
     "chinchilla-fig3": ("https://arxiv.org/pdf/2203.15556", 6, (55, 60, 540, 222), 220),    # 方法 2：IsoFLOP 曲线
     # 预训练 04 数据工程
-    "fineweb-fig1": ("https://arxiv.org/pdf/2406.17557", 3, None, 200),                     # FineWeb 的处理管线（第一张嵌入图；实际位置运行时确认）
+    "fineweb-fig1-2": ("https://arxiv.org/pdf/2406.17557", 4, (100, 314, 512, 452), 220),   # 图 1 WARC+trafilatura vs WET；图 2 过滤 vs 不过滤（28B token 消融）
+    "fineweb-fig3-4": ("https://arxiv.org/pdf/2406.17557", 5, (100, 200, 512, 342), 220),   # 图 3 全局去重反而更差；图 4 单快照上全局去重删掉的 vs 留下的
 }
 
 

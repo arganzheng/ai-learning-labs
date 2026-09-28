@@ -16,6 +16,8 @@
 | `step6_isoflop.py` | 6 选尺寸 | 迷你 iso-FLOP：三个算力预算 × 八个模型尺寸，固定 C = 6ND 看 val loss（`--quick` 预算缩小 4 倍） | PyTorch |
 | `step7_train.py` | 7 训练 | 按配方训一个小 GPT，一路记录七条曲线，画成一张图 | PyTorch |
 | `step8_eval.py` | 8 评 | val loss → PPL → bits/byte；与 GPT-2 small 在同一批 val 文档上比 bits/byte；生成样本；试当助手用 | PyTorch, transformers（本地缓存 gpt2） |
+| `domain_mixture.py` | 预训练 04 | 配比是取舍：网页 + Python 标准库两个域，代码占 0–100% 各训一个小模型，两个域各自的 val loss（MPS 约 12 分钟，`--quick`） | PyTorch |
+| `show_before_after.py` | 预训练 04 | 一篇真实网页 C4 行级清理前后的对照 | 无 |
 | `trainer.py` / `common.py` / `_plot.py` / `download.py` | — | 训练循环（记录七条曲线）、语料读写与语言识别、画图设置、断点续传下载 | — |
 
 `data/` 下的下载文件与中间产物（约 1.8 GB）不入库；`expected/` 是每步的完整输出，`out/` 是文中的七张图。

@@ -78,6 +78,7 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 | `minhash_lsh.py` | [预训练 04 预训练数据工程](https://arganzheng.life/pretraining-data-pipeline-dedup-filtering-and-mixture.html) | MinHash + LSH 从零实现（FineWeb 配置），S 曲线验证，近重复文档演示 | 无 |
 | `quality_filters.py` | 同上 | Gopher 文档级 / 重复度规则与 C4 行级规则，对典型网页文本逐条判定 | 无 |
 | `llm_cost_11_data.py` | 同上 | 漏斗刻度、管线 CPU 小时、存储与训练读带宽、配比 → epoch | 无 |
+| `recipe_intuition.py` | [预训练 05 训练配方与稳定性](https://arganzheng.life/pretraining-recipe-and-training-stability.html) | 「先讲明白」的四张图：学习率合适 / 太小 / 太大 / 太大且无 warmup 的曲线、大 lr 下 loss + attention logit + 梯度范数三条曲线同步看（有无 QK-norm）、z-loss、第一篇实训里那次真实小 spike 的放大（约 6 分钟，`--quick`） | PyTorch |
 | `training_recipe_lab.py` | [预训练 05 训练配方与稳定性](https://arganzheng.life/pretraining-recipe-and-training-stability.html) | 四个子实验：`schedule` / `batch_lr` / `spike` / `zloss`（约 7 分钟，`--quick` 1 分钟） | PyTorch |
 | `llm_cost_12_recipe.py` | 同上 | 公开配方的超参表与步数、DeepSeek 的 lr/batch 经验律、checkpoint 字节与写带宽、spike 回滚代价 | 无 |
 | `tools/gen_schedule_svg.py` | 同上 | 文中的调度 / batch ramp 图 | 无 |

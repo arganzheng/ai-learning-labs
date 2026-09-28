@@ -1,0 +1,21 @@
+=== 图 1：学习率调坏了长什么样（d=64，2 层，batch 32，cosine，600 步）===
+  合适：lr 2e-3，warmup 30 步             第 5 步 loss 4.94   第 25 步 4.05   末 train loss 2.152   val 2.072   最大梯度范数 2.9
+  太小：lr 2e-4（1/10）                   第 5 步 loss 5.11   第 25 步 4.81   末 train loss 2.757   val 2.648   最大梯度范数 2.9
+  太大：lr 1e-1（50 倍），有 warmup          第 5 步 loss 3.57   第 25 步 3.15   末 train loss 2.234   val 2.155   最大梯度范数 8.8
+  太大且没有 warmup：lr 1e-1，第 1 步就是峰值     第 5 步 loss 8.65   第 25 步 3.18   末 train loss 2.304   val 2.222   最大梯度范数 5.1
+  图已保存 out/pretrain-05-lr-gone-wrong.svg
+
+=== 图 2：大学习率（常数 1e-1，不裁剪）下三条曲线同步看，有无 QK-norm（d=128，4 层，300 步）===
+  无 QK-norm  末 loss 2.75  attention logit 最大 12,592  梯度范数最大 6.2  loss 单步上跳 > 0.3 的次数 1
+  QK-norm    末 loss 2.45  attention logit 最大 22  梯度范数最大 5.9  loss 单步上跳 > 0.3 的次数 1
+  图已保存 out/pretrain-05-spike-anatomy.svg
+
+=== 图 3：z-loss 与 |log Z|（d=64，lr 4e-3，600 步）===
+  无 z-loss                   末 val loss 1.963   |log Z| 末值 6.29
+  z-loss 1e-4（PaLM 的系数）      末 val loss 1.964   |log Z| 末值 6.11
+  z-loss 1e-2（夸张）            末 val loss 1.982   |log Z| 末值 0.46
+  图已保存 out/pretrain-05-zloss.svg
+
+=== 图 4：第一篇实训里 step 833 的那次小 spike ===
+  梯度范数最大在 step 833：|g| = 6.99（平时 0.4–0.8），train loss 5.645（前一次记录 5.053），val 5.017 → 下一次 4.936，attention logit 41.4 → 23.6 → 45.1
+  图已保存 out/pretrain-05-real-spike.svg

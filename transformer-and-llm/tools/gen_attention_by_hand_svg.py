@@ -28,7 +28,7 @@ def matrix(x, y, rows, title, col, cw=44, ch=26, rowlab=None, collab=None, fmt=l
     return ''.join(out)
 
 toks = ['t0', 't1', 't2']
-b = [f'<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560" {FONT} font-size="12">',
+b = [f'<svg xmlns="http://www.w3.org/2000/svg" width="760" height="710" viewBox="0 0 760 710" {FONT} font-size="12">',
      '<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>',
      T(380, 22, '一个 attention 头的六步手算：d = 4、T = 3 个 token（t0、t1、t2）', '#222', 14, 'middle', '600')]
 
@@ -41,8 +41,18 @@ b.append(matrix(388, y, [['1', '0', '2', '0'], ['0', '1', '0', '2'], ['1', '1', 
 b.append(matrix(548, y, [['1', '0', '1', '0'], ['0', '1', '0', '1'], ['1', '1', '0', '0']], 'V = x W_V（取恒等）', GRN, cw=34))
 b.append(T(400, y + 100, '每个 token 各自算出三个向量：query「我在找什么」、key「我是什么」、value「我能提供什么」；三个投影矩阵是可训练参数', '#666', 10.5, 'middle'))
 
+# row 1b: the three projection matrices (hand-picked small integers so every number above is mental arithmetic)
+y = 215
+b.append(T(40, y + 30, '三个投影矩阵 [4, 4]', '#555', 12, 'start', '600'))
+b.append(T(40, y + 48, '可训练参数；这里手写小整数', '#666', 10.5))
+b.append(T(40, y + 64, 'Q 的第 i 行 = x 的第 i 行 × W_Q', '#666', 10.5))
+b.append(T(40, y + 80, '如 t0：(1,0,1,0) W_Q = W_Q 第 1 行 + 第 3 行', '#666', 10.5))
+b.append(matrix(236, y, [['1', '0', '0', '0'], ['0', '1', '0', '0'], ['1', '0', '1', '0'], ['0', '1', '0', '1']], 'W_Q', BLUE, cw=30, ch=22))
+b.append(matrix(396, y, [['1', '0', '1', '0'], ['0', '1', '0', '1'], ['0', '0', '1', '0'], ['0', '0', '0', '1']], 'W_K', RED, cw=30, ch=22))
+b.append(matrix(556, y, [['1', '0', '0', '0'], ['0', '1', '0', '0'], ['0', '0', '1', '0'], ['0', '0', '0', '1']], 'W_V = I', GRN, cw=30, ch=22))
+
 # row 2: S, S/sqrt(d), mask
-y = 210
+y = 360
 b.append(matrix(60, y, [['4', '0', '3'], ['0', '4', '3'], ['1', '1', '2']], '② S = Q Kᵀ [3, 3]', PUR, rowlab=toks, collab=toks))
 b.append(T(60 + 66, y + 96, 'S[i, j] = qᵢ · kⱼ', '#666', 10, 'middle'))
 b.append(L(200, y + 40, 228, y + 40)); b.append(T(214, y + 32, '÷ √4 = 2', '#333', 10, 'middle'))
@@ -56,7 +66,7 @@ b.append(matrix(600, y, [['1.00', '0', '0'], ['0.12', '0.88', '0'], ['0.27', '0.
 b.append(T(600 + 66, y + 96, 'e^−∞ = 0，权重恰为 0', '#666', 10, 'middle'))
 
 # row 3: P V = out
-y = 392
+y = 542
 b.append(T(40, y - 52, '⑥ out = P V：每个 token 的输出 = 它能看到的 token 的 value 的加权平均', '#222', 12, 'start', '600'))
 b.append(matrix(60, y, [['1.00', '0', '0'], ['0.12', '0.88', '0'], ['0.27', '0.27', '0.45']], 'P', ORG, rowlab=toks, collab=toks))
 b.append(T(210, y + 44, '×', '#333', 16, 'middle'))

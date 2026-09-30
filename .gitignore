@@ -29,3 +29,6 @@ classical-ml/data/
 transformer-and-llm/pretrain_e2e/data/
 # 论文 PDF（tools/paper_figures.py 下载）
 transformer-and-llm/data/
+
+# LoRA 实验输出（checkpoint 与 json）
+lora/out/

@@ -35,7 +35,7 @@ for layer, A in enumerate(out.attentions):
         if best_it is None or it2cat > best_it[0]: best_it = (it2cat, layer, h)
 print("看上一个词的头:", best_prev, " it→cat 的头:", best_it)
 
-fig, axes = plt.subplots(1, 2, figsize=(11, 5.2))
+fig, axes = plt.subplots(1, 2, figsize=(12, 5.2), gridspec_kw={"wspace": 0.5})
 for ax, (score, layer, h), title in zip(axes, [best_prev, best_it],
         ["一个头在看「上一个词」", "一个头把 it 指回 cat"]):
     a = out.attentions[layer][0, h].numpy()

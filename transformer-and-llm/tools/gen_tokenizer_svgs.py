@@ -126,28 +126,39 @@ def bpe_steps(corpus, n_merges):
 def fig_bpe_steps():
     corpus = {"low": 5, "lower": 2, "newest": 6, "widest": 3}
     states = bpe_steps(corpus, 8)
-    svg = SVG(740)
-    svg.text(370, 20, "BPE 训练：每一步把语料里最常相邻的一对合并成一个新 token（语料：low ×5、lower ×2、newest ×6、widest ×3）", 12.5, "middle", "bold")
-    svg.text(20, 44, "第几步 · 合并了谁（出现次数）", 11, fill="#555")
-    svg.text(250, 44, "合并之后语料里的四个词各切成什么样（␣ 是词前的空格）", 11, fill="#555")
-    y = 54
+    svg = SVG(800)
+    svg.text(400, 20, "BPE 训练：每一步把语料里最常相邻的一对合并成一个新 token（语料只有四个词型，各出现 5 / 2 / 6 / 3 次）", 12.5, "middle", "bold")
+    svg.text(20, 44, "第几步 · 合并了谁 · 相邻次数 = 含这一对的词的出现次数之和", 11, fill="#555")
+    svg.text(310, 44, "合并之后四个词各切成什么样（␣ 是词前的空格；列头是每个词在语料里出现的次数）", 11, fill="#555")
+    y = 60
     order = [" low", " lower", " newest", " widest"]
+    x = 310
+    for w in order:
+        toks = next(list(ws) for ws in states[0][2] if "".join(ws) == w)
+        x0 = x
+        x, _ = svg.tokens(x, y, toks, size=11, h=19, gap=1.5, color_by=lambda t: 0)
+        svg.text((x0 + x - 1.5) / 2, y + 36, f"{w.strip()} ×{corpus[w.strip()]}", 11, "middle", "bold", fill="#3b6fb6")
+        x += 10
+    y += 48
     for k, (pair, cnt, words) in enumerate(states):
         if k == 0:
             svg.text(20, y + 14, "初始：每个字符一个 token", 11.5, weight="bold")
         else:
+            prev = states[k - 1][2]
+            parts = [f"{c}" for w in order for ws, c in prev.items() if "".join(ws) == w and pair in zip(ws, ws[1:])]
             svg.text(20, y + 14, f"第 {k} 步：", 11.5, weight="bold")
             svg.tokens(70, y + 1, [pair[0], "+", pair[1], "→", pair[0] + pair[1]], size=11, h=19, gap=2,
                        color_by=lambda t, p=pair: 7 if t in ("+", "→") else (0 if t == p[0] else 1 if t == p[1] else 2))
-            svg.text(238, y + 14, f"{cnt} 次", 10.5, "end", fill="#555")
-        x = 250
+            svg.text(298, y + 14, f"{cnt} 次 = {' + '.join(parts)}", 10.5, "end", fill="#555")
+        x = 310
         for w in order:
             toks = next(list(ws) for ws in words if "".join(ws) == w)
             x, _ = svg.tokens(x, y + 1, toks, size=11, h=19, gap=1.5, color_by=lambda t: min(len(t) - 1, 5))
             x += 10
         y += 36
-    svg.text(20, y + 8, "颜色 = token 的长度（1 个字符最浅）。8 步之后 low、est、␣new 各成了一个 token；训练的产物就是这 8 条合并规则，编码新词时按同样顺序再走一遍。", 10.5, fill="#555")
-    svg.save("pretrain-02-bpe-steps.svg", y + 20)
+    svg.text(20, y + 8, "次数按词频加权：e+s 只在 newest、widest 两个词型里相邻，但两词共出现 6 + 3 = 9 次，比任何别的对都多，所以第 1 步合并它。", 10.5, fill="#555")
+    svg.text(20, y + 24, "颜色 = token 的长度（1 个字符最浅）。8 步之后 low、est、␣new 各成了一个 token；训练的产物就是这 8 条合并规则，编码新词时按同样顺序再走一遍。", 10.5, fill="#555")
+    svg.save("pretrain-02-bpe-steps.svg", y + 36)
 
 
 # ---------------------------------------------------------------- 图 3：四个 tokenizer 并排

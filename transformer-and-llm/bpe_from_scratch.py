@@ -39,8 +39,9 @@ def train_bpe(text, vocab_size, verbose_steps=0):
         new_id = 256 + step
         merges.append((a, b))
         if step < verbose_steps:
+            parts = " + ".join(str(f) for w, f in words.items() if (a, b) in zip(w, w[1:]))
             print(f"  merge {step + 1:>3}: {show(a, merges)!r:>10} + {show(b, merges)!r:<10} "
-                  f"-> id {new_id}  (出现 {freq} 次)")
+                  f"-> id {new_id}  ({freq} 次 = {parts})")
         merged = {}
         for word, freq in words.items():
             out, i = [], 0
@@ -104,10 +105,11 @@ def stdlib_corpus(max_bytes):
 
 
 def toy_example():
-    print("=== 玩具例子：经典的 low / lower / newest / widest ===")
-    text = " ".join(["low"] * 5 + ["lower"] * 2 + ["newest"] * 6 + ["widest"] * 3)
+    print("=== 玩具例子：经典的 low ×5 / lower ×2 / newest ×6 / widest ×3 ===")
+    # 每个词都带前导空格（GPT-2 的预分词把空格算进后面的词里），这样 8 步合并与文章里的图完全一致
+    text = "".join(" " + w for w in ["low"] * 5 + ["lower"] * 2 + ["newest"] * 6 + ["widest"] * 3)
     merges = train_bpe(text, 256 + 8, verbose_steps=8)
-    for w in ["lowest", "newer", "wide"]:
+    for w in [" lowest", " newer", " wide"]:
         ids = encode(w, merges)
         print(f"  encode({w!r}) -> {[show(i, merges) for i in ids]}")
     print()

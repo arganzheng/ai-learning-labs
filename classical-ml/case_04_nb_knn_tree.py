@@ -20,7 +20,7 @@ from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import make_pipeline
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier
 
 from _data import mnist, sms_spam, titanic
 from _plot import C, plt, save
@@ -72,6 +72,14 @@ def exp_nb():
     print(f"   先验 log(P(spam)/P(ham)) = {nb[-1].class_log_prior_[1] - nb[-1].class_log_prior_[0]:+.2f}，加上每个词的贡献 = {tot:+.1f} → P(spam) = {1 / (1 + np.exp(-tot)):.4f}")
     print("  解读：每个词独立投票、把 log 比值加起来——这就是'朴素'（假设词之间独立）；和逻辑回归的 wᵀx 形式一样，"
           "区别在权重怎么来：NB 数频率（一遍扫过就好），LR 用梯度下降学。")
+    # 为什么必须在 log 域：测试集里最长的一条短信
+    longest = Xte.iloc[int(np.argmax(Xte.str.len().values))]
+    xl = nb[0].transform([longest]).toarray()[0]
+    with np.errstate(under="ignore"):
+        linear = np.exp(nb[-1].class_log_prior_) * np.prod(np.exp(lp) ** xl, axis=1)
+    logs = nb[-1].class_log_prior_ + xl @ lp.T
+    print(f"\n  测试集里最长的一条短信（{len(longest)} 字符，{int(xl.sum())} 个词表内的词）：直接乘概率 P(c)·ΠP(词|c)^计数 = {linear.tolist()}（{int((linear == 0).sum())} 类已下溢成 0，另一类也只剩 1e-297 量级，再长几十个词就全是 0）；"
+          f"log 域累加 = {np.round(logs, 1).tolist()} → 判 {'spam' if logs[1] > logs[0] else 'ham'}")
 
     fig, ax = plt.subplots(figsize=(7.6, 3.4))
     sel = np.r_[idx[common[idx]][:12], idx[common[idx]][::-1][:12][::-1]]
@@ -92,7 +100,7 @@ def exp_knn():
     sub = rng.choice(len(X), 10000, replace=False)
     Xs, ys = X[sub], y[sub]
     Xv, yv = Xt[:2000], yt[:2000]
-    print(f"\n  在 10,000 张训练子集上扫 k（验证用 2,000 张测试图）：")
+    print("\n  在 10,000 张训练子集上扫 k（验证用 2,000 张测试图）：")
     ks = [1, 3, 5, 7, 11, 21, 51]
     errs = []
     for k in ks:
@@ -100,7 +108,7 @@ def exp_knn():
         e = 1 - m.score(Xv, yv); errs.append(e)
         print(f"    k = {k:<3} 错误率 {e:.3%}")
     # 全量
-    print(f"\n  全量 60,000 张训练、10,000 张测试：")
+    print("\n  全量 60,000 张训练、10,000 张测试：")
     for k, metric in [(3, "euclidean"), (3, "cosine")]:
         m = KNeighborsClassifier(k, metric=metric, algorithm="brute", n_jobs=-1).fit(X, y)
         t = time.time(); pred = m.predict(Xt); dt = time.time() - t
@@ -117,7 +125,7 @@ def exp_knn():
     axes[0].set_xscale("log"); axes[0].set_xticks(ks); axes[0].set_xticklabels(ks)
     axes[0].set_xlabel("k"); axes[0].set_ylabel("错误率 %"); axes[0].set_title("MNIST 标签干净：k 越大越模糊，k=1 反而最好（10k 训练子集）")
     wrong = np.where(pred_e != yt)[0][:24]
-    ax = axes[1]; ax.axis("off"); ax.set_title(f"全量 k=3 错分的前 24 张（真实→预测）")
+    ax = axes[1]; ax.axis("off"); ax.set_title("全量 k=3 错分的前 24 张（真实→预测）")
     for i, j in enumerate(wrong):
         r, c = divmod(i, 8)
         ax.imshow(Xt[j].reshape(28, 28), cmap="gray_r", extent=(c, c + 0.9, -r - 0.9, -r))
@@ -157,9 +165,17 @@ def exp_tree():
         res[d] = (m.score(Xtr, ytr), m.score(Xte, yte), m.get_n_leaves())
         print(f"  {'决策树 max_depth=' + str(d):<36}{res[d][0]:>9.3f}{res[d][1]:>9.3f}   叶子 {res[d][2]}")
     cv = {d: cross_val_score(DecisionTreeClassifier(max_depth=d, random_state=0), Xtr, ytr, cv=5).mean() for d in [1, 2, 3, 4, 5, 6, 8, 10, None]}
-    best = max(cv, key=cv.get)
-    print(f"  5 折交叉验证（只用训练集）选深度：" + "  ".join(f"{d}:{v:.3f}" for d, v in cv.items()) + f" → 选 {best}")
+    best = max(cv, key=lambda d: cv[d])
+    print("  5 折交叉验证（只用训练集）选深度：" + "  ".join(f"{d}:{v:.3f}" for d, v in cv.items()) + f" → 选 {best}")
     print("  解读：深度不限时训练 98% 测试 76%——树把每个乘客背下来了（01 篇的过拟合）；深度 3 的树测试最好，而且能整棵画出来。")
+    # 后剪枝：代价复杂度剪枝，α 同样只用训练集交叉验证挑
+    path = DecisionTreeClassifier(random_state=0).fit(Xtr, ytr).cost_complexity_pruning_path(Xtr, ytr)
+    alphas = np.unique(np.round(path.ccp_alphas, 5))
+    cvp = {a: cross_val_score(DecisionTreeClassifier(random_state=0, ccp_alpha=a), Xtr, ytr, cv=5).mean() for a in alphas}
+    ba = max(cvp, key=lambda a: cvp[a])
+    mp = DecisionTreeClassifier(random_state=0, ccp_alpha=ba).fit(Xtr, ytr)
+    print(f"  后剪枝（代价复杂度）：满树 {res[None][2]} 片叶子，剪枝路径上 {len(alphas)} 个 α 候选，5 折交叉验证选 α = {ba:.5f} → "
+          f"{mp.get_n_leaves()} 片叶子、深度 {mp.get_depth()}，训练 {mp.score(Xtr, ytr):.3f} 测试 {mp.score(Xte, yte):.3f}（深度 3 预剪枝：{res[3][2]} 片叶子，测试 {res[3][1]:.3f}）")
 
     # 泄漏陷阱：把 boat（救生艇号）放进去
     Xl = X.copy(); Xl["boat"] = df.boat.notna().astype(int)
@@ -184,16 +200,16 @@ def draw_tree(model, names, n_total):
         if t.children_left[node] == -1:
             col = C["blue"] if p1 >= 0.5 else C["orange"]
             ax.text(x, y, f"{'生还' if p1 >= 0.5 else '死亡'}\n生还率 {p1:.0%}\n{n} 人（{n / n_total:.0%}）", ha="center", va="center", fontsize=7,
-                    bbox=dict(boxstyle="round,pad=0.35", fc=col, ec="none", alpha=0.85), color="white")
+                    bbox={"boxstyle": "round,pad=0.35", "fc": col, "ec": "none", "alpha": 0.85}, color="white")
             return
         f, thr = names[t.feature[node]], t.threshold[node]
         cond = "是女性？" if f == "是女性" else f"{f} ≤ {thr:.3g}？"
         ax.text(x, y, f"{cond}\n{n} 人，生还率 {p1:.0%}", ha="center", va="center", fontsize=7.5,
-                bbox=dict(boxstyle="round,pad=0.35", fc="#f2f2f2", ec=C["gray"]))
+                bbox={"boxstyle": "round,pad=0.35", "fc": "#f2f2f2", "ec": C["gray"]})
         for child, (a, b), lab in [(t.children_left[node], (x0, x), "否" if f == "是女性" else "是"),
                                    (t.children_right[node], (x, x1), "是" if f == "是女性" else "否")]:
             cx = (a + b) / 2
-            ax.annotate("", xy=(cx, y - 1 + 0.32), xytext=(x, y - 0.3), arrowprops=dict(arrowstyle="->", color=C["gray"], lw=0.8))
+            ax.annotate("", xy=(cx, y - 1 + 0.32), xytext=(x, y - 0.3), arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 0.8})
             ax.text((x + cx) / 2 + (-0.03 if cx < x else 0.03), y - 0.45, lab, fontsize=7, color=C["gray"], ha="center")
             rec(child, a, b, depth + 1)
 

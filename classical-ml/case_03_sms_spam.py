@@ -6,10 +6,16 @@ https://arganzheng.life/linear-and-logistic-regression-the-skeleton-of-reward-mo
 数据：UCI SMS Spam Collection，5,574 条英文短信，747 条垃圾（13.4%）。
 图输出到 out/case-03-*.svg。
 """
+from itertools import pairwise
+
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, precision_recall_curve, precision_recall_fscore_support
+from sklearn.metrics import (
+    confusion_matrix,
+    precision_recall_curve,
+    precision_recall_fscore_support,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
@@ -68,6 +74,20 @@ def main():
         print(f"  {kind}（共 {mask.sum()} 条）：")
         for i in idx:
             print(f"    p(spam)={prob[i]:.2f}  {Xte_l[i][:100]}")
+
+    # 概率校准：预测概率分桶，对比每桶里实际的 spam 比例
+    print("\n=== 概率校准：说 70% 的那些短信里真有 70% 是 spam 吗 ===")
+    edges = [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
+    ece = 0.0
+    for lo, hi in pairwise(edges):
+        m = (prob >= lo) & ((prob < hi) if hi < 1 else (prob <= hi))
+        if m.sum() == 0:
+            continue
+        ece += m.sum() / len(yte) * abs(prob[m].mean() - yte[m].mean())
+        print(f"  预测 p(spam) ∈ [{lo:.1f}, {hi:.1f}{')' if hi < 1 else ']'}：{m.sum():>4} 条，平均预测 {prob[m].mean():.3f}，实际 spam 比例 {yte[m].mean():.3f}")
+    print(f"  ECE（各桶 |平均预测 − 实际比例| 按桶大小加权）= {ece:.3f}，Brier = {np.mean((prob - yte) ** 2):.4f}；"
+          f"0.5 以上的三个桶里实际 spam 比例都是 1.0、高于平均预测——模型在高概率区偏保守，这与阈值 0.5 时精确率 1.000、召回率 {np.mean(pred[yte == 1]):.3f} 是同一件事的两种说法")
+    print("  准确率说的是阈值后判断对了多少；校准说的是概率本身可不可信——两者可以一个好一个差")
 
     # 图 1：混淆矩阵
     fig, ax = plt.subplots(figsize=(3.6, 3.2))

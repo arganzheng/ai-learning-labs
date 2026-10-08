@@ -22,6 +22,16 @@
     p(spam)=0.01  Hi ya babe x u 4goten bout me?' scammers getting smart..Though this is a regular vodafone no, if you
     p(spam)=0.17  Filthy stories and GIRLS waiting for your
   误杀的 ham（共 0 条）：
+
+=== 概率校准：说 70% 的那些短信里真有 70% 是 spam 吗 ===
+  预测 p(spam) ∈ [0.0, 0.1)： 950 条，平均预测 0.015，实际 spam 比例 0.009
+  预测 p(spam) ∈ [0.1, 0.3)：  25 条，平均预测 0.173，实际 spam 比例 0.280
+  预测 p(spam) ∈ [0.3, 0.5)：  10 条，平均预测 0.388，实际 spam 比例 0.300
+  预测 p(spam) ∈ [0.5, 0.7)：   5 条，平均预测 0.594，实际 spam 比例 1.000
+  预测 p(spam) ∈ [0.7, 0.9)：  28 条，平均预测 0.805，实际 spam 比例 1.000
+  预测 p(spam) ∈ [0.9, 1.0]：  97 条，平均预测 0.962，实际 spam 比例 1.000
+  ECE（各桶 |平均预测 − 实际比例| 按桶大小加权）= 0.018，Brier = 0.0161；0.5 以上的三个桶里实际 spam 比例都是 1.0、高于平均预测——模型在高概率区偏保守，这与阈值 0.5 时精确率 1.000、召回率 0.872 是同一件事的两种说法
+  准确率说的是阈值后判断对了多少；校准说的是概率本身可不可信——两者可以一个好一个差
   图已保存 out/case-03-confusion.svg
   图已保存 out/case-03-threshold.svg
   图已保存 out/case-03-top-words.svg

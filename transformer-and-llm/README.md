@@ -29,6 +29,7 @@
 | `attention_by_hand.py` | [01 Transformer 长什么样](https://arganzheng.life/transformer-architecture-from-a-sentence-to-the-next-token.html) | d=4、T=3 的 attention 六步手算与 `F.scaled_dot_product_attention` 对拍；换序实验；除 √d 的方差表 | PyTorch |
 | `tools/gen_gpt2_attention_heatmap.py` | 同上 | GPT-2 small 两个真实 attention 头的热力图（SVG） | transformers（本地缓存 gpt2）, matplotlib |
 | `tools/gen_attention_by_hand_svg.py` | 同上 | 六步手算图 | 无 |
+| `position_two_methods.py` | 同上 | 两种给位置的方法用「猫追狗」/「狗追猫」算一遍：加位置向量 vs 转角度（RoPE），并画配图 | NumPy（配图需 matplotlib） |
 | `token_journey.py` | [02 一个 token 的旅程](https://arganzheng.life/transformer-token-journey-training-and-inference.html) | 带 KV cache 的极小 GPT：训练侧形状、逐位置 loss、梯度、一步更新；prefill / decode；有无 cache 一致性与计时 | PyTorch |
 | `tools/gen_token_journey_svg.py` | 同上 | 训练一步图、prefill / decode 图 | 无 |
 | `nanogpt_model.py` | [03 nanoGPT model.py 逐行](https://arganzheng.life/nanogpt-model-py-line-by-line.html) | 原样 vendored 的 nanoGPT `model.py`（MIT） | PyTorch |

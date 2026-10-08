@@ -4,8 +4,8 @@
 
 | 脚本 | 文章 | 子实验 | 运行时间 |
 |---|---|---|---|
-| `01_learning_and_generalization.py` | [什么是学习](https://arganzheng.life/what-is-learning-splits-generalization-and-bias-variance.html) | fit learncurve split groups contamination leak biasvar | 一分钟 |
-| `02_linear_regression.py` | [线性回归](https://arganzheng.life/linear-regression-least-squares-ridge-and-lasso.html) | line surface gd scaling collinear paths geometry wd smooth robust | 十几秒 |
+| `01_learning_and_generalization.py` | [什么是学习](https://arganzheng.life/what-is-learning-splits-generalization-and-bias-variance.html) | fit learncurve split groups contamination leak biasvar cv pipeline | 一分钟 |
+| `02_linear_regression.py` | [线性回归](https://arganzheng.life/linear-regression-least-squares-ridge-and-lasso.html) | line surface gd scaling collinear paths geometry wd smooth robust step solvers soft align | 十几秒 |
 | `03_logistic_regression_and_reward_model.py` | [逻辑回归与奖励模型](https://arganzheng.life/linear-and-logistic-regression-the-skeleton-of-reward-models.html) | sigmoid gradient boundary cancer softmax reward noise | 十几秒 |
 | `04_naive_bayes_knn_and_trees.py` | [三个基础分类器](https://arganzheng.life/a-family-of-classifiers-from-naive-bayes-to-gradient-boosting.html) | compare grid bayes nb knn curse tree depth | 一分钟 |
 | `05_svm_and_kernels.py` | [SVM 与核方法](https://arganzheng.life/svm-and-kernel-methods.html) | margin hinge primal softc kernel rbf attention scale | 半分钟 |

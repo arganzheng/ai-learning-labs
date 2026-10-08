@@ -9,7 +9,6 @@ https://arganzheng.life/linear-regression-least-squares-ridge-and-lasso.html
 import time
 
 import numpy as np
-import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.impute import SimpleImputer
@@ -144,7 +143,7 @@ def main():
     ax.set_xlabel("真实房价（千美元）"); ax.set_ylabel("预测房价（千美元）")
     ax.set_title(f"三次多项式 + Ridge：测试 RMSE {rmse(yte, pte) / 1e3:.0f} 千美元")
     ax.annotate("50 万处的竖线：\n数据把房价截断在 500,001", xy=(500, 150), xytext=(320, 20), fontsize=8,
-                color=C["gray"], arrowprops=dict(arrowstyle="->", color=C["gray"]))
+                color=C["gray"], arrowprops={"arrowstyle": "->", "color": C["gray"]})
     save(fig, "case-02-pred-vs-true")
 
     # 图 3：第 3 步系数
@@ -154,6 +153,38 @@ def main():
             coef[order] / 1e3, color=[C["red"] if c < 0 else C["blue"] for c in coef[order]])
     ax.set_xlabel("系数（千美元 / 标准差）"); ax.set_title("线性回归学到的每个特征的'价格'")
     save(fig, "case-02-coefficients")
+
+    # 追加：第 6 步为什么不稳——363 列设计矩阵的条件数，inv / solve / lstsq 三种解法差多少；α 在求和式与平均式之间的换算
+    m6 = res["6 三次多项式（363 列），无正则"][0]
+    Xtr6 = m6[0].transform(logd.iloc[tr][ALL])
+    Xte6 = m6[0].transform(logd.iloc[te][ALL])
+    Xtr6 = np.asarray(Xtr6.todense()) if hasattr(Xtr6, "todense") else np.asarray(Xtr6)
+    Xte6 = np.asarray(Xte6.todense()) if hasattr(Xte6, "todense") else np.asarray(Xte6)
+    Xb_tr, Xb_te = np.c_[np.ones(len(Xtr6)), Xtr6], np.c_[np.ones(len(Xte6)), Xte6]
+    G = Xb_tr.T @ Xb_tr
+    print(f"\n第 6 步的设计矩阵（含截距列）：{Xb_tr.shape}，cond(X) = {np.linalg.cond(Xb_tr):.1e}，cond(XᵀX) = {np.linalg.cond(G):.1e}；"
+          f"5 列 one-hot 之和恒等于截距列，XᵀX 在精确算术里奇异；sklearn 报告的秩 rank_ = {m6[-1].rank_}（共 {Xtr6.shape[1]} 列，不含截距）")
+    sols = []
+    with np.errstate(all="ignore"):
+        for name, fn in (("inv(XᵀX)·Xᵀy", lambda: np.linalg.inv(G) @ (Xb_tr.T @ ytr)),
+                         ("solve(XᵀX, Xᵀy)", lambda: np.linalg.solve(G, Xb_tr.T @ ytr)),
+                         ("lstsq(X, y)", lambda: np.linalg.lstsq(Xb_tr, ytr, rcond=None)[0])):
+            try:
+                w = fn()
+                sols.append((name, rmse(ytr, Xb_tr @ w), rmse(yte, Xb_te @ w), float(np.abs(w).max())))
+            except np.linalg.LinAlgError as e:
+                sols.append((name, float("nan"), float("nan"), float("nan")))
+                print(f"  {name:<18} LinAlgError: {e}")
+    print(f"  {'解法':<18}{'训练 RMSE':>16}{'测试 RMSE':>18}{'max|w|':>10}")
+    for name, a, b, c in sols:
+        print(f"  {name:<18}{a:>16,.0f}{b:>18,.0f}{c:>10.1e}")
+    pte6 = res["6 三次多项式（363 列），无正则"][1]
+    print(f"  sklearn LinearRegression（scipy lstsq）测试 RMSE {rmse(yte, pte6):,.0f}；"
+          "无正则 + 近奇异，哪个解法、哪个 BLAS 都可能给出不同的测试误差，这一行的数字换台机器就会变")
+    a_ridge = res["7 三次多项式 + Ridge（α 交叉验证）"][0][-1].alpha_
+    n_tr = len(tr)
+    print(f"  α 的换算：RidgeCV 选的 α={a_ridge:.2f} 作用在求和式 ‖y−Xw‖² + α‖w‖² 上，换成平均式 (1/n)‖y−Xw‖² + λ‖w‖² 是 λ = α/n = {a_ridge / n_tr:.2e}（n={n_tr}）；"
+          f"Lasso(α=100) 的目标是 (1/2n)‖y−Xw‖² + α‖w‖₁，换成求和式 ‖y−Xw‖² + β‖w‖₁ 是 β = 2nα = {2 * n_tr * 100:,.0f}")
 
 
 if __name__ == "__main__":

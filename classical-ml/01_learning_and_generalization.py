@@ -142,6 +142,7 @@ def exp_split():
         va = mse(m, Xva, yva)
         if best is None or va < best[1]:
             best = (d, va, m)
+    assert best is not None
     d, va, m = best
     print(f"  用验证集选出次数 {d}（验证 MSE {va:.3f}）；测试集只在最后看一次：测试 MSE {mse(m, Xte, yte):.3f}")
     print()
@@ -213,13 +214,13 @@ def exp_leak():
         cheat = min((mse(poly_model(d).fit(Xtr, ytr), Xte, yte), d) for d in range(1, 13))
         honest = mse(poly_model(cheat[1]).fit(Xtr, ytr), Xfresh, yfresh)
         gaps.append(honest - cheat[0])
-    gaps = np.array(gaps)
-    print(f"  200 次重复：'在测试集上选出的最好分数' 比 '同一模型在全新数据上的真实分数' 平均乐观 {gaps.mean():.3f}（MSE），"
-          f"{(gaps > 0).mean()*100:.0f}% 的情况下真实更差；中位数 {np.median(gaps):.3f}")
+    g = np.array(gaps)
+    print(f"  200 次重复：'在测试集上选出的最好分数' 比 '同一模型在全新数据上的真实分数' 平均乐观 {g.mean():.3f}（MSE），"
+          f"{(g > 0).mean()*100:.0f}% 的情况下真实更差；中位数 {np.median(g):.3f}")
     fig, ax = plt.subplots(figsize=(7.6, 2.6))
-    ax.hist(np.clip(gaps, -0.2, 1.5), bins=40, color=C["blue"], alpha=0.85)
+    ax.hist(np.clip(g, -0.2, 1.5), bins=40, color=C["blue"], alpha=0.85)
     ax.axvline(0, color=C["gray"], lw=1)
-    ax.axvline(gaps.mean(), color=C["red"], ls="--", lw=1.2, label=f"平均 {gaps.mean():.3f}")
+    ax.axvline(g.mean(), color=C["red"], ls="--", lw=1.2, label=f"平均 {g.mean():.3f}")
     ax.set_xlabel("真实 MSE − 在测试集上挑出的最好 MSE（正 = 报出的分数偏乐观）")
     ax.set_ylabel("次数（共 200 次）")
     ax.legend(frameon=False)
@@ -254,8 +255,158 @@ def exp_biasvar():
     print()
 
 
+# ---------------- 5. 从一次划分到训练集内交叉验证：选超参数只碰训练集 ----------------
+def kfold_cv_mse(X, y, degree, k=5, seed=0):
+    """在 (X, y) 内部做 k 折：每一折都是「在 k-1 份上 fit、在剩下 1 份上算 MSE」，k 个数取平均。"""
+    scores = []
+    for tr, va in KFold(k, shuffle=True, random_state=seed).split(X):     # !ref folds
+        m = poly_model(degree).fit(X[tr], y[tr])                             # !ref fit_fold
+        scores.append(mse(m, X[va], y[va]))                                  # !ref score_fold
+    return float(np.mean(scores)), float(np.std(scores))
+
+
+def exp_cv():
+    print("=== 5. 从一次划分到训练集内交叉验证：选次数只碰训练集，测试集到最后只看一次 ===")
+    X, y = make_data(300, seed=3)
+    Xdev, Xte, ydev, yte = train_test_split(X, y, test_size=0.2, random_state=0)     # !ref holdout
+    Xtr, Xva, ytr, yva = train_test_split(Xdev, ydev, test_size=0.25, random_state=0)  # !ref single
+    print(f"  开发集 {len(Xdev)}（其中一次划分：训练 {len(Xtr)} / 验证 {len(Xva)}）/ 测试 {len(Xte)}")
+    print(f"  {'次数':>4} {'一次划分验证 MSE':>14} {'5 折 CV 均值':>10} {'5 折 CV 标准差':>10}")
+    single, cv = {}, {}
+    for d in range(1, 16):
+        single[d] = mse(poly_model(d).fit(Xtr, ytr), Xva, yva)
+        cv[d] = kfold_cv_mse(Xdev, ydev, d)
+        if d in (1, 2, 3, 4, 5, 6, 8, 10, 15):
+            print(f"  {d:>4} {single[d]:>18.3f} {cv[d][0]:>14.3f} {cv[d][1]:>14.3f}")
+    d_single = min(single, key=lambda d: single[d])
+    d_cv = min(cv, key=lambda d: cv[d][0])
+    final = poly_model(d_cv).fit(Xdev, ydev)                                            # !ref refit
+    print(f"  一次划分选出次数 {d_single}；5 折 CV 选出次数 {d_cv}（CV MSE {cv[d_cv][0]:.3f} ± {cv[d_cv][1]:.3f}）")
+    print(f"  用全部 {len(Xdev)} 个开发样本重新拟合 {d_cv} 次多项式，测试集只看这一次：测试 MSE {mse(final, Xte, yte):.3f}")
+    # 一次划分 vs 5 折 CV：换 30 个随机种子重做「切开发集 → 选次数」，看选出来的次数有多稳
+    picks_single, picks_cv = [], []
+    for seed in range(30):
+        Xtr_s, Xva_s, ytr_s, yva_s = train_test_split(Xdev, ydev, test_size=0.25, random_state=seed)
+        picks_single.append(min(range(1, 16), key=lambda d: mse(poly_model(d).fit(Xtr_s, ytr_s), Xva_s, yva_s)))
+        picks_cv.append(min(range(1, 16), key=lambda d: kfold_cv_mse(Xdev, ydev, d, seed=seed)[0]))
+    fresh = make_data(20_000, seed=999)
+    true_mse = {d: mse(poly_model(d).fit(Xdev, ydev), *fresh) for d in range(1, 16)}
+    print(f"  换 30 个随机种子重选：一次划分选出的次数 {sorted(set(picks_single))}，"
+          f"对应全新数据 MSE {min(true_mse[d] for d in picks_single):.3f}–{max(true_mse[d] for d in picks_single):.3f}")
+    print(f"                       5 折 CV 选出的次数 {sorted(set(picks_cv))}，"
+          f"对应全新数据 MSE {min(true_mse[d] for d in picks_cv):.3f}–{max(true_mse[d] for d in picks_cv):.3f}")
+    print(f"  全新数据上真正最好的次数是 {min(true_mse, key=lambda d: true_mse[d])}（MSE {min(true_mse.values()):.3f}）")
+    print("  测试集从头到尾只参与了最后一行的那一次评估；再拿它选次数，它就变成了第二个验证集（见第 3 节）")
+    print()
+
+
+# ---------------- 6. 完整流程：填补 / 标准化 / 特征选择各在哪份数据上 fit；泄漏对照 ----------------
+def make_wide_data(n, d=1000, noise=1.0, nan_rate=0.1, seed=0):
+    """n 个样本、d 个特征，只有前两个特征与 y 有关；随机挖掉 nan_rate 的格子模拟缺失值。"""
+    r = np.random.default_rng(seed)
+    X = r.normal(size=(n, d))
+    y = X[:, 0] + X[:, 1] + r.normal(0, noise, n)
+    X[r.random(X.shape) < nan_rate] = np.nan
+    return X, y
+
+
+def preprocess_fit(Xtr, ytr, k=20):
+    """只看训练数据，把三步预处理各自要记住的量算出来。"""
+    fill = np.nanmean(Xtr, axis=0)                                           # !ref fill
+    Xf = np.where(np.isnan(Xtr), fill, Xtr)
+    mu, sd = Xf.mean(axis=0), Xf.std(axis=0)                                 # !ref scale
+    Z = (Xf - mu) / sd
+    corr = np.abs(Z.T @ (ytr - ytr.mean())) / len(ytr)                      # !ref corr
+    keep = np.sort(np.argsort(corr)[-k:])                                    # !ref select
+    w = np.linalg.lstsq(np.c_[np.ones(len(Z)), Z[:, keep]], ytr, rcond=None)[0]   # !ref fitlr
+    return {"fill": fill, "mu": mu, "sd": sd, "keep": keep, "w": w}
+
+
+def preprocess_apply(state, X):
+    """用训练时记住的量变换任何一份数据：这里没有任何从 X 本身算出来的统计量。"""
+    Xf = np.where(np.isnan(X), state["fill"], X)                             # !ref apply_fill
+    Z = (Xf - state["mu"]) / state["sd"]                                     # !ref apply_scale
+    return np.c_[np.ones(len(Z)), Z[:, state["keep"]]] @ state["w"]           # !ref apply_rest
+
+
+def r2(y, yhat):
+    return float(1 - np.sum((y - yhat) ** 2) / np.sum((y - y.mean()) ** 2))
+
+
+def cv_r2(X, y, k, leak=None, seed=0):
+    """5 折 CV 的 R²。leak 指定哪一步在「全部数据」上 fit（None = 每一步都只看训练折）。"""
+    scores = []
+    full = preprocess_fit(np.where(np.isnan(X), np.nanmean(X, axis=0), X), y, k)
+    for tr, va in KFold(5, shuffle=True, random_state=seed).split(X):
+        st = preprocess_fit(X[tr], y[tr], k)
+        if leak == "fill":
+            Xtr = np.where(np.isnan(X[tr]), np.nanmean(X, axis=0), X[tr])    # 用全量均值填训练折
+            st = preprocess_fit(Xtr, y[tr], k)
+            st["fill"] = np.nanmean(X, axis=0)
+        elif leak == "scale":
+            Xall = np.where(np.isnan(X), np.nanmean(X, axis=0), X)
+            st["mu"], st["sd"] = Xall.mean(axis=0), Xall.std(axis=0)
+            Z = (np.where(np.isnan(X[tr]), st["fill"], X[tr]) - st["mu"]) / st["sd"]
+            st["w"] = np.linalg.lstsq(np.c_[np.ones(len(Z)), Z[:, st["keep"]]], y[tr], rcond=None)[0]
+        elif leak == "select":
+            st["keep"] = full["keep"]                                         # 用全量数据选出来的列
+            Z = (np.where(np.isnan(X[tr]), st["fill"], X[tr]) - st["mu"]) / st["sd"]
+            st["w"] = np.linalg.lstsq(np.c_[np.ones(len(Z)), Z[:, st["keep"]]], y[tr], rcond=None)[0]
+        scores.append(r2(y[va], preprocess_apply(st, X[va])))
+    return float(np.mean(scores))
+
+
+def exp_pipeline():
+    print("=== 6. 完整流程：填补 / 标准化 / 特征选择各在哪份数据上 fit —— 有泄漏 / 无泄漏对照 ===")
+    X, y = make_wide_data(120, d=1000, seed=0)
+    Xdev, Xte, ydev, yte = train_test_split(X, y, test_size=20, random_state=0)
+    Xfresh, yfresh = make_wide_data(20_000, d=1000, seed=1)
+    print(f"  {len(Xdev)} 个开发样本、{X.shape[1]} 个特征（只有前 2 个有用），{np.isnan(X).mean()*100:.0f}% 的格子缺失；测试 {len(Xte)}")
+    st = preprocess_fit(Xdev, ydev)
+    print(f"  训练上记住的量：fill 形状 {st['fill'].shape}、mu/sd 形状 {st['mu'].shape}、保留列 {st['keep'].size} 个、系数 {st['w'].shape}")
+    has01 = {0, 1} <= set(st['keep'].tolist())
+    print(f"  第 0 列：训练均值 {st['fill'][0]:+.3f}（全量 {np.nanmean(X[:, 0]):+.3f}）；保留的列里含 0、1 两列：{has01}")
+    print(f"  {'哪一步在全部数据上 fit':<24} {'5 折 CV R²':>10}")
+    rows = [("都只在训练折上 fit（无泄漏）", None), ("缺失值填补", "fill"), ("标准化", "scale"), ("特征选择（选 20 列）", "select")]
+    res = {}
+    for name, leak in rows:
+        res[name] = cv_r2(Xdev, ydev, 20, leak)
+        print(f"  {name:<28} {res[name]:>10.3f}")
+    final = preprocess_fit(Xdev, ydev)
+    print(f"  无泄漏流程在测试集上：R² {r2(yte, preprocess_apply(final, Xte)):.3f}；在 20,000 个全新样本上：R² {r2(yfresh, preprocess_apply(final, Xfresh)):.3f}")
+    leaked_keep = preprocess_fit(np.where(np.isnan(X), np.nanmean(X, axis=0), X), y)["keep"]
+    print(f"  全量上选出的 20 列与只在开发集上选出的 20 列重合 {len(set(leaked_keep.tolist()) & set(final['keep'].tolist()))} 个"
+          f"（其中 998 个纯噪声列里，谁与 y 碰巧相关，取决于看到了哪些样本）")
+    # 与 scikit-learn Pipeline 对照：同一套步骤装进 Pipeline，cross_val_score 会在每一折内部重新 fit 全部步骤
+    from sklearn.feature_selection import SelectKBest, f_regression
+    from sklearn.impute import SimpleImputer
+    from sklearn.model_selection import cross_val_score
+    from sklearn.preprocessing import StandardScaler
+    pipe = make_pipeline(SimpleImputer(), StandardScaler(), SelectKBest(f_regression, k=20), LinearRegression())  # !ref pipe
+    sk = cross_val_score(pipe, Xdev, ydev, cv=KFold(5, shuffle=True, random_state=0), scoring="r2").mean()         # !ref cvs
+    keep_all = SelectKBest(f_regression, k=20).fit(SimpleImputer().fit_transform(X), y).get_support()        # !ref leakfit
+    Xsel = SimpleImputer().fit_transform(Xdev)[:, keep_all]
+    sk_leak = cross_val_score(make_pipeline(StandardScaler(), LinearRegression()), Xsel, ydev,
+                              cv=KFold(5, shuffle=True, random_state=0), scoring="r2").mean()
+    print(f"  sklearn Pipeline 装进 cross_val_score：R² {sk:.3f}；先在全量上 SelectKBest 再 CV：R² {sk_leak:.3f}")
+    fig, ax = plt.subplots(figsize=(7.6, 2.8))
+    names = list(res) + ["无泄漏流程\n在全新数据上"]
+    vals = list(res.values()) + [r2(yfresh, preprocess_apply(final, Xfresh))]
+    colors = [C["green"], C["orange"], C["orange"], C["red"], C["blue"]]
+    ax.bar(range(len(vals)), vals, color=colors, width=0.6)
+    for i, v in enumerate(vals):
+        ax.text(i, v + 0.02, f"{v:.3f}", ha="center", fontsize=8)
+    ax.set_xticks(range(len(vals)), [n.replace("（", "\n（") for n in names], fontsize=8)
+    ax.set_ylabel("5 折 CV R²")
+    ax.axhline(0, color=C["gray"], lw=0.8)
+    save(fig, "01-leak-contrast")
+    print("  特征选择在全量数据上 fit 时，验证折的 y 已经参与了「选哪些列」，CV 分数就不再是泛化估计")
+    print()
+
+
 EXPS = {"fit": exp_fit, "learncurve": exp_learncurve, "split": exp_split, "groups": exp_groups,
-        "contamination": exp_contamination, "leak": exp_leak, "biasvar": exp_biasvar}
+        "contamination": exp_contamination, "leak": exp_leak, "biasvar": exp_biasvar,
+        "cv": exp_cv, "pipeline": exp_pipeline}
 
 if __name__ == "__main__":
     names = [a for a in sys.argv[1:] if not a.startswith("-")] or list(EXPS)

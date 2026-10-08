@@ -43,3 +43,11 @@ Lasso：368 列里 322 列系数恰好为 0，只留下 46 列；Ridge 的 368 �
   图已保存 out/case-02-rmse-steps.svg
   图已保存 out/case-02-pred-vs-true.svg
   图已保存 out/case-02-coefficients.svg
+
+第 6 步的设计矩阵（含截距列）：(16512, 369)，cond(X) = 1.4e+16，cond(XᵀX) = 3.4e+18；5 列 one-hot 之和恒等于截距列，XᵀX 在精确算术里奇异；sklearn 报告的秩 rank_ = 367（共 368 列，不含截距）
+  解法                         训练 RMSE           测试 RMSE    max|w|
+  inv(XᵀX)·Xᵀy           140,653,843     4,871,167,013   9.2e+14
+  solve(XᵀX, Xᵀy)             54,616           217,049   4.3e+11
+  lstsq(X, y)                 54,572           224,642   3.4e+10
+  sklearn LinearRegression（scipy lstsq）测试 RMSE 224,642；无正则 + 近奇异，哪个解法、哪个 BLAS 都可能给出不同的测试误差，这一行的数字换台机器就会变
+  α 的换算：RidgeCV 选的 α=14.38 作用在求和式 ‖y−Xw‖² + α‖w‖² 上，换成平均式 (1/n)‖y−Xw‖² + λ‖w‖² 是 λ = α/n = 8.71e-04（n=16512）；Lasso(α=100) 的目标是 (1/2n)‖y−Xw‖² + α‖w‖₁，换成求和式 ‖y−Xw‖² + β‖w‖₁ 是 β = 2nα = 3,302,400

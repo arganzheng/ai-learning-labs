@@ -10,7 +10,12 @@ https://arganzheng.life/what-is-learning-splits-generalization-and-bias-variance
 import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import GroupShuffleSplit, train_test_split
+from sklearn.model_selection import (
+    GroupKFold,
+    GroupShuffleSplit,
+    cross_val_score,
+    train_test_split,
+)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -83,6 +88,26 @@ def main():
     ax.axhline(base / 1e3, ls="--", c=C["gray"], lw=1); ax.text(2.45, base / 1e3 + 2, "基线（猜均值）", ha="right", fontsize=8, color=C["gray"])
     ax.set_xticks(x); ax.set_xticklabels(names); ax.set_ylabel("测试 RMSE（千美元）"); ax.legend()
     save(fig, "case-01-split-rmse")
+
+    # 追加：训练集内按组交叉验证选 k —— 预处理与模型都只在训练折上 fit，测试集只在最后看一次
+    print("\n训练集内按组 5 折交叉验证选 KNN 的 k（只用按地区划分的训练集，每一折按 1°×1° 格子切）：")
+    X8 = df[NUM].values
+    imp = SimpleImputer().fit(X8[tr_g])                                                     # !ref imp_fit
+    print(f"total_bedrooms 的填补值：训练集均值 {imp.statistics_[4]:,.1f}，全部数据均值 {np.nanmean(X8[:, 4]):,.1f}"
+          " —— Pipeline 里 SimpleImputer / StandardScaler 的统计量只来自 fit 时看到的那份数据")
+    print(f"{'k':>5}{'按组 5 折 CV RMSE':>18}{'事后对照：留出地区测试 RMSE':>26}")
+    cv_rmse = {}
+    for k in (3, 10, 30, 100, 300):
+        m = make_pipeline(SimpleImputer(), StandardScaler(), KNeighborsRegressor(k))
+        scores = cross_val_score(m, X8[tr_g], y[tr_g], groups=cell.iloc[tr_g], cv=GroupKFold(5),
+                                 scoring="neg_root_mean_squared_error")                       # !ref cv_group
+        cv_rmse[k] = -scores.mean()
+        t = rmse(y[te_g], m.fit(X8[tr_g], y[tr_g]).predict(X8[te_g]))
+        print(f"{k:>5}{cv_rmse[k]:>18,.0f}{t:>26,.0f}")
+    k_best = min(cv_rmse, key=lambda k: cv_rmse[k])
+    final = make_pipeline(SimpleImputer(), StandardScaler(), KNeighborsRegressor(k_best)).fit(X8[tr_g], y[tr_g])
+    print(f"CV 选出 k={k_best}；用整个训练集重新 fit 后，留出地区测试 RMSE {rmse(y[te_g], final.predict(X8[te_g])):,.0f}"
+          "（右列只是事后对照，选 k 时没有看它）")
 
 
 if __name__ == "__main__":

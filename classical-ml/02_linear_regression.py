@@ -82,7 +82,7 @@ def exp_surface():
     X = add_bias(x[:, None])
     Xs = add_bias((x[:, None] - x.mean()) / x.std())         # 标准化后的版本，碗是圆的
     for name, XX in (("原始 x（0–10）", X), ("标准化 x", Xs)):
-        w_star = fit_closed_form(XX, y)
+        _w_star = fit_closed_form(XX, y)
         # 学习率上限：2 / 最大特征值（Hessian 2XᵀX/n）
         lam = np.linalg.eigvalsh(2 * XX.T @ XX / len(y))
         print(f"  {name:<12} Hessian 特征值 {lam.min():.2f} / {lam.max():.2f}（条件数 {lam.max()/lam.min():.0f}），稳定学习率上限 {2/lam.max():.3f}")
@@ -94,9 +94,9 @@ def exp_surface():
         w = np.zeros(2); path = [w.copy()]
         for _ in range(steps):
             w = w - lr * 2 * X.T @ (X @ w - y) / len(y); path.append(w.copy())
-        path = np.array(path)
-        cs = ax.contour(W, B, L, levels=np.geomspace(L.min() + 0.5, L.max(), 14), colors=C["gray"], linewidths=0.6)
-        ax.plot(path[:, 1], path[:, 0], "o-", ms=2, lw=0.8, color=C["red"], alpha=0.8)
+        path_arr = np.array(path)
+        ax.contour(W, B, L, levels=np.geomspace(L.min() + 0.5, L.max(), 14), colors=C["gray"], linewidths=0.6)
+        ax.plot(path_arr[:, 1], path_arr[:, 0], "o-", ms=2, lw=0.8, color=C["red"], alpha=0.8)
         ax.plot(*fit_closed_form(X, y)[::-1], "*", ms=10, color=C["orange"], label="闭式解")
         ax.set_xlabel("w（斜率）"); ax.set_ylabel("b（截距）"); ax.set_title(title, fontsize=8.5)
         ax.set_xlim(ws[0], ws[-1]); ax.set_ylim(bs[0], bs[-1])
@@ -112,7 +112,7 @@ def exp_gd():
     w_closed = fit_closed_form(Xb, y)
     w_gd, h_gd = fit_gd(Xb, y, lr=0.05, steps=300)
     w_sgd, h_sgd = fit_gd(Xb, y, lr=0.05, steps=300, batch=16)
-    w_sgd_decay, h_sgd_decay = fit_gd(Xb, y, lr=0.05, steps=300, batch=16, seed=1)
+    _w_sgd_decay, _h_sgd_decay = fit_gd(Xb, y, lr=0.05, steps=300, batch=16, seed=1)
     mse_star = np.mean((Xb @ w_closed - y) ** 2)
     print(f"  真实系数        {np.round(w_true, 2)}")
     print(f"  闭式解          {np.round(w_closed[1:], 2)}  (偏置 {w_closed[0]:.2f})  MSE {mse_star:.2f}")
@@ -142,7 +142,7 @@ def exp_scaling():
     for name, X in (("原始特征", X_raw), ("标准化后", X_std)):
         lam = np.linalg.eigvalsh(2 * X.T @ X / n)
         lr = 0.9 * 2 / lam.max()
-        w, h = fit_gd(X, y, lr=lr, steps=500)
+        _w, h = fit_gd(X, y, lr=lr, steps=500)
         mse_star = np.mean((X @ fit_closed_form(X, y) - y) ** 2)
         print(f"  {name}: 条件数 {lam.max()/lam.min():.0f}，最大安全学习率 {lr:.1e}，500 步后 MSE 比最优多 {h[-1]-mse_star:.4f}")
     print("  量纲差 1000 倍 → 碗是一条极窄的沟，安全学习率被大特征限制，小特征的方向几乎不动；标准化让碗变圆，几十步收敛")
@@ -299,8 +299,194 @@ def exp_robust():
     print()
 
 
+# ---------------- 11. 矩阵形状与一步梯度：3 个点，每个中间量的形状和数值都能手算 ----------------
+def exp_step():
+    print("=== 11. 矩阵形状与一步梯度：3 个点上把 GD 的一步拆开 ===")
+    X = add_bias(np.array([1.0, 2.0, 3.0]))                                  # !ref X
+    y = np.array([3.0, 5.0, 8.0])
+    n = len(y)
+    w = np.zeros(X.shape[1])                                                 # !ref w0
+    pred = X @ w                                                             # !ref pred
+    resid = pred - y                                                         # !ref resid
+    grad = 2 * X.T @ resid / n                                               # !ref grad
+    print(f"  X {X.shape}  w {w.shape}  X@w {pred.shape}  残差 {resid.shape}  Xᵀ@残差 {(X.T @ resid).shape}  梯度 {grad.shape}")
+    print(f"  w = 0 时：残差 {resid}，Xᵀ·残差 = {X.T @ resid}，梯度 = 2/3 × 那个 = {np.round(grad, 3)}，MSE {np.mean(resid**2):.3f}")
+    lr = 0.05
+    w1 = w - lr * grad                                                       # !ref step
+    print(f"  学习率 {lr}：w ← 0 − {lr} × 梯度 = {np.round(w1, 3)}，MSE {np.mean((X @ w1 - y)**2):.3f}")
+    H = 2 * X.T @ X / n                                                      # !ref hess
+    lam = np.linalg.eigvalsh(H)
+    print(f"  Hessian H = 2/n·XᵀX =\n{np.round(H, 3)}\n  特征值 {np.round(lam, 2)}，稳定上限 2/λmax = {2/lam.max():.3f}，条件数 {lam.max()/lam.min():.1f}")
+    w_star = fit_closed_form(X, y)
+    for lr in (0.05, 0.17, 0.19):
+        w_gd, hist = fit_gd(X, y, lr=lr, steps=200)
+        print(f"  lr={lr}: 200 步后 w = {np.round(w_gd, 3)}，与闭式解 {np.round(w_star, 3)} 最大差 {np.abs(w_gd - w_star).max():.1e}，MSE {hist[-1]:.3g}")
+    print()
+
+
+# ---------------- 12. 为什么不显式求逆：条件数、inv / solve / lstsq 三种算法 ----------------
+def exp_solvers():
+    print("=== 12. 为什么实现不显式求逆：条件数把误差放大多少，三种求解器各错多少 ===")
+    A = np.array([[1.0, 1.0], [1.0, 1.0001]])
+    b = np.array([2.0, 2.0001])
+    b2 = b + np.array([0.0, 1e-4])
+    print(f"  2×2 例子：A = {A.tolist()}，cond(A) = {np.linalg.cond(A):.1e}")
+    print(f"    b = {b} → 解 {np.round(np.linalg.solve(A, b), 4)}；b 的第二项加 1e-4 → 解 {np.round(np.linalg.solve(A, b2), 4)}")
+    print("    右边动了万分之一，解动了 100%：条件数 ≈ 4×10⁴ 就是这个放大倍数的上界")
+    r = np.random.default_rng(0)
+    x = r.uniform(0, 1, 30)
+    y = np.sin(2 * np.pi * x) + r.normal(0, 0.3, 30)
+    print("  上一篇的 30 个点、多项式特征 1, x, …, x^d：")
+    print(f"  {'次数':>4} {'cond(X)':>9} {'cond(XᵀX)':>10} {'inv 残差平方和':>12} {'solve 残差平方和':>13} {'lstsq 残差平方和':>13} {'sklearn':>10} {'inv 与 lstsq 系数最大差':>14}")
+    rows = []
+    for d in (3, 6, 9, 12, 15, 20):
+        X = np.vander(x, d + 1, increasing=True)
+        G, c = X.T @ X, X.T @ y
+        w_inv = np.linalg.inv(G) @ c                                         # !ref inv
+        w_solve = np.linalg.solve(G, c)                                      # !ref solve
+        w_lstsq = np.linalg.lstsq(X, y, rcond=None)[0]                       # !ref lstsq
+        w_sk = LinearRegression(fit_intercept=False).fit(X, y).coef_
+        rss = [float(np.sum((X @ w - y) ** 2)) for w in (w_inv, w_solve, w_lstsq, w_sk)]
+        rows.append((d, np.linalg.cond(X), np.linalg.cond(G), *rss, float(np.abs(w_inv - w_lstsq).max())))
+        print(f"  {d:>4} {rows[-1][1]:>9.1e} {rows[-1][2]:>10.1e} {rss[0]:>14.4f} {rss[1]:>16.4f} {rss[2]:>16.4f} {rss[3]:>10.4f} {rows[-1][-1]:>20.1e}")
+    print(f"  机器精度 eps = {np.finfo(float).eps:.1e}：cond(XᵀX) 超过 1/eps ≈ 4.5e15 后，正规方程里的 XᵀX 在浮点里已经分不清是否可逆")
+    print("  精确算术里 cond(XᵀX) = cond(X)²，先算 XᵀX 再解等于主动把条件数平方（表里 1e17 附近是浮点算出来的饱和值）；")
+    print("  lstsq / sklearn 直接对 X 做 SVD（LAPACK gelsd），只付 cond(X) 的代价")
+    fig, ax = plt.subplots(figsize=(7.6, 2.8))
+    ds = [row[0] for row in rows]
+    for i, (label, color) in enumerate(((" inv(XᵀX)·Xᵀy", C["red"]), ("solve(XᵀX, Xᵀy)", C["orange"]), ("lstsq(X, y)", C["blue"]))):
+        ax.plot(ds, [row[3 + i] for row in rows], "o-", color=color, label=label, lw=1.4)
+    ax.set_yscale("log")
+    ax.set_xlabel("多项式次数 d")
+    ax.set_ylabel("训练残差平方和（对数轴）")
+    ax.set_title("30 个点拟合 d 次多项式：先算 XᵀX 再求解，d 越大错得越多", fontsize=9)
+    ax2 = ax.twinx()
+    ax2.plot(ds, [row[2] for row in rows], "s--", color=C["gray"], lw=1, label="cond(XᵀX)")
+    ax2.set_yscale("log")
+    ax2.set_ylabel("cond(XᵀX)", color=C["gray"])
+    ax2.spines["top"].set_visible(False)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.5, loc="upper left")
+    save(fig, "02-solver-conditioning")
+    print()
+
+
+# ---------------- 13. Lasso：一维软阈值 + 坐标下降，稀疏从哪来 ----------------
+def soft_threshold(rho, t):
+    """软阈值：|rho| ≤ t 时直接归零，否则向零收缩 t。"""
+    return np.sign(rho) * max(abs(rho) - t, 0.0)                              # !ref soft
+
+
+def lasso_cd(X, y, alpha, sweeps=100, tol=1e-10, log=None):
+    """坐标下降解 sklearn 形式的 Lasso：(1/2n)‖y − Xw‖² + α‖w‖₁，无截距。每次只动一个 w_j。"""
+    n, d = X.shape
+    w = np.zeros(d)
+    q = (X ** 2).sum(axis=0) / n                                               # !ref q
+    for sweep in range(1, sweeps + 1):
+        w_old = w.copy()
+        for j in range(d):
+            r_j = y - X @ w + X[:, j] * w[j]                                   # !ref partial
+            rho = X[:, j] @ r_j / n                                            # !ref rho
+            w[j] = soft_threshold(rho, alpha) / q[j]                           # !ref update
+        if log is not None:
+            log.append(w.copy())
+        if np.abs(w - w_old).max() < tol:
+            break
+    return w, sweep
+
+
+def exp_soft():
+    print("=== 13. Lasso 的稀疏从哪来：一维软阈值手算，再用坐标下降对上 sklearn ===")
+    x = np.array([1.0, 2.0, 3.0])
+    y = np.array([3.0, 5.0, 8.0])
+    n = len(y)
+    rho, q = x @ y / n, x @ x / n
+    print(f"  一个特征、无截距：ρ = xᵀy/n = {rho:.3f}，q = xᵀx/n = {q:.3f}，最小二乘 w = ρ/q = {rho/q:.4f}")
+    print(f"  {'α':>6} {'软阈值 S(ρ, α)/q':>16} {'sklearn Lasso':>14}")
+    for a in (0.0, 1.0, 4.0, 10.0, rho, 13.0):
+        w_hand = soft_threshold(rho, a) / q
+        w_sk = Lasso(alpha=a, fit_intercept=False).fit(x[:, None], y).coef_[0] if a > 0 else LinearRegression(fit_intercept=False).fit(x[:, None], y).coef_[0]
+        print(f"  {a:>6.3f} {w_hand:>16.4f} {w_sk:>14.4f}")
+    print(f"  α ≥ |ρ| = {rho:.3f} 时 w 恰好是 0——不是「很小」，是零；Ridge 对应的收缩 ρ/(q + α) 永远不为零")
+    X, y5, w_true = make_regression(n_samples=60, n_features=5, n_informative=2, noise=5.0, coef=True, random_state=4)
+    X = StandardScaler().fit_transform(X)
+    y5 = y5 - y5.mean()
+    alpha = 5.0
+    log: list = []
+    w_cd, sweeps = lasso_cd(X, y5, alpha, log=log)
+    print(f"  5 个特征（真实非零 {int((w_true != 0).sum())} 个）、α={alpha}，坐标下降逐轮的 w：")
+    for k in (0, 1, 2, 4, len(log) - 1):
+        print(f"    第 {k+1:>2} 轮  {np.round(log[k], 4)}")
+    sk = Lasso(alpha=alpha, fit_intercept=False, tol=1e-10, max_iter=100000).fit(X, y5).coef_
+    print(f"  {sweeps} 轮后收敛；sklearn Lasso(α={alpha}) 的系数 {np.round(sk, 4)}，最大差 {np.abs(w_cd - sk).max():.1e}")
+    print(f"  恰好为 0 的系数：坐标下降 {int((w_cd == 0).sum())} 个，sklearn {int((sk == 0).sum())} 个；真实为 0 的 {int((w_true == 0).sum())} 个")
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
+    rr = np.linspace(-15, 15, 301)
+    axes[0].plot(rr, rr / q, color=C["gray"], lw=1, ls="--", label="最小二乘 ρ/q")
+    axes[0].plot(rr, rr / (q + 4), color=C["blue"], lw=1.4, label="Ridge ρ/(q+α)，α=4")
+    axes[0].plot(rr, [soft_threshold(v, 4.0) / q for v in rr], color=C["red"], lw=1.6, label="Lasso S(ρ,α)/q，α=4")
+    axes[0].axvspan(-4, 4, color=C["light"], alpha=0.6)
+    axes[0].plot([rho], [soft_threshold(rho, 4.0) / q], "o", color=C["red"])
+    axes[0].set_xlabel("ρ = xᵀy/n（特征与目标的相关量）")
+    axes[0].set_ylabel("解出的 w")
+    axes[0].set_title("一维：|ρ| ≤ α 的灰色区间里 Lasso 的解恰好为 0", fontsize=8.5)
+    axes[0].legend(frameon=False, fontsize=7)
+    path = np.array(log)
+    for j in range(5):
+        axes[1].plot(range(1, len(path) + 1), path[:, j], "o-", ms=3, lw=1.2,
+                     color=C["red"] if w_true[j] != 0 else C["blue"], label=f"w{j+1}" + ("（真有用）" if w_true[j] != 0 else ""))
+    axes[1].set_xlabel("坐标下降轮数")
+    axes[1].set_title("5 个特征：无用特征的系数在前几轮就被压到 0", fontsize=8.5)
+    axes[1].legend(frameon=False, fontsize=7, ncol=2)
+    save(fig, "02-soft-threshold-cd")
+    print()
+
+
+# ---------------- 14. 正则系数到底乘在什么上：求和 / 平均两种写法，手算、NumPy、sklearn 对齐 ----------------
+def exp_align():
+    print("=== 14. 正则系数在「按求和」与「按平均」的损失里如何对应：手算、NumPy、sklearn 同一目标才可比 ===")
+    X, y = make_regression(n_samples=200, n_features=5, noise=5.0, random_state=2)
+    X = StandardScaler().fit_transform(X)
+    y = y - y.mean()
+    n = len(y)
+    lam = 0.5
+    w_mean = np.linalg.solve(X.T @ X / n + lam * np.eye(5), X.T @ y / n)          # !ref mean_form
+    w_sum = np.linalg.solve(X.T @ X + n * lam * np.eye(5), X.T @ y)               # !ref sum_form
+    w_sk = Ridge(alpha=n * lam, fit_intercept=False).fit(X, y).coef_               # !ref sk_ridge
+    w_sk_wrong = Ridge(alpha=lam, fit_intercept=False).fit(X, y).coef_
+    w_gd, _ = fit_gd(X, y, lr=0.05, steps=3000, wd=lam)                           # !ref gd_wd
+    print(f"  Ridge，n={n}，平均式 λ={lam}：")
+    print(f"    (XᵀX/n + λI)w = Xᵀy/n       {np.round(w_mean, 4)}")
+    print(f"    (XᵀX + nλI)w = Xᵀy          {np.round(w_sum, 4)}   与上行最大差 {np.abs(w_sum - w_mean).max():.1e}")
+    print(f"    sklearn Ridge(alpha=n·λ={n*lam:g}) {np.round(w_sk, 4)}   最大差 {np.abs(w_sk - w_mean).max():.1e}")
+    print(f"    fit_gd(wd=λ) 3000 步          {np.round(w_gd, 4)}   最大差 {np.abs(w_gd - w_mean).max():.1e}")
+    print(f"    sklearn Ridge(alpha=λ={lam})      {np.round(w_sk_wrong, 4)}   最大差 {np.abs(w_sk_wrong - w_mean).max():.1e}  ← 把 λ 直接当 alpha 传，正则弱了 {n} 倍")
+    beta = 400.0
+    w_cd, _ = lasso_cd(X, y, beta / (2 * n))                                        # !ref lasso_align
+    w_lsk = Lasso(alpha=beta / (2 * n), fit_intercept=False, tol=1e-10, max_iter=100000).fit(X, y).coef_
+    print(f"  Lasso，求和式 ‖y−Xw‖² + β‖w‖₁ 里 β={beta:g}：sklearn 的目标是 (1/2n)‖y−Xw‖² + α‖w‖₁，两边同除 2n 得 α = β/(2n) = {beta/(2*n):g}")
+    print(f"    坐标下降(α={beta/(2*n):g}) {np.round(w_cd, 4)}；sklearn Lasso(alpha={beta/(2*n):g}) {np.round(w_lsk, 4)}；最大差 {np.abs(w_cd - w_lsk).max():.1e}")
+    Xr, yr = make_regression(n_samples=200, n_features=5, noise=5.0, random_state=2)
+    Xr = Xr + np.array([10.0, -3.0, 0.0, 5.0, 1.0])
+    yr = yr + 100.0
+    alpha = 100.0
+    D = np.eye(6)
+    D[0, 0] = 0.0                                                                   # !ref no_pen_bias
+    Xb = add_bias(Xr)
+    w_hand = np.linalg.solve(Xb.T @ Xb + alpha * D, Xb.T @ yr)
+    m = Ridge(alpha=alpha).fit(Xr, yr)
+    print("  带截距：sklearn Ridge 先把 X、y 中心化、不惩罚截距；手写时惩罚矩阵的截距那一格写 0——")
+    print(f"    手写 [b, w] = {np.round(w_hand, 4)}")
+    print(f"    sklearn [intercept_, coef_] = {np.round(np.r_[m.intercept_, m.coef_], 4)}   最大差 {np.abs(w_hand - np.r_[m.intercept_, m.coef_]).max():.1e}")
+    w_pen_bias = np.linalg.solve(Xb.T @ Xb + alpha * np.eye(6), Xb.T @ yr)
+    print(f"    若连截距一起惩罚：b = {w_pen_bias[0]:.4f}（sklearn 的 {m.intercept_:.4f}），系数最大差 {np.abs(w_pen_bias - np.r_[m.intercept_, m.coef_]).max():.1e}")
+    print()
+
+
 EXPS = {"line": exp_line, "surface": exp_surface, "gd": exp_gd, "scaling": exp_scaling, "collinear": exp_collinear,
-        "paths": exp_paths, "geometry": exp_geometry, "wd": exp_wd, "smooth": exp_smooth, "robust": exp_robust}
+        "paths": exp_paths, "geometry": exp_geometry, "wd": exp_wd, "smooth": exp_smooth, "robust": exp_robust,
+        "step": exp_step, "solvers": exp_solvers, "soft": exp_soft, "align": exp_align}
 
 if __name__ == "__main__":
     names = [a for a in sys.argv[1:] if not a.startswith("-")] or list(EXPS)

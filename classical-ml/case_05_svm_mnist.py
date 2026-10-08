@@ -3,6 +3,7 @@ https://arganzheng.life/svm-and-kernel-methods.html
 
     python case_05_svm_mnist.py            # 全部（RBF-SVM 全量训练几分钟）
     python case_05_svm_mnist.py grid       # 只跑 C / γ 网格
+    python case_05_svm_mnist.py cost       # 支持向量数与预测时间随训练集增长
 
 MNIST 1998 年发布时就是为了比较分类器：线性 12%、KNN 5%、SVM 1.1%、LeNet-5 0.95%。
 这里用同一份数据，在今天的笔记本上重跑线性 / KNN / RBF-SVM。图输出到 out/case-05-*.svg。
@@ -11,12 +12,11 @@ import sys
 import time
 
 import numpy as np
+from _data import mnist
+from _plot import C, plt, save
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
-
-from _data import mnist
-from _plot import C, plt, save
 
 X, y = mnist("train"); Xt, yt = mnist("test")
 
@@ -99,7 +99,31 @@ def exp_table():
     save(fig, "case-05-svm-errors")
 
 
-EXPS = {"grid": exp_grid, "table": exp_table}
+def exp_cost():
+    print("\n=== 3. 核化不免费：训练集从 2k 到 20k，支持向量数、训练与预测时间怎么长 ===")
+    print(f"  {'训练张数':>8} {'支持向量':>8} {'占比':>6} {'训练':>8} {'预测 10k 张':>10} {'错误率':>7}")
+    ns = [2000, 5000, 10000, 20000]
+    nsv, t_pred = [], []
+    for n in ns:
+        idx = np.random.default_rng(0).choice(len(X), n, replace=False)
+        m = SVC(C=10, gamma=0.03, cache_size=2000)
+        t = time.time()
+        m.fit(X[idx], y[idx])
+        t_fit = time.time() - t
+        t = time.time()
+        err = np.mean(m.predict(Xt) != yt)
+        t_pred.append(time.time() - t)
+        nsv.append(int(m.n_support_.sum()))
+        print(f"  {n:>8,} {nsv[-1]:>8,} {nsv[-1] / n:>6.0%} {t_fit:>7.1f}s {t_pred[-1]:>9.1f}s {err:>7.2%}")
+    print(f"  训练张数 ×10：支持向量 ×{nsv[-1] / nsv[0]:.1f}，预测时间 ×{t_pred[-1] / t_pred[0]:.1f}；每张测试图要与全部支持向量算一次 784 维的核，预测代价 = 支持向量数 × 784")
+    print("  核矩阵 n×n 存不下时 LIBSVM 靠 cache_size 缓存部分行、其余重算，所以训练时间比 n² 还陡；这就是第七章「核 SVM 在大数据上退场」在 MNIST 上的样子")
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.6))
+    axes[0].plot(ns, nsv, "o-", color=C["red"]); axes[0].set_xlabel("训练张数"); axes[0].set_ylabel("支持向量数"); axes[0].set_title("支持向量随训练集增长", fontsize=8.5)
+    axes[1].plot(nsv, t_pred, "s-", color=C["orange"]); axes[1].set_xlabel("支持向量数"); axes[1].set_ylabel("预测 10,000 张的秒数"); axes[1].set_title("预测时间 ∝ 支持向量数", fontsize=8.5)
+    save(fig, "case-05-sv-growth")
+
+
+EXPS = {"grid": exp_grid, "table": exp_table, "cost": exp_cost}
 
 if __name__ == "__main__":
     names = [a for a in sys.argv[1:] if not a.startswith("-")] or list(EXPS)

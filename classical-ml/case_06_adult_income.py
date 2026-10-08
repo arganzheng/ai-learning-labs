@@ -10,8 +10,6 @@ import pickle
 import time
 
 import numpy as np
-from _data import adult
-from _plot import C, plt, save
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -22,6 +20,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
+
+from _data import adult
+from _plot import C, plt, save
 
 NUM = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
 CAT = ["workclass", "marital-status", "occupation", "relationship", "race", "sex", "native-country"]

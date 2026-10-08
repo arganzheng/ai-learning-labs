@@ -12,11 +12,12 @@ import sys
 import time
 
 import numpy as np
-from _data import mnist
-from _plot import C, plt, save
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
+
+from _data import mnist
+from _plot import C, plt, save
 
 X, y = mnist("train"); Xt, yt = mnist("test")
 

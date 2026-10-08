@@ -6,8 +6,8 @@
 |---|---|---|---|
 | `01_learning_and_generalization.py` | [什么是学习](https://arganzheng.life/what-is-learning-splits-generalization-and-bias-variance.html) | fit learncurve split groups contamination leak biasvar cv pipeline | 一分钟 |
 | `02_linear_regression.py` | [线性回归](https://arganzheng.life/linear-regression-least-squares-ridge-and-lasso.html) | line surface gd scaling collinear paths geometry wd smooth robust step solvers soft align | 十几秒 |
-| `03_logistic_regression_and_reward_model.py` | [逻辑回归与奖励模型](https://arganzheng.life/linear-and-logistic-regression-the-skeleton-of-reward-models.html) | sigmoid gradient boundary cancer softmax reward noise | 十几秒 |
-| `04_naive_bayes_knn_and_trees.py` | [三个基础分类器](https://arganzheng.life/a-family-of-classifiers-from-naive-bayes-to-gradient-boosting.html) | compare grid bayes nb knn curse tree depth | 一分钟 |
+| `03_logistic_regression_and_reward_model.py` | [逻辑回归与奖励模型](https://arganzheng.life/linear-and-logistic-regression-the-skeleton-of-reward-models.html) | sigmoid gradient boundary cancer softmax reward noise step stable pair calib | 十几秒 |
+| `04_naive_bayes_knn_and_trees.py` | [三个基础分类器](https://arganzheng.life/a-family-of-classifiers-from-naive-bayes-to-gradient-boosting.html) | compare grid bayes nb knn curse tree depth mnb knn_rules split grow diag | 一分钟 |
 | `05_svm_and_kernels.py` | [SVM 与核方法](https://arganzheng.life/svm-and-kernel-methods.html) | margin hinge primal softc kernel rbf attention scale dual cscale cost analogy | 一分钟 |
 | `06_ensembles_and_gradient_boosting.py` | [集成](https://arganzheng.life/ensembles-random-forest-and-gradient-boosting.html) | bagging forest boost_steps boost_hand lr importance tabular budget variance logit early forest_cost | 四五分钟（variance 要训 50 份 × 1000 棵） |
 | `07_clustering.py` | [聚类](https://arganzheng.life/unsupervised-learning-kmeans-pca-and-embedding-clusters.html) | iterate kmeans choose_k init dbscan hierarchical corpus edge expand linkage | 一分钟（corpus 首次加载模型） |
@@ -19,10 +19,10 @@
 
 | 脚本 | 文章 | 案例 | 数据（首次运行自动下载到 `data/`） |
 |---|---|---|---|
-| `case_01_housing_split.py` | 01 什么是学习 | 同一个 KNN，随机划分 vs 按地区划分，RMSE 差 65% | 加州房价 openml #43939（1 MB） |
-| `case_02_housing_regression.py` | 02 线性回归 | 从猜均值到 Ridge / Lasso 十步，每步误差降多少 | 同上 |
-| `case_03_sms_spam.py` | 03 逻辑回归 | 垃圾短信识别：TF-IDF + 逻辑回归，阈值与权重 | UCI SMS Spam Collection（200 KB） |
-| `case_04_nb_knn_tree.py` | 04 三个分类器 | `nb` 朴素贝叶斯做垃圾短信；`knn` KNN 做 MNIST（全量 2.95%）；`tree` 决策树做泰坦尼克（整棵画出 + boat 泄漏陷阱） | SMS Spam；MNIST（复用 ../deep-learning-foundations/data，12 MB）；Titanic openml #40945 |
+| `case_01_housing_split.py` | 01 什么是学习 | 同一个 KNN，随机划分 vs 按地区划分，RMSE 差 65%；GroupKFold 在训练集内选 k | 加州房价 openml #43939（1 MB） |
+| `case_02_housing_regression.py` | 02 线性回归 | 从猜均值到 Ridge / Lasso 十步，每步误差降多少；第 6 步的条件数与 inv / solve / lstsq 对照 | 同上 |
+| `case_03_sms_spam.py` | 03 逻辑回归 | 垃圾短信识别：TF-IDF + 逻辑回归，阈值与权重；概率校准表（ECE / Brier） | UCI SMS Spam Collection（200 KB） |
+| `case_04_nb_knn_tree.py` | 04 三个分类器 | `nb` 朴素贝叶斯做垃圾短信；`knn` KNN 做 MNIST（全量 2.95%）；`tree` 决策树做泰坦尼克（整棵画出 + boat 泄漏陷阱 + 代价复杂度剪枝） | SMS Spam；MNIST（复用 ../deep-learning-foundations/data，12 MB）；Titanic openml #40945 |
 | `case_05_svm_mnist.py` | 05 SVM | 重跑 LeCun 1998 的表：线性 / KNN / RBF-SVM（60k 全量 1.43%，约 4 分钟）；`grid` C×γ 网格；`cost` 训练集 2k → 20k 时支持向量与预测时间 | MNIST |
 | `case_06_adult_income.py` | 06 集成 | 人口普查收入预测：逻辑回归 → 树 → 随机森林 → 梯度提升；permutation 重要性；学习率 × 轮数；早停的验证集 vs 测试集；森林棵数的收益与代价 | Adult openml #1590（4 MB） |
 | `case_07_customer_segments.py` | 07 聚类 | `rfm` 54 万行交易 → RFM → K-Means 4 群画像；`colors` 照片颜色量化 | UCI Online Retail（23 MB xlsx，需 `openpyxl`）；sklearn 自带 china.jpg |
@@ -42,6 +42,17 @@ PLOT_PNG=/tmp/plots python 02_linear_regression.py   # 另存一份 png 方便�
 ```
 
 数据全部是 scikit-learn 自带的小数据集（乳腺癌、手写数字）或合成数据（`make_classification`、`make_blobs`、`make_moons`、`make_circles`、自造的近重复文本），不用下载。`expected/` 是作者机器上的完整输出；不同版本下小数末位与耗时会有出入，结论应一致。
+
+## 01 – 06 深化实验
+
+- 01：`cv` 一次划分 vs 5 折交叉验证选多项式次数（30 个种子的选择分布）；`pipeline` 填补 / 标准化 / 特征选择三种"偷看"与无泄漏 Pipeline 的 CV 对照。`case_01` 末尾新增 GroupKFold 在训练集内选 k。
+- 02：`step` 把 GD 的一步拆成矩阵形状与数值（Hessian 特征值、学习率上限）；`solvers` inv / solve / lstsq 在不同条件数下的误差；`soft` 一维软阈值与坐标下降 Lasso 对照 sklearn；`align` 求和 / 平均 / sklearn 三种 α 写法的换算。`case_02` 末尾新增第 6 步的 cond(X)、rank 与三种求解器的测试 RMSE。
+- 03：`step` 六个样本从 logit 到一步更新；`stable` logaddexp / log-sum-exp 与 eps 截断、有限差分步长；`pair` 一条样本 → 一对回答的分差、概率、loss 与梯度；`calib` 温度缩放与可靠性图、两位标注者一致性。`case_03` 末尾新增概率校准表（ECE / Brier）。
+- 04：`mnb` 多项式朴素贝叶斯手算（拉普拉斯平滑、log-space）与反例；`knn_rules` 六个点的缩放、三种距离、投票规则；`split` 分位点候选 vs 全部相邻中点；`grow` 递归生长记录、weakest-link α 序列与 CV 选 α；`diag` 斜边界反例。`case_04` 新增 log 域下溢演示与泰坦尼克代价复杂度剪枝。
+- 05：`dual` 原问题到对偶、两点手算、核化 SGD；`cscale` C 乘求和 / 平均的换算；`cost` 核化的 n² 与支持向量代价；`analogy` attention 类比成立在哪一层。`case_05` 新增 `cost`：训练集 2k → 20k 的支持向量与预测时间。
+- 06：`variance` ρσ² + (1 − ρ)σ²/B 公式 vs 实测；`logit` 二分类 boosting 的牛顿叶子值与 log-loss 对照；`early` 早停轮数来自验证集 vs 测试集；`forest_cost` 10 → 3000 棵的收益与代价。`case_06` 新增早停的验证集 vs 测试集、森林 50 → 2000 棵。
+- 新增记录由 NumPy 2.2.6、scikit-learn 1.7.2（05 / 06 为 scikit-learn 1.9.1 / NumPy 2.5.3）CPU 实跑产生，追加在 `expected/` 对应文件末尾；旧区段原样保留。01 高次多项式、02 近奇异设计矩阵（`case_02` 第 6 步测试 RMSE 本机 224,642 vs 旧记录 102,265）、`case_06` 的末位在不同 BLAS / 平台下会有出入，不应为迎合旧日志手改输出。
+- `case_01` – `case_04` 读取 parquet 缓存需要 `pyarrow`。
 
 ## 07 / 08 深化实验
 

@@ -12,7 +12,6 @@ import sys
 import time
 
 import numpy as np
-from _plot import C, plt, save
 from sklearn.datasets import (
     fetch_20newsgroups,
     load_breast_cancer,
@@ -39,6 +38,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
+from _plot import C, plt, save
 
 
 def tabular():

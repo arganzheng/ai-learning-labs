@@ -2,7 +2,8 @@
 PCA vs t-SNE 的二维图、embedding 的各向异性（真实句向量）、真实权重矩阵的奇异值谱（低秩直觉）。
 https://arganzheng.life/dimensionality-reduction-pca-svd-tsne-and-umap.html
 
-    python 08_dimensionality_reduction.py          # 全部：geometry pca reconstruct svd tsne anisotropy spectrum
+    python 08_dimensionality_reduction.py          # 全部：geometry pca reconstruct svd tsne anisotropy spectrum scaling neighbors faces
+    #                                              （neighbors 的 UMAP 部分需要可选依赖 umap-learn，没装会跳过）
     python 08_dimensionality_reduction.py anisotropy   # 需要 07 生成的 out/sentence_embeddings.npz（没有会自动生成）
 
 图输出到 out/08-*.svg。
@@ -11,10 +12,20 @@ import os
 import sys
 
 import numpy as np
-from sklearn.datasets import load_digits
+from scipy.stats import spearmanr
+from sklearn.datasets import load_breast_cancer, load_digits
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 
+try:
+    import umap
+except ModuleNotFoundError:
+    umap = None
+
+from _data import olivetti_faces
 from _plot import C, plt, save
 
 
@@ -114,7 +125,7 @@ def exp_svd():
     print(f"  sklearn explained_variance_   {np.round(sk.explained_variance_[:3], 2)}")
     cos = np.abs((evecs[:, :3] * Vt[:3].T).sum(0))
     print(f"  特征向量与 SVD 的 V 的前 3 列：|余弦| {np.round(cos, 6)}（同一方向，可能差一个符号）")
-    print(f"  64×64 协方差特征分解 vs 1797×64 数据 SVD：数值上 SVD 更稳（不用先算 XᵀX，条件数是平方关系），实现都走 SVD")
+    print("  64×64 协方差特征分解 vs 1797×64 数据 SVD：数值上 SVD 更稳（不用先算 XᵀX，条件数是平方关系），实现都走 SVD")
     print()
 
 
@@ -126,8 +137,6 @@ def exp_tsne():
     print(f"  PCA 前两维只解释 {ratio[:2].sum():.1%} 的方差")
     Zt = TSNE(2, init="pca", perplexity=30, random_state=0).fit_transform(d.data)
     Zt50 = TSNE(2, init="pca", perplexity=30, random_state=0).fit_transform(PCA(30).fit_transform(d.data))
-    from sklearn.neighbors import KNeighborsClassifier
-    from sklearn.model_selection import cross_val_score
     for name, ZZ in (("PCA 2 维", Z), ("t-SNE 2 维", Zt), ("PCA 30 → t-SNE 2", Zt50)):
         acc = cross_val_score(KNeighborsClassifier(5), ZZ, d.target, cv=5).mean()
         print(f"  在{name}坐标上做 KNN 分类（5 折）：{acc:.3f}——衡量二维图上同类点有多聚在一起")
@@ -209,8 +218,176 @@ def exp_spectrum():
     print()
 
 
-EXPS = {"geometry": exp_geometry, "pca": exp_pca, "reconstruct": exp_reconstruct, "svd": exp_svd, "tsne": exp_tsne,
-        "anisotropy": exp_anisotropy, "spectrum": exp_spectrum}
+# ---------------- 8. 中心化、标准化与白化 ----------------
+def exp_scaling():
+    print("=== 8. 中心化、标准化、白化：三件不同的事 ===")
+    data = load_breast_cancer()
+    X, cols = data.data, data.feature_names
+    spread = X.std(0)
+    print(
+        f"  数据 {X.shape}：各列标准差从 {spread.min():.4f}（{cols[spread.argmin()]}）到 {spread.max():.1f}（{cols[spread.argmax()]}）"
+    )
+
+    _, _, Vt0 = np.linalg.svd(X, full_matrices=False)  # 不中心化：直接对原始矩阵做 SVD
+    mu = X.mean(0)
+    cos_mu = abs(Vt0[0] @ mu) / np.linalg.norm(mu)
+    print(
+        f"  不中心化：第一「主成分」与均值向量的 |余弦| {cos_mu:.4f}——它指的是数据云的位置，不是数据的变化方向"
+    )
+
+    _, _, ratio_raw = pca(X, 30)  # 中心化但不标准化
+    _, _, ratio_std = pca(StandardScaler().fit_transform(X), 30)
+    top_raw = cols[np.abs(np.linalg.svd(X - mu, full_matrices=False)[2][0]).argmax()]
+    print(
+        f"  中心化、不标准化：PC1 解释 {ratio_raw[0]:.1%}，载荷最大的列是 {top_raw}（量纲最大的那列）"
+    )
+    print(
+        f"  标准化（每列减均值除标准差）之后：PC1 解释 {ratio_std[0]:.1%}，前 3 个 {ratio_std[:3].sum():.1%}——各列按相关性而不是按单位大小竞争"
+    )
+
+    Z, _, _ = pca(
+        StandardScaler().fit_transform(X), 10
+    )  # 白化：把每个主成分的方差拉成 1
+    Zw = Z / Z.std(0, ddof=1)
+    cov_before = np.cov(Z.T)
+    cov_after = np.cov(Zw.T)
+    np.testing.assert_allclose(cov_after, np.eye(10), atol=1e-10)
+    reference = PCA(10, whiten=True, svd_solver="full").fit_transform(
+        StandardScaler().fit_transform(X)
+    )
+    np.testing.assert_allclose(np.abs(Zw), np.abs(reference), atol=1e-10)
+    off_before = np.abs(cov_before - np.diag(np.diag(cov_before))).max()
+    print(
+        f"  PCA 之后（未白化）：10 个坐标两两不相关（协方差矩阵非对角最大 {off_before:.1e}），但方差从 {np.diag(cov_before).max():.2f} 到 {np.diag(cov_before).min():.3f} 不等"
+    )
+    print(
+        f"  白化之后：协方差矩阵与单位阵的最大偏差 {np.abs(cov_after - np.eye(10)).max():.1e}——每个方向方差都是 1"
+    )
+    print(
+        "  三件事互不替代：中心化决定主成分是不是「变化方向」；标准化决定各列按什么尺度竞争；白化把尺度全抹平，低方差方向也会被放大；是否有益必须在留出集上比较"
+    )
+
+    fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.5))
+    ax = axes[0]
+    ax.bar(range(1, 11), ratio_raw[:10] * 100, color=C["gray"], label="只中心化")
+    ax.bar(
+        range(1, 11), ratio_std[:10] * 100, color=C["red"], alpha=0.75, label="标准化"
+    )
+    ax.set_xlabel("主成分序号")
+    ax.set_ylabel("解释方差比 (%)")
+    ax.legend(frameon=False, fontsize=7)
+    ax.set_title("标准化前后的解释方差", fontsize=8.5)
+    for ax, M, title in (
+        (axes[1], cov_before, "PCA 坐标的协方差：对角线不等"),
+        (axes[2], cov_after, "白化后：协方差 = 单位阵"),
+    ):
+        im = ax.imshow(M, cmap="RdBu_r", vmin=-1.2, vmax=1.2)
+        ax.set_title(title, fontsize=8.5)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    fig.colorbar(im, ax=axes[1:], shrink=0.8)
+    save(fig, "08-centering-scaling-whitening")
+    print()
+
+
+# ---------------- 9. 邻域大小这个超参数：t-SNE 的 perplexity 与 UMAP 的 n_neighbors ----------------
+def exp_neighbors():
+    print(
+        "=== 9. 邻域大小：t-SNE 的 perplexity、UMAP 的 n_neighbors，以及二维图上的距离 ==="
+    )
+    d = load_digits()
+    X, y = d.data, d.target
+    X30 = PCA(30, random_state=0).fit_transform(X)
+    cent = np.array([X[y == c].mean(0) for c in range(10)])
+    iu = np.triu_indices(10, 1)
+    d_high = np.sqrt(((cent[:, None] - cent[None]) ** 2).sum(-1))[iu]
+
+    def report(name, Z2):
+        acc = cross_val_score(KNeighborsClassifier(5), Z2, y, cv=5).mean()
+        c2 = np.array([Z2[y == c].mean(0) for c in range(10)])
+        d_low = np.sqrt(((c2[:, None] - c2[None]) ** 2).sum(-1))[iu]
+        rho = spearmanr(d_high, d_low).statistic
+        print(
+            f"  {name:<34} 二维上的 5-NN 准确率 {acc:.3f}，类心距离与 64 维的 Spearman 相关 {rho:+.2f}"
+        )
+        return acc, rho, Z2
+
+    print(
+        f"  参照：在原始 64 维上做同样的 5-NN 交叉验证 {cross_val_score(KNeighborsClassifier(5), X, y, cv=5).mean():.3f}"
+    )
+    panels = [
+        ("PCA 2 维", report("PCA 2 维", PCA(2, random_state=0).fit_transform(X))[2])
+    ]
+    for perp in (5, 30, 50):
+        _, _, Z2 = report(
+            f"t-SNE perplexity={perp}",
+            TSNE(2, init="pca", perplexity=perp, random_state=0).fit_transform(X30),
+        )
+        panels.append((f"t-SNE perplexity={perp}", Z2))
+    if umap is None:
+        print("  （没装 umap-learn，跳过 UMAP；pip install umap-learn==0.5.7）")
+    else:
+        for nn in (5, 15, 50):
+            _, _, Z2 = report(
+                f"UMAP n_neighbors={nn}",
+                umap.UMAP(n_neighbors=nn, min_dist=0.1, random_state=0).fit_transform(
+                    X30
+                ),
+            )
+            panels.append((f"UMAP n_neighbors={nn}", Z2))
+    fig, axes = plt.subplots(2, 4, figsize=(7.6, 4.0))
+    rng = np.random.default_rng(0)
+    shown = np.concatenate(
+        [
+            rng.choice(np.flatnonzero(y == label), 10, replace=False)
+            for label in range(10)
+        ]
+    )
+    for ax, (title, Z2) in zip(axes.ravel(), panels):
+        sc = ax.scatter(Z2[shown, 0], Z2[shown, 1], c=y[shown], cmap="tab10", s=3)
+        ax.set_title(title, fontsize=8)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    for ax in axes.ravel()[len(panels) :]:
+        ax.axis("off")
+    fig.colorbar(sc, ax=axes, ticks=range(10), shrink=0.7, label="数字")
+    save(fig, "08-neighborhood-size")
+    print(
+        "  perplexity / n_neighbors 调的是「多大范围算邻居」：小值只管最近的几个点（团碎、团间距离更不可信），大值把更大范围算进来"
+    )
+    print(
+        "  两点注意：① 二维图上的 KNN 只说明这张图上同类点聚在一起，它用了全部数据（含标签要预测的那些点）来构造坐标，不能当成泛化评估——要评估就在原始特征上按第一篇的划分做；② 本例 t-SNE 的类心距离相关也可达 +0.81，但高相关不等于保距保证，UMAP 的相关随邻域参数改变，不能把团间距离当语义刻度"
+    )
+    print()
+
+
+
+def exp_faces():
+    print("=== 10. Eigenfaces 控制变量：同一划分、同一维数，只切换白化 ===")
+    X, y = olivetti_faces()
+    Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
+    print(f"  训练 {len(Xtr)} 张、测试 {len(Xte)} 张；各人训练张数 {np.unique(np.bincount(ytr)).tolist()}")
+    for k in (50, 150):
+        for whiten in (False, True):
+            model = PCA(k, whiten=whiten, svd_solver="full").fit(Xtr)
+            train, test = model.transform(Xtr), model.transform(Xte)
+            score = KNeighborsClassifier(1).fit(train, ytr).score(test, yte)
+            print(f"  PCA {k:3d}，whiten={str(whiten):5s}：1-NN 留出准确率 {score:.3f}")
+    print("  只在训练集 fit PCA；此对照隔离白化效应，但不能据此把每个低方差方向都判成噪声")
+    print()
+
+EXPS = {
+    "geometry": exp_geometry,
+    "pca": exp_pca,
+    "reconstruct": exp_reconstruct,
+    "svd": exp_svd,
+    "tsne": exp_tsne,
+    "anisotropy": exp_anisotropy,
+    "spectrum": exp_spectrum,
+    "scaling": exp_scaling,
+    "neighbors": exp_neighbors,
+    "faces": exp_faces,
+}
 
 if __name__ == "__main__":
     names = [a for a in sys.argv[1:] if not a.startswith("-")] or list(EXPS)

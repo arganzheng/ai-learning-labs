@@ -10,8 +10,8 @@
 | `04_naive_bayes_knn_and_trees.py` | [三个基础分类器](https://arganzheng.life/a-family-of-classifiers-from-naive-bayes-to-gradient-boosting.html) | compare grid bayes nb knn curse tree depth | 一分钟 |
 | `05_svm_and_kernels.py` | [SVM 与核方法](https://arganzheng.life/svm-and-kernel-methods.html) | margin hinge primal softc kernel rbf attention scale | 半分钟 |
 | `06_ensembles_and_gradient_boosting.py` | [集成](https://arganzheng.life/ensembles-random-forest-and-gradient-boosting.html) | bagging forest boost_steps boost_hand lr importance tabular budget | 一两分钟 |
-| `07_clustering.py` | [聚类](https://arganzheng.life/unsupervised-learning-kmeans-pca-and-embedding-clusters.html) | iterate kmeans choose_k init dbscan hierarchical corpus | 一分钟（corpus 首次加载模型） |
-| `08_dimensionality_reduction.py` | [降维](https://arganzheng.life/dimensionality-reduction-pca-svd-tsne-and-umap.html) | geometry pca reconstruct svd tsne anisotropy spectrum | 一分钟 |
+| `07_clustering.py` | [聚类](https://arganzheng.life/unsupervised-learning-kmeans-pca-and-embedding-clusters.html) | iterate kmeans choose_k init dbscan hierarchical corpus edge expand linkage | 一分钟（corpus 首次加载模型） |
+| `08_dimensionality_reduction.py` | [降维](https://arganzheng.life/dimensionality-reduction-pca-svd-tsne-and-umap.html) | geometry pca reconstruct svd tsne anisotropy spectrum scaling neighbors faces | 一分钟 |
 | `09_minhash_lsh.py` | [去重：MinHash 与 LSH](https://arganzheng.life/deduplication-minhash-and-lsh-probabilities.html) | tiny estimate error scurve dedup semantic | 一分钟 |
 | `10_evaluation.py` | [评估](https://arganzheng.life/evaluation-from-confusion-matrix-to-judge-agreement.html) | metrics threshold imbalance calibration kappa cv bootstrap paired multiple | 半分钟 |
 
@@ -42,3 +42,12 @@ PLOT_PNG=/tmp/plots python 02_linear_regression.py   # 另存一份 png 方便�
 ```
 
 数据全部是 scikit-learn 自带的小数据集（乳腺癌、手写数字）或合成数据（`make_classification`、`make_blobs`、`make_moons`、`make_circles`、自造的近重复文本），不用下载。`expected/` 是作者机器上的完整输出；不同版本下小数末位与耗时会有出入，结论应一致。
+
+## 07 / 08 深化实验
+
+- 07：`edge` 验证空簇、提前停止与最终 labels/centers/inertia 一致性；`expand` 跟踪 DBSCAN 队列并逐点对照 sklearn；`linkage` 给五点合并记录与两组形状对照。
+- 08：`scaling` 对照中心化、标准化、样本协方差白化（并与 sklearn 对数）；`neighbors` 控制同一输入、随机种子下的邻域参数；`faces` 固定人脸数据划分与维数，只切换白化。
+- UMAP 可选：`pip install umap-learn==0.5.7`。未安装会明确跳过 UMAP；其他子实验仍可用。
+- 新增记录由 NumPy 2.2.6、scikit-learn 1.7.2、umap-learn 0.5.7 实跑产生。旧 `expected/` 区段与文章执行输出保留；不同 BLAS/平台下 PCA 的符号对齐误差和 t-SNE 末位可能不同，不应为迎合旧日志手改输出。
+- 邻域实验的二维 KNN 是先做全数据嵌入后的聚集度诊断，不是对未见样本的泛化评估。图每类固定抽 10 点，指标使用全部 1797 点。
+- 07/08 全部子实验及 RFM、颜色量化、Eigenfaces 案例可在 CPU 运行；首次模型/数据下载及 UMAP 编译缓存不包含在原表的粗略时间里。

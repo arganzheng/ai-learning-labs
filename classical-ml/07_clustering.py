@@ -2,12 +2,13 @@
 以及用一个真实的小语料（78 句、Qwen2.5-0.5B 句向量）做"这批数据里有什么"。
 https://arganzheng.life/unsupervised-learning-kmeans-pca-and-embedding-clusters.html
 
-    python 07_clustering.py          # 全部：iterate kmeans choose_k init dbscan hierarchical corpus
+    python 07_clustering.py          # 全部：iterate kmeans choose_k init dbscan hierarchical corpus edge expand linkage
     python 07_clustering.py corpus   # 语料实验第一次跑要加载 Qwen2.5-0.5B（本地缓存），之后读 out/sentence_embeddings.npz
 
 图输出到 out/07-*.svg。
 """
 import sys
+from collections import deque
 
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
@@ -115,8 +116,8 @@ def exp_init():
     print(f"           k-means++            中位数 {np.median(pp):.0f}，最差 {pp.max():.0f}，落到最优的比例 {(pp < pp.min()*1.01).mean():.0%}")
     fig, ax = plt.subplots(figsize=(7.6, 2.4))
     bins = np.linspace(min(rand.min(), pp.min()) * 0.98, max(rand.max(), pp.max()) * 1.02, 30)
-    ax.hist(rand, bins=bins, color=C["gray"], alpha=0.7, label="随机初始化")
-    ax.hist(pp, bins=bins, color=C["red"], alpha=0.7, label="k-means++")
+    ax.hist(rand, bins=bins.tolist(), color=C["gray"], alpha=0.7, label="随机初始化")
+    ax.hist(pp, bins=bins.tolist(), color=C["red"], alpha=0.7, label="k-means++")
     ax.set_xlabel("收敛后的簇内平方和（50 个不同 seed）"); ax.set_ylabel("次数"); ax.legend(frameon=False)
     save(fig, "07-init-kmeanspp")
     print("  局部最优是真实存在的：随机初始化最差能停在 2 倍于最优的解（两个中心挤在一个真簇里）；k-means++ 让初始中心彼此远，最差情况好得多；实践再加 n_init 多跑几次取最好")
@@ -179,7 +180,7 @@ def exp_hierarchical():
     ax.set_title("30 个点，切成 3 簇", fontsize=8.5); ax.set_xticks([]); ax.set_yticks([])
     ax = axes[1]
     dendrogram(Z, ax=ax, color_threshold=Z[-2, 2], leaf_font_size=5, above_threshold_color=C["gray"])
-    ax.axhline(Z[-2, 2] * 1.05, color=C["red"], ls="--", lw=0.8)
+    ax.axhline((Z[-3, 2] + Z[-2, 2]) / 2, color=C["red"], ls="--", lw=0.8)
     ax.set_title("树状图：纵轴是合并时的距离；在红线处横切得 3 簇", fontsize=8.5); ax.set_yticks([])
     save(fig, "07-hierarchical-dendrogram")
     print("  不用先定 k：看树状图上哪一层合并距离突然变大，在那里切；代价 O(n²) 内存，几万个点以上就不合适")
@@ -206,8 +207,214 @@ def exp_corpus():
     print()
 
 
-EXPS = {"iterate": exp_iterate, "kmeans": exp_kmeans, "choose_k": exp_choose_k, "init": exp_init,
-        "dbscan": exp_dbscan, "hierarchical": exp_hierarchical, "corpus": exp_corpus}
+def kmeans_safe(X, initial_centers, n_iter=100, tol=1e-8):
+    X = np.asarray(X, dtype=float)
+    centers = np.asarray(initial_centers, dtype=float).copy()
+    if X.ndim != 2 or len(X) == 0 or X.shape[1] == 0:
+        raise ValueError("X must be a nonempty matrix")
+    if (
+        centers.ndim != 2
+        or not 1 <= len(centers) <= len(X)
+        or centers.shape[1] != X.shape[1]
+    ):
+        raise ValueError("invalid initial centers")
+    if not np.isfinite(X).all() or not np.isfinite(centers).all():
+        raise ValueError("non-finite input")
+    if n_iter < 1 or not np.isfinite(tol) or tol < 0:
+        raise ValueError("invalid stopping parameters")
+    for iteration in range(1, n_iter + 1):
+        d2 = ((X[:, None] - centers[None]) ** 2).sum(-1)
+        labels = d2.argmin(1)
+        new_centers = centers.copy()
+        for j in range(len(centers)):
+            members = X[labels == j]
+            if len(members):
+                new_centers[j] = members.mean(0)
+        shift = np.linalg.norm(new_centers - centers)
+        centers = new_centers
+        if shift <= tol:
+            break
+    d2 = ((X[:, None] - centers[None]) ** 2).sum(-1)
+    labels = d2.argmin(1)
+    inertia = float(d2[np.arange(len(X)), labels].sum())
+    return labels, centers, inertia, iteration
+
+
+def exp_edge():
+    print("=== 8. 空簇与提前停止：最终中心、标签和目标值必须对应 ===")
+    X = np.array([[0.0], [0.0], [10.0], [10.0]])
+    initial = X[[0, 1, 2]]
+    labels = ((X[:, None] - initial[None]) ** 2).sum(-1).argmin(1)
+    print(
+        f"  重复坐标 [0, 0, 10, 10]、初始中心 [0, 0, 10]：首轮计数 {np.bincount(labels, minlength=3).tolist()}"
+    )
+    labels, centers, inertia, _ = kmeans_safe(X, initial)
+    assert np.isfinite(centers).all() and inertia == 0
+    print(
+        f"  空簇保留旧中心：中心 {centers.ravel().tolist()}，实际非空簇 {len(np.unique(labels))}，inertia {inertia:.1f}"
+    )
+    X = np.array([[0.0], [2.0], [3.0], [10.0]])
+    initial = np.array([[0.0], [2.0]])
+    old_labels = ((X[:, None] - initial[None]) ** 2).sum(-1).argmin(1)
+    for limit in (1, 100):
+        labels, centers, inertia, iterations = kmeans_safe(X, initial, n_iter=limit)
+        recomputed = ((X - centers[labels]) ** 2).sum()
+        np.testing.assert_allclose(inertia, recomputed)
+        expected_labels = ((X[:, None] - centers[None]) ** 2).sum(-1).argmin(1)
+        np.testing.assert_array_equal(labels, expected_labels)
+        print(
+            f"  max_iter={limit}：{iterations} 轮，中心 {np.round(centers.ravel(), 3).tolist()}，标签 {labels.tolist()}，inertia {inertia:.3f}"
+        )
+        if limit == 1:
+            assert not np.array_equal(old_labels, labels)
+    sk = KMeans(2, init=initial, n_init=1, tol=0, algorithm="lloyd").fit(X)
+    np.testing.assert_allclose(inertia, sk.inertia_)
+    assert adjusted_rand_score(labels, sk.labels_) == 1
+    print(
+        f"  同一初始中心、充分迭代与 sklearn 对照：ARI 1.000，inertia {sk.inertia_:.3f}"
+    )
+    for tolerance in (0.0, 1e-4, 10.0):
+        labels, centers, inertia, iterations = kmeans_safe(X, initial, tol=tolerance)
+        print(
+            f"  绝对 Frobenius 位移阈值 {tolerance:g}：{iterations} 轮，inertia {inertia:.3f}"
+        )
+    print(
+        "  保留空中心不保证 k 个非空簇；绝对位移阈值不是 sklearn 的缩放 tol；提前停止后中心未必是最终标签的均值"
+    )
+    print()
+
+
+# ---------------- 9. DBSCAN 的扩张过程 ----------------
+def exp_expand():
+    print("=== 9. DBSCAN 的扩张：从一个核心点出发，队列怎么把一簇吃完 ===")
+    P = np.array(
+        [
+            [0.0, 0.0],
+            [0.4, 0.2],
+            [0.2, 0.5],
+            [0.8, 0.3],
+            [1.2, 0.4],
+            [1.6, 0.5],
+            [4.0, 4.0],
+            [4.3, 4.2],
+            [4.1, 4.4],
+            [8.0, 1.0],
+        ]
+    )
+    eps, min_pts = 0.8, 3
+    names = [f"p{i}" for i in range(len(P))]
+    D = np.sqrt(((P[:, None, :] - P[None]) ** 2).sum(-1))
+    neigh = [np.where(D[i] <= eps)[0] for i in range(len(P))]
+    is_core = np.array([len(n) >= min_pts for n in neigh])
+    print(
+        f"  10 个点，eps = {eps}、min_samples = {min_pts}；每个点 eps 邻域内的点数 {[len(n) for n in neigh]}"
+    )
+    print(f"  核心点 {[names[i] for i in range(len(P)) if is_core[i]]}")
+    labels = np.full(len(P), -1)
+    cid = 0
+    for i in range(len(P)):
+        if labels[i] != -1 or not is_core[i]:
+            continue
+        labels[i] = cid
+        queue = deque(j for j in neigh[i] if labels[j] == -1)
+        for j in queue:
+            labels[j] = cid
+        print(f"  簇 {cid} 从核心点 {names[i]} 出发，队列 {[names[j] for j in queue]}")
+        while queue:
+            j = queue.popleft()
+            if is_core[j]:
+                add = [t for t in neigh[j] if labels[t] == -1]
+                for t in add:
+                    labels[t] = cid
+                queue.extend(add)
+                print(
+                    f"    取出 {names[j]}：它是核心点，把邻域里还没归属的 {[names[t] for t in add] or '（没有新点）'} 加进队列 → 队列 {[names[t] for t in queue] or '空'}"
+                )
+            else:
+                print(
+                    f"    取出 {names[j]}：邻域不足 {min_pts} 个，是边界点——归到簇 {cid}，但不再向外扩"
+                )
+        cid += 1
+    print(f"  手写结果 {labels.tolist()}（−1 是噪声）")
+    sk = DBSCAN(eps=eps, min_samples=min_pts).fit(P)
+    np.testing.assert_array_equal(labels, sk.labels_)
+    np.testing.assert_array_equal(np.flatnonzero(is_core), sk.core_sample_indices_)
+    print(
+        f"  sklearn  {sk.labels_.tolist()}——逐点相同：{np.array_equal(labels, sk.labels_)}"
+    )
+    print(
+        "  扩张只从核心点继续：边界点被吃进簇里但不再传播，所以两个密集团之间只要没有核心点搭桥就不会连起来"
+    )
+    print()
+
+
+# ---------------- 10. 四种 linkage ----------------
+def exp_linkage():
+    print("=== 10. 层次聚类的四种 linkage：簇间距离怎么定，结果差很多 ===")
+    Xm, ym = make_moons(300, noise=0.05, random_state=0)
+    Xb, yb = make_blobs(
+        n_samples=[200, 60, 40],
+        centers=[[0, 0], [4, 4], [8, 0]],
+        cluster_std=[1.2, 0.4, 0.4],
+        random_state=0,
+    )
+    methods = ("single", "complete", "average", "ward")
+    small = np.array([0.0, 1.0, 3.0, 5.0, 9.0])[:, None]
+    print(
+        "  五个一维点 [0, 1, 3, 5, 9]：每行 [左簇, 右簇, 合并高度, 合并后点数]；新簇编号从 5 开始"
+    )
+    for method in methods:
+        print(f"    {method}: {np.round(linkage(small, method=method), 3).tolist()}")
+    zh = {
+        "single": "最近点（single）",
+        "complete": "最远点（complete）",
+        "average": "平均（average）",
+        "ward": "Ward（合并后平方和增加最少）",
+    }
+    fig, axes = plt.subplots(2, 4, figsize=(7.6, 4.0))
+    for row, (X, y, title) in enumerate(
+        ((Xm, ym, "两个月牙"), (Xb, yb, "一大两小、密度不同的三团"))
+    ):
+        print(f"  {title}：")
+        for col, m in enumerate(methods):
+            lab = fcluster(linkage(X, method=m), len(set(y)), criterion="maxclust")
+            ari = adjusted_rand_score(y, lab)
+            print(
+                f"    {zh[m]:<28} ARI {ari:.3f}，每簇大小 {sorted(np.bincount(lab)[1:].tolist(), reverse=True)}"
+            )
+            ax = axes[row, col]
+            for j in sorted(set(lab)):
+                ax.scatter(
+                    X[lab == j][::3, 0],
+                    X[lab == j][::3, 1],
+                    s=4,
+                    color=PALETTE[(j - 1) % len(PALETTE)],
+                )
+            ax.set_title(f"{m}：ARI {ari:.2f}", fontsize=8)
+            ax.set_xticks([])
+            ax.set_yticks([])
+    save(fig, "07-linkage-comparison")
+    print(
+        "  single 容易产生链式连接；complete 与 Ward 偏好紧凑的簇。结果依赖数据、噪声与切树位置，不是普适排名"
+    )
+    print(
+        "  同一份数据、同一个 k，换个 linkage 就是另一套簇——聚类给的是一种看法，不是数据里「本来就有」的答案"
+    )
+    print()
+
+
+EXPS = {
+    "iterate": exp_iterate,
+    "kmeans": exp_kmeans,
+    "choose_k": exp_choose_k,
+    "init": exp_init,
+    "dbscan": exp_dbscan,
+    "hierarchical": exp_hierarchical,
+    "corpus": exp_corpus,
+    "edge": exp_edge,
+    "expand": exp_expand,
+    "linkage": exp_linkage,
+}
 
 if __name__ == "__main__":
     names = [a for a in sys.argv[1:] if not a.startswith("-")] or list(EXPS)

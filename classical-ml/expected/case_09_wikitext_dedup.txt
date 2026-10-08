@@ -30,3 +30,9 @@
              段 4863: Shara Worden – backing vocals on " Concerning the UFO Sighting Near Hi...
   同一系列条目（同型军舰、同一位作者的多篇）常有整段套模板改名字的写法，这是真实语料里去重会碰到的东西。
   图已保存 out/case-09-lsh-wikitext.svg
+
+=== 4. 从重复对到删除清单：160 对 J ≥ 0.7 连成 158 个分量（最大 3 段，大小 ≥ 3 的 1 个）===
+  分量内两两 160 对里有 0 对 J < 0.7（含不在候选里的对）——这份语料的重复几乎都是孤立的一对，没出现 A ≈ B ≈ C 而 A ≉ C 的链
+  策略 A 连通分量各留一段：保留 14,654 段、删 159
+  策略 B 只删与代表（分量里编号最小的一段）J ≥ 0.7 的：删 159，另外 0 段与代表不够像、被留下——两种策略在这里删得一样多，分量小时策略之差不显现
+  最大分量的前 3 段：段 6379: Adrian Paul said that Vandernoot portray... / 段 14593: Paul said that Vandernoot portrayed Lisa... / 段 14782: Adrian Paul said that Vandernoot portray...

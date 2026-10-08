@@ -81,7 +81,7 @@ def main():
     idx = rng.integers(0, n, (k_try, 2))
     _ = [jaccard(sets[a], sets[b]) for a, b in idx]
     per_pair = (time.time() - t) / k_try
-    print(f"\n=== 2. 暴力两两比较 ===")
+    print("\n=== 2. 暴力两两比较 ===")
     print(f"  {n:,} 段有 {pairs_all:,} 对；实测每对 Jaccard {per_pair * 1e6:.0f} µs → 全部要 {pairs_all * per_pair / 60:.0f} 分钟")
 
     # MinHash + LSH
@@ -115,8 +115,8 @@ def main():
     print(f"\n  注入的 500 对里成为候选的 {len(found)}；按改动比例：")
     rec = {}
     for frac in [0.02, 0.05, 0.10, 0.20]:
-        m = [(a, b) for a, b, f in truth if f == frac]
-        rec[frac] = np.mean([p in cand for p in m]); jm = np.median([jaccard(sets[a], sets[b]) for a, b in m])
+        pf = [(a, b) for a, b, f in truth if f == frac]
+        rec[frac] = np.mean([p in cand for p in pf]); jm = np.median([jaccard(sets[a], sets[b]) for a, b in pf])
         print(f"    改 {frac:>3.0%}：Jaccard 中位 {jm:.2f}，召回 {rec[frac]:.0%}")
     print("  解读：改 2% 的词（Jaccard 0.87）几乎全找到；改 5% 的 Jaccard 中位 0.68 正卡在阈值 0.71 上，召回 61%——S 曲线在阈值附近就是一半一半；"
           "改 10%（0.46）只剩 6%，改 20% 全漏。这不是 bug，是阈值的定义：词级 5-gram 下，改 10% 的词已经不算'近重复'。要抓更松的，调 b / r 或换更短的 shingle。")
@@ -126,7 +126,7 @@ def main():
     for j, (a, bb) in natural[:3]:
         print(f"    J = {j:.2f}  段 {a}: {docs[a][:70]}...")
         print(f"             段 {bb}: {docs[bb][:70]}...")
-    print(f"  同一系列条目（同型军舰、同一位作者的多篇）常有整段套模板改名字的写法，这是真实语料里去重会碰到的东西。")
+    print("  同一系列条目（同型军舰、同一位作者的多篇）常有整段套模板改名字的写法，这是真实语料里去重会碰到的东西。")
 
     # 图：S 曲线 + 注入对的召回；耗时对比
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8), width_ratios=[1.4, 1])
@@ -134,8 +134,8 @@ def main():
     ss = np.linspace(0.2, 1, 200)
     ax.plot(ss, 1 - (1 - ss ** r) ** b, c=C["gray"], label=f"S 曲线 1 − (1 − s^{r})^{b}")
     for frac, col in zip([0.02, 0.05, 0.10, 0.20], [C["green"], C["blue"], C["orange"], C["red"]]):
-        m = [(jaccard(sets[a], sets[bb]), (a, bb) in cand) for a, bb, f in truth if f == frac]
-        jj = np.array([x for x, _ in m]); hit = np.array([h for _, h in m])
+        pts = [(jaccard(sets[a], sets[bb]), (a, bb) in cand) for a, bb, f in truth if f == frac]
+        jj = np.array([x for x, _ in pts]); hit = np.array([h for _, h in pts])
         ax.scatter(jj, hit + rng.normal(0, 0.015, len(hit)), s=6, alpha=0.6, c=col, label=f"改 {frac:.0%} 的词（召回 {rec[frac]:.0%}）")
     ax.set_xlabel("与原文的真实 Jaccard"); ax.set_ylabel("成为候选（1）/ 漏掉（0）"); ax.legend(fontsize=6.5, loc="center left")
     ax.set_title("500 个注入的近重复：找到了哪些")
@@ -145,6 +145,48 @@ def main():
     for i, v in enumerate([pairs_all * per_pair, t_sig, t_lsh, t_ver]):
         ax.text(i, v * 1.3, f"{v:.1f}s" if v < 100 else f"{v / 60:.0f} 分", ha="center", fontsize=7)
     save(fig, "case-09-lsh-wikitext")
+
+    # 4. 判为重复的对怎么变成「删哪些段」：连通分量 vs 贪心，近重复不传递
+    parent = list(range(n))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for a, bb in dup:
+        ra, rb = find(a), find(bb)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+    groups = defaultdict(list)
+    for i in range(n):
+        groups[find(i)].append(i)
+    multi = sorted((g for g in groups.values() if len(g) > 1), key=len, reverse=True)
+    sizes = np.array([len(g) for g in multi])
+    below = 0
+    inner = 0
+    for g in multi:
+        for x in range(len(g)):
+            for y in range(x + 1, len(g)):
+                inner += 1
+                if verified.get((g[x], g[y]), 0.0) < thr:
+                    below += 1
+    kept_cc = n - int((sizes - 1).sum())
+    print(f"\n=== 4. 从重复对到删除清单：{len(dup):,} 对 J ≥ {thr} 连成 {len(multi)} 个分量（最大 {sizes.max()} 段，大小 ≥ 3 的 {int((sizes >= 3).sum())} 个）===")
+    note = "近重复关系不传递，分量把它们串在了一起" if below else "这份语料的重复几乎都是孤立的一对，没出现 A ≈ B ≈ C 而 A ≉ C 的链"
+    print(f"  分量内两两 {inner} 对里有 {below} 对 J < {thr}（含不在候选里的对）——{note}")
+    print(f"  策略 A 连通分量各留一段：保留 {kept_cc:,} 段、删 {n - kept_cc}")
+    removed = set()
+    for g in multi:
+        rep = g[0]
+        for i in g[1:]:
+            if verified.get((rep, i), 0.0) >= thr:
+                removed.add(i)
+    same = "两种策略在这里删得一样多，分量小时策略之差不显现" if len(removed) == n - kept_cc else "两种策略对同一批重复对给出不同的删除数"
+    print(f"  策略 B 只删与代表（分量里编号最小的一段）J ≥ {thr} 的：删 {len(removed)}，另外 {n - kept_cc - len(removed)} 段与代表不够像、被留下——{same}")
+    biggest = multi[0]
+    print("  最大分量的前 3 段：" + " / ".join(f"段 {i}: {docs[i][:40]}..." for i in biggest[:3]))
 
 
 if __name__ == "__main__":

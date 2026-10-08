@@ -8,8 +8,8 @@
 | `02_linear_regression.py` | [线性回归](https://arganzheng.life/linear-regression-least-squares-ridge-and-lasso.html) | line surface gd scaling collinear paths geometry wd smooth robust step solvers soft align | 十几秒 |
 | `03_logistic_regression_and_reward_model.py` | [逻辑回归与奖励模型](https://arganzheng.life/linear-and-logistic-regression-the-skeleton-of-reward-models.html) | sigmoid gradient boundary cancer softmax reward noise | 十几秒 |
 | `04_naive_bayes_knn_and_trees.py` | [三个基础分类器](https://arganzheng.life/a-family-of-classifiers-from-naive-bayes-to-gradient-boosting.html) | compare grid bayes nb knn curse tree depth | 一分钟 |
-| `05_svm_and_kernels.py` | [SVM 与核方法](https://arganzheng.life/svm-and-kernel-methods.html) | margin hinge primal softc kernel rbf attention scale | 半分钟 |
-| `06_ensembles_and_gradient_boosting.py` | [集成](https://arganzheng.life/ensembles-random-forest-and-gradient-boosting.html) | bagging forest boost_steps boost_hand lr importance tabular budget | 一两分钟 |
+| `05_svm_and_kernels.py` | [SVM 与核方法](https://arganzheng.life/svm-and-kernel-methods.html) | margin hinge primal softc kernel rbf attention scale dual cscale cost analogy | 一分钟 |
+| `06_ensembles_and_gradient_boosting.py` | [集成](https://arganzheng.life/ensembles-random-forest-and-gradient-boosting.html) | bagging forest boost_steps boost_hand lr importance tabular budget variance logit early forest_cost | 四五分钟（variance 要训 50 份 × 1000 棵） |
 | `07_clustering.py` | [聚类](https://arganzheng.life/unsupervised-learning-kmeans-pca-and-embedding-clusters.html) | iterate kmeans choose_k init dbscan hierarchical corpus edge expand linkage | 一分钟（corpus 首次加载模型） |
 | `08_dimensionality_reduction.py` | [降维](https://arganzheng.life/dimensionality-reduction-pca-svd-tsne-and-umap.html) | geometry pca reconstruct svd tsne anisotropy spectrum scaling neighbors faces | 一分钟 |
 | `09_minhash_lsh.py` | [去重：MinHash 与 LSH](https://arganzheng.life/deduplication-minhash-and-lsh-probabilities.html) | tiny estimate error scurve dedup semantic | 一分钟 |
@@ -23,8 +23,8 @@
 | `case_02_housing_regression.py` | 02 线性回归 | 从猜均值到 Ridge / Lasso 十步，每步误差降多少 | 同上 |
 | `case_03_sms_spam.py` | 03 逻辑回归 | 垃圾短信识别：TF-IDF + 逻辑回归，阈值与权重 | UCI SMS Spam Collection（200 KB） |
 | `case_04_nb_knn_tree.py` | 04 三个分类器 | `nb` 朴素贝叶斯做垃圾短信；`knn` KNN 做 MNIST（全量 2.95%）；`tree` 决策树做泰坦尼克（整棵画出 + boat 泄漏陷阱） | SMS Spam；MNIST（复用 ../deep-learning-foundations/data，12 MB）；Titanic openml #40945 |
-| `case_05_svm_mnist.py` | 05 SVM | 重跑 LeCun 1998 的表：线性 / KNN / RBF-SVM（60k 全量 1.43%，约 4 分钟）；`grid` C×γ 网格 | MNIST |
-| `case_06_adult_income.py` | 06 集成 | 人口普查收入预测：逻辑回归 → 树 → 随机森林 → 梯度提升；permutation 重要性；学习率 × 轮数 | Adult openml #1590（4 MB） |
+| `case_05_svm_mnist.py` | 05 SVM | 重跑 LeCun 1998 的表：线性 / KNN / RBF-SVM（60k 全量 1.43%，约 4 分钟）；`grid` C×γ 网格；`cost` 训练集 2k → 20k 时支持向量与预测时间 | MNIST |
+| `case_06_adult_income.py` | 06 集成 | 人口普查收入预测：逻辑回归 → 树 → 随机森林 → 梯度提升；permutation 重要性；学习率 × 轮数；早停的验证集 vs 测试集；森林棵数的收益与代价 | Adult openml #1590（4 MB） |
 | `case_07_customer_segments.py` | 07 聚类 | `rfm` 54 万行交易 → RFM → K-Means 4 群画像；`colors` 照片颜色量化 | UCI Online Retail（23 MB xlsx，需 `openpyxl`）；sklearn 自带 china.jpg |
 | `case_08_eigenfaces.py` | 08 降维 | Eigenfaces：平均脸 / 特征脸 / 重建 / PCA + 分类器认人 | Olivetti_Faces openml #41083（4 MB） |
 | `case_09_wikitext_dedup.py` | 09 去重 | wikitext-2 14,813 段 + 注入 500 近重复：MinHash-LSH vs 暴力 | HF `Salesforce/wikitext`（4 MB，需 `datasets`） |

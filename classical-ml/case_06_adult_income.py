@@ -6,10 +6,12 @@ https://arganzheng.life/ensembles-random-forest-and-gradient-boosting.html
 数据：UCI Adult，1994 年美国人口普查 48,842 人，14 个特征（6 数值 + 8 类别），正类 23.9%。
 表格数据的标准考题：类别特征多、有缺失、特征间有交互，树模型的主场。图输出到 out/case-06-*.svg。
 """
+import pickle
 import time
 
 import numpy as np
-import pandas as pd
+from _data import adult
+from _plot import C, plt, save
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -20,9 +22,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
-
-from _data import adult
-from _plot import C, plt, save
 
 NUM = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
 CAT = ["workclass", "marital-status", "occupation", "relationship", "race", "sex", "native-country"]
@@ -36,7 +35,7 @@ def main():
         X[c] = X[c].astype(str).replace("nan", "缺失")
     print(f"数据：{len(df):,} 人，年收入 >50K 的 {y.mean():.1%}；{len(NUM)} 个数值特征 + {len(CAT)} 个类别特征"
           f"（类别数：{', '.join(f'{c} {X[c].nunique()}' for c in CAT)}）")
-    print(f"缺失：workclass / occupation 各约 2,800、native-country 857——当成一个类别「缺失」，树模型不在乎")
+    print("缺失：workclass / occupation 各约 2,800、native-country 857——当成一个类别「缺失」，树模型不在乎")
     Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
 
     onehot = ColumnTransformer([("num", make_pipeline(SimpleImputer(), StandardScaler()), NUM),
@@ -57,7 +56,7 @@ def main():
     res = {}
     for name, m in models:
         if m is None:
-            acc, auc, dt, dp, prob = np.mean(yte == 0), 0.5, 0, 0, None
+            acc, auc, dt, dp, prob = np.mean(yte == 0), 0.5, 0.0, 0.0, None
         else:
             t = time.time(); m.fit(Xtr, ytr); dt = time.time() - t
             t = time.time(); prob = m.predict_proba(Xte)[:, 1]; dp = time.time() - t
@@ -129,5 +128,34 @@ def main():
     save(fig, "case-06-lr-rounds")
 
 
+def extra():
+    """早停用的验证集与测试集的关系；随机森林棵数的收益与代价。main() 的输出不动，这里只追加。"""
+    df = adult()
+    y = df.pop("class").values
+    X = df[NUM + CAT].copy()
+    for c in CAT:
+        X[c] = X[c].astype(str).replace("nan", "缺失")
+    Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
+    ordinal = ColumnTransformer([("num", "passthrough", NUM), ("cat", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1), CAT)])
+    print("\n早停选的轮数来自哪份数据（lr 0.05，最多 1000 轮）")
+    Xa, Xv, ya, yv = train_test_split(Xtr, ytr, test_size=0.1, random_state=1, stratify=ytr)
+    g = make_pipeline(ordinal, HistGradientBoostingClassifier(max_iter=1000, learning_rate=0.05, early_stopping=False, random_state=0)).fit(Xa, ya)
+    val = np.array([roc_auc_score(yv, p[:, 1]) for p in g[-1].staged_predict_proba(g[0].transform(Xv))])
+    te = np.array([roc_auc_score(yte, p[:, 1]) for p in g[-1].staged_predict_proba(g[0].transform(Xte))])
+    kv, kt = int(val.argmax()), int(te.argmax())
+    print(f"  验证集（训练集内 10%）最佳第 {kv + 1} 轮 → 测试 AUC {te[kv]:.4f}；直接在测试集上挑：第 {kt + 1} 轮、{te[kt]:.4f}（高出的 {te[kt] - te[kv]:.4f} 是在测试集上调参的乐观偏差）；第 1000 轮 {te[-1]:.4f}")
+    es = make_pipeline(ordinal, HistGradientBoostingClassifier(max_iter=1000, learning_rate=0.05, early_stopping=True, validation_fraction=0.1, n_iter_no_change=10, random_state=0)).fit(Xtr, ytr)
+    print(f"  内置早停（validation_fraction=0.1, n_iter_no_change=10）停在第 {es[-1].n_iter_} 轮，测试 AUC {roc_auc_score(yte, es.predict_proba(Xte)[:, 1]):.4f}——它自己从训练集里切验证集，测试集没有参与")
+    print("\n随机森林的棵数：收益与代价（min_samples_leaf=2）")
+    print(f"  {'棵数':>5} {'AUC':>7} {'准确率':>6} {'训练':>7} {'预测':>7} {'pickle 大小':>9}")
+    for B in (50, 100, 500, 2000):
+        rf = make_pipeline(ordinal, RandomForestClassifier(B, min_samples_leaf=2, random_state=0, n_jobs=-1))
+        t = time.time(); rf.fit(Xtr, ytr); dt = time.time() - t
+        t = time.time(); prob = rf.predict_proba(Xte)[:, 1]; dp = time.time() - t
+        print(f"  {B:>5} {roc_auc_score(yte, prob):>7.4f} {np.mean((prob >= 0.5) == yte):>6.3f} {dt:>6.1f}s {dp:>6.2f}s {len(pickle.dumps(rf)) / 1e6:>7.0f}MB")
+    print("  AUC 在几百棵后只在第四位小数上动，训练时间与模型大小随棵数线性涨——「树越多越好」只在方差项上成立，代价是线性的")
+
+
 if __name__ == "__main__":
     main()
+    extra()

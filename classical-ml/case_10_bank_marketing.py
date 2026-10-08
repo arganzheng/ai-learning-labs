@@ -5,13 +5,20 @@ https://arganzheng.life/evaluation-from-confusion-matrix-to-judge-agreement.html
 
 数据：UCI Bank Marketing，45,211 次电话，目标：客户是否订了定期存款。图输出到 out/case-10-*.svg。
 """
+from itertools import pairwise
+
 import numpy as np
 from scipy import stats
 from sklearn.calibration import calibration_curve
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import average_precision_score, precision_recall_curve, roc_auc_score, roc_curve
+from sklearn.metrics import (
+    average_precision_score,
+    precision_recall_curve,
+    roc_auc_score,
+    roc_curve,
+)
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
@@ -25,7 +32,7 @@ CAT = ["job", "marital", "education", "default", "housing", "loan", "contact", "
 
 def ece(y, p, bins=10):
     edges = np.linspace(0, 1, bins + 1); e = 0
-    for lo, hi in zip(edges[:-1], edges[1:]):
+    for lo, hi in pairwise(edges):
         m = (p >= lo) & (p < hi)
         if m.any():
             e += m.mean() * abs(y[m].mean() - p[m].mean())
@@ -105,7 +112,8 @@ def main():
     # ---- 4. 两个模型谁更好：配对检验 ----
     print("\n=== 4. 随机森林 vs 梯度提升，差 0.001 AUC 是真的吗 ===")
     skf = StratifiedKFold(5, shuffle=True, random_state=0)
-    a_rf, a_gb = [], []
+    a_rf: list[float] = []
+    a_gb: list[float] = []
     for tr, va in skf.split(df, y):
         for name, lst in [("随机森林", a_rf), ("梯度提升", a_gb)]:
             m = models[name].fit(df.iloc[tr], y[tr])
@@ -146,6 +154,43 @@ def main():
         frac, mean_p = calibration_curve(yte, pp, n_bins=10, strategy="quantile"); ax.plot(mean_p, frac, "o-", ms=3, c=col, label=f"{name} ECE {ece(yte, pp):.3f}")
     ax.set_xlabel("预测的成交概率"); ax.set_ylabel("实际成交比例"); ax.set_title("可靠性图：在对角线上才可信"); ax.legend(fontsize=7)
     save(fig, "case-10-profit-calibration")
+
+    # ---- 5. 把流程走完：训练 / 验证 / 测试三份，验证集定阈值 + 校准，测试集只评一次，再成对比较 ----
+    print("\n=== 5. 完整流程：定阈值 → 校准 → 留出评估 → 成对比较（阈值和校准都不碰测试集）===")
+    Xtr2, Xva, ytr2, yva = train_test_split(Xtr, ytr, test_size=1 / 3, random_state=0, stratify=ytr)
+    print(f"  训练 {len(ytr2):,} / 验证 {len(yva):,} / 测试 {len(yte):,}；上面第 2 节的最优阈值是在测试集上扫出来的，这里改成只看验证集")
+    cost_call, gain = 25, 100
+
+    def profit_at(pp, yy, t):
+        sel = pp >= t
+        return int(gain * (sel & (yy == 1)).sum() - cost_call * sel.sum())
+
+    test_probs = {}
+    for name in ("随机森林", "梯度提升"):
+        m = models[name].fit(Xtr2, ytr2)
+        p_va, p_te = m.predict_proba(Xva)[:, 1], m.predict_proba(Xte)[:, 1]
+        test_probs[name] = p_te
+        prof_va = np.array([profit_at(p_va, yva, t) for t in ths])
+        t_va = float(ths[prof_va.argmax()])
+        prof_te = np.array([profit_at(p_te, yte, t) for t in ths])
+        t_te = float(ths[prof_te.argmax()])
+        print(f"  {name}：验证集最优阈值 {t_va:.2f} → 测试集利润 {profit_at(p_te, yte, t_va):,} 欧；在测试集上直接挑的阈值 {t_te:.2f} 利润 {prof_te.max():,} 欧（偷看的数字，只能当上界）")
+        logit_va, logit_te = np.log(p_va / (1 - p_va)), np.log(p_te / (1 - p_te))
+        platt = LogisticRegression(C=1e6).fit(logit_va[:, None], yva)
+        p_cal = platt.predict_proba(logit_te[:, None])[:, 1]
+        print(f"      留出评估：AUC {roc_auc_score(yte, p_te):.4f}，ECE 校准前 {ece(yte, p_te):.3f} → 验证集 Platt 后 {ece(yte, p_cal):.3f}（本来就校准好，映射近似恒等；校准前提是验证集与测试集同分布）")
+    rng = np.random.default_rng(0)
+    p_rf, p_gb = test_probs["随机森林"], test_probs["梯度提升"]
+    d_auc = roc_auc_score(yte, p_gb) - roc_auc_score(yte, p_rf)
+    boots = []
+    for _ in range(1000):
+        idx = rng.integers(0, len(yte), len(yte))
+        boots.append(roc_auc_score(yte[idx], p_gb[idx]) - roc_auc_score(yte[idx], p_rf[idx]))
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    print(f"  成对比较（同一测试集，配对 bootstrap 1000 次）：梯度提升 − 随机森林 的 AUC 差 {d_auc:+.4f}，95% 区间 [{lo:+.4f}, {hi:+.4f}]")
+    verdict = "区间不含 0：这份测试集上梯度提升更好" if lo > 0 or hi < 0 else "区间含 0：这份测试集分不出两者"
+    print(f"  {verdict}；注意「分不出」不是「一样好」——区间宽 {hi - lo:.4f}，只能说差距大概率不超过 {max(abs(lo), abs(hi)):.3f} 个 AUC 点。"
+          f"第 4 节的 5 折配对 t 检验 p = {pv:.3f} 要同样读：任意两折的训练集共享 75% 的样本，不是 5 次独立实验，折间标准差算出的显著性偏乐观")
 
 
 if __name__ == "__main__":

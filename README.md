@@ -10,6 +10,7 @@
 | [`cpp-for-ai-infra/`](cpp-for-ai-infra/) | C++ 在 AI-Infra：从对象模型到算子扩展 | Infra L1 | C++17 编译器 + make |
 | [`transformer-and-llm/`](transformer-and-llm/) | Transformer 与 LLM：结构、实现与算量（13 篇）+ 预训练：从 tokenizer 到训练配方（5 篇：`pretrain_e2e/` 端到端流水线、`llm_cost_09`–`_12` 及配套实验） | Infra L2 · 算法 L4（成本表两张地图共享；预训练只在算法地图） | 纯 Python；部分实验 NumPy / PyTorch；tokenizer 对比需 tiktoken + tokenizers |
 | [`algorithm-tooling/`](algorithm-tooling/) | 算法工程师的工具箱：从一个想法到一次能跑的实验 | 算法 L1 | numpy、torch（CPU）、pandas、matplotlib；04 需 transformers / peft / trl + 下载 Qwen2.5-0.5B |
+| [`gpu-kernel-engineering/`](gpu-kernel-engineering/) | GPU Kernel 工程（11：Ascend C Add 对照） | Infra L3（05） | NumPy 账本可用 CPU；编译/CPU 调试需 CANN，性能需昇腾 NPU |
 | [`classical-ml/`](classical-ml/) | LLM 时代的经典机器学习：只讲它在哪里重现（10 篇） | 算法 L2 | numpy、scikit-learn、scipy、matplotlib；07 / 08 / 09 的句向量需 transformers + 本地缓存的 Qwen2.5-0.5B |
 | [`multimodal/`](multimodal/) | 多模态：从视觉编码器到扩散模型（9 篇正文各一个 toy） | 算法 L7 | numpy、scikit-learn、matplotlib、torch（CPU）；不下载模型 |
 | [`large-scale-training/`](large-scale-training/) | 大规模训练工程：从并行策略到容错恢复（02 并行篇：4 个 CPU 进程真跑 ZeRO / TP / CP / PP / EP） | Infra L4（07） | torch（CPU，gloo 后端） |
@@ -20,7 +21,7 @@
 | [`diffusion-inference-infra/`](diffusion-inference-infra/) | 扩散模型推理基础设施：从一次去噪到一个生成服务 | Infra L4（10） | 纯 Python（账本） |
 | [`coding-interview/`](coding-interview/) | 面试手撕代码：从 LeetCode 中等题到 Transformer 组件（19 篇） | 独立系列，不属于三张地图 | `python/` 标准库；`java/` JDK 21；`ai/` numpy + torch（CPU）；`infra/` C++17 + make |
 
-尚未收录代码的系列（PyTorch 深度实践、GPU Kernel 工程、通信与互联、vLLM、AI 平台工程、开源贡献、应用地图）会在有可运行示例时按同样方式加目录。
+尚未收录代码的系列（PyTorch 深度实践、通信与互联、vLLM、AI 平台工程、开源贡献、应用地图）会在有可运行示例时按同样方式加目录。
 
 ## 需要什么硬件
 

@@ -1,0 +1,6 @@
+/vendor/build/
+/vendor/out/
+/vendor/input/
+/vendor/output/
+/vendor/sim_log/
+/vendor/ascendc_kernels_bbit

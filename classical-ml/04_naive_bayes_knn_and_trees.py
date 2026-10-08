@@ -97,8 +97,8 @@ def build_tree(X, y, depth, max_depth):
 
 def tree_predict(node, x):
     while isinstance(node, tuple):                                                # ⑥ 从根往下走到叶子
-        j, thr, l, r = node
-        node = l if x[j] <= thr else r
+        j, thr, left, right = node
+        node = left if x[j] <= thr else right
     return node
 
 
@@ -565,7 +565,7 @@ def exp_grow():
         log = []
         r2 = grow(X, y, 0, max_depth=md, min_samples_leaf=msl, log=log)
         skp = DecisionTreeClassifier(max_depth=md, min_samples_leaf=msl, random_state=0).fit(X, y)
-        print(f"  预剪枝 max_depth={md}, min_samples_leaf={msl}：手写 {len(leaves(r2))} 片叶子（{[l['counts'].tolist() for l in leaves(r2)]}），sklearn {skp.get_n_leaves()} 片叶子，训练准确率 {skp.score(X, y):.3f}")
+        print(f"  预剪枝 max_depth={md}, min_samples_leaf={msl}：手写 {len(leaves(r2))} 片叶子（{[leaf['counts'].tolist() for leaf in leaves(r2)]}），sklearn {skp.get_n_leaves()} 片叶子，训练准确率 {skp.score(X, y):.3f}")
     # 代价复杂度剪枝：从满树开始一次剪掉一个「最弱的」内部节点
     N = len(y)
     alphas = [0.0]

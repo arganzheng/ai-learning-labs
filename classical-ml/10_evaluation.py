@@ -12,7 +12,6 @@ from itertools import pairwise
 
 import numpy as np
 
-warnings.filterwarnings("ignore", category=FutureWarning)
 from sklearn.calibration import calibration_curve
 from sklearn.datasets import make_classification
 from sklearn.ensemble import GradientBoostingClassifier
@@ -24,6 +23,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 from _plot import C, plt, save
+
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 def data(n=6000, weights=(0.5, 0.5), seed=0):

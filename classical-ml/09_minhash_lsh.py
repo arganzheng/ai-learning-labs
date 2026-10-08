@@ -182,8 +182,8 @@ def exp_semantic():
     from _sentences import embeddings
     E, texts, labels, names = embeddings()
     Ec = E - E.mean(0); Ec /= np.linalg.norm(Ec, axis=1, keepdims=True)          # 减均值（第八篇的各向异性修法）
-    tmpl = [i for i, l in enumerate(labels) if names[l] == "模板"]
-    sport = [i for i, l in enumerate(labels) if names[l] == "体育"]
+    tmpl = [i for i, label in enumerate(labels) if names[label] == "模板"]
+    sport = [i for i, label in enumerate(labels) if names[label] == "体育"]
     def pairs(idx):
         return [(a, b) for x, a in enumerate(idx) for b in idx[x + 1:]]
     for name, idx in (("6 句模板文本（换了数字）", tmpl), ("12 句体育（意思相关、措辞不同）", sport)):

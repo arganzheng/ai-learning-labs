@@ -25,6 +25,8 @@ jobs:
       - name: transformer-and-llm
         working-directory: transformer-and-llm
         run: |
+          # mtp_nanogpt reads the char-level shakespeare bins produced by nanoGPT's prepare.py
+          python nanogpt/data/shakespeare_char/prepare.py
           # scaling_law_fit / training_recipe_lab / bpe_from_scratch train small models: --quick keeps them to ~1 min each
           for f in *.py; do
             echo "== $f"

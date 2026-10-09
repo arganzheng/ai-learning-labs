@@ -190,10 +190,14 @@ def exp_zloss(data, val, vocab, steps):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("experiments", nargs="*", choices=["schedule", "batch_lr", "spike", "zloss"])
+    experiments = ["schedule", "batch_lr", "spike", "zloss"]
+    ap.add_argument("experiments", nargs="*", metavar="{" + ",".join(experiments) + "}")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
-    args.experiments = args.experiments or ["schedule", "batch_lr", "spike", "zloss"]
+    unknown = [e for e in args.experiments if e not in experiments]
+    if unknown:
+        ap.error(f"invalid experiment(s): {', '.join(unknown)} (choose from {', '.join(experiments)})")
+    args.experiments = args.experiments or experiments
     data, val, vocab = load_corpus()
     scale = 0.2 if args.quick else 1.0
     t0 = time.time()

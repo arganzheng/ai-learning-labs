@@ -1,6 +1,6 @@
 # Transformer 与 LLM：结构、实现与算量 — 配套代码
 
-博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十三篇：01–04 结构与实现、05–09 结构的演进、10–13 成本账）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
+博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十三篇：01–04 结构与实现、05–10 结构的演进、11–13 通用成本账）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
 
 ## 预训练 01：一次预训练是怎么跑起来的（`pretrain_e2e/`）
 
@@ -49,23 +49,24 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 
 ## 第二、三段：结构的演进与成本账（05–13，原 01–08）
 
-两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，每篇加几个函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 02–05）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里按篇保存为十二个文件，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号。
+两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，每篇加几个函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 02–05）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里按篇保存为十二个文件，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号；多模态调整为第 10 篇后，脚本文件名与导入关系保持不变，下表按脚本版本排列。
 
 | 文件 | 文章 | 内容 | 依赖 |
 |---|---|---|---|
-| `llm_cost_01_params.py` | [05 解剖与参数量](https://arganzheng.life/transformer-anatomy-and-parameter-count.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
-| `llm_cost_02_flops_roofline.py` | [10 FLOPs、字节数与 Roofline](https://arganzheng.life/transformer-flops-bytes-and-roofline.html) | 每 token FLOPs、prefill / decode 的时间下界 | 无 |
+| `llm_cost_01_params.py` | [05 从 GPT-2 到 Llama——五处改动与参数量](https://arganzheng.life/transformer-anatomy-and-parameter-count.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
+| `tools/gen_gqa_mapping_svg.py` | 同上 | MHA / GQA / MQA 的 Q head 到 KV head 映射图；默认输出到 `out/`，也可传输出目录 | 无 |
+| `llm_cost_02_flops_roofline.py` | [11 FLOPs、字节数与 Roofline](https://arganzheng.life/transformer-flops-bytes-and-roofline.html) | 每 token FLOPs、prefill / decode 的时间下界 | 无 |
 | `llm_cost_03_attention_kv.py` | [06 Attention 变体与 KV cache](https://arganzheng.life/attention-variants-and-kv-cache.html) | MHA / GQA / MQA / MLA 的 KV 字节数与并发上限 | 无 |
 | `llm_cost_04_long_context.py` | [07 位置编码与长上下文](https://arganzheng.life/positional-encoding-and-long-context.html) | 上下文长度扫描：KV、prefill、attention 占比 | 无 |
 | `rope_numpy.py` | 同上 | RoPE 的 NumPy 实现、相对性验证、PI / NTK-aware / YaRN 波长表 | NumPy |
 | `llm_cost_05_moe.py` | [08 MoE 的算量与通信](https://arganzheng.life/moe-compute-and-communication.html) | 总参数 / 激活参数、期望激活专家数、EP all-to-all 字节数 | 无 |
 | `moe_layer_minimal.py` | 同上 | 最小 MoE 层：softmax 路由 + top-k + 共享专家 | PyTorch |
-| `fp_formats.py` | [11 浮点格式与混合精度](https://arganzheng.life/floating-point-formats-and-mixed-precision.html) | 逐位构造 FP32 / FP16 / BF16 / FP8 | NumPy, PyTorch |
+| `fp_formats.py` | [12 浮点格式与混合精度](https://arganzheng.life/floating-point-formats-and-mixed-precision.html) | 逐位构造 FP32 / FP16 / BF16 / FP8 | NumPy, PyTorch |
 | `bf16_update_swallowed.py` | 同上 | BF16 权重更新被吃掉，为什么要 FP32 master | PyTorch |
 | `gemm_error_vs_k.py` | 同上 | GEMM 误差随 k 的增长 | PyTorch |
 | `llm_cost_06_dtype_state.py` | 同上 | dtype 字节表与训练状态显存 | 无 |
-| `llm_cost_07_quant_specdec_lora.py` | [12 量化、投机解码与 LoRA](https://arganzheng.life/quantization-speculative-decoding-and-lora.html) | 量化字节数、投机解码加速比、LoRA 参数 | 无 |
-| `llm_cost_08_multimodal.py` | [13 多模态成本](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
+| `llm_cost_07_quant_specdec_lora.py` | [13 量化、投机解码与 LoRA](https://arganzheng.life/quantization-speculative-decoding-and-lora.html) | 量化字节数、投机解码加速比、LoRA 参数 | 无 |
+| `llm_cost_08_multimodal.py` | [10 多模态成本](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
 | `vlm_cost_numbers.py` | 同上 | 文章里多模态各表的理论数字（BF16，H100 SXM） | 无 |
 | `tools/gen_patch_merge_svg.py` | 同上 | 生成文中 patch → merge → token 的示意图 | 无 |
 | `bpe_from_scratch.py` | [预训练 02 分词与词表](https://arganzheng.life/tokenizer-vocabulary-and-token-efficiency.html) | 从零实现 byte-level BPE；玩具例子；词表大小 → bytes/token 扫描（约 2 分钟，`--quick` 10 秒） | 无 |
@@ -86,4 +87,4 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 
 所有 `llm_cost_*` 都是纯 Python 标准库，直接 `python llm_cost_01_params.py` 即可；第一版还支持 `python llm_cost_01_params.py path/to/config.json` 读 transformers 风格的配置。第 09–12 版从第七版导入 `ModelConfig`，要在本目录下运行。`scaling_law_fit.py` 与 `training_recipe_lab.py` 用 PyTorch CPU，语料是 Python 自带的标准库源码，不需要下载；`tokenizer_compare.py` 是唯一需要联网的脚本（下载几个 tokenizer 的词表）。`expected/` 是每个脚本的完整输出。
 
-这里的数字全部是理论下界或估算（参数量、FLOPs、字节数、峰值算力下的时间），不是实测；文章第二篇讲了如何与实测对照。
+这里的数字全部是理论下界或估算（参数量、FLOPs、字节数、峰值算力下的时间），不是实测；第 11 篇《前向的算量与访存量》讲了如何与实测对照。

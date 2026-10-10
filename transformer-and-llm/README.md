@@ -53,7 +53,7 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 
 | 文件 | 文章 | 内容 | 依赖 |
 |---|---|---|---|
-| `llm_cost_01_params.py` | [05 从 GPT-2 到 Llama 与 DeepSeek——读真实模型的配置与参数量](https://arganzheng.life/transformer-anatomy-and-parameter-count.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
+| `llm_cost_01_params.py` | [05 从 GPT-2 到今天的 LLM——结构演进的路线图](https://arganzheng.life/llm-architecture-evolution-roadmap-from-gpt2.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
 | `tools/gen_gqa_mapping_svg.py` | 同上 | MHA / GQA / MQA 的 Q head 到 KV head 映射图；默认输出到 `out/`，也可传输出目录 | 无 |
 | `llm_cost_02_flops_roofline.py` | [06 前向的算量与访存量](https://arganzheng.life/transformer-flops-bytes-and-roofline.html) | 每 token FLOPs、prefill / decode 的时间下界 | 无 |
 | `llm_cost_03_attention_kv.py` | [08 Attention 变体与 KV cache](https://arganzheng.life/attention-variants-and-kv-cache.html) | MHA / GQA / MQA / MLA 的 KV 字节数与并发上限 | 无 |

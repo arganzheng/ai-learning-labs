@@ -1,5 +1,5 @@
 """llm_cost.py -- 第一版（Transformer 与 LLM 01）：从超参数算出参数量。
-https://arganzheng.life/transformer-anatomy-and-parameter-count.html
+https://arganzheng.life/llm-architecture-evolution-roadmap-from-gpt2.html
 
 用法：
     python llm_cost.py                # 打印内置模型的参数表

@@ -1,6 +1,6 @@
-# Transformer 与 LLM：结构、实现与算量 — 配套代码
+# Transformer 与 LLM：结构、实现与演进 — 配套代码
 
-博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十四篇：01–04 基本原理与实现、05–14 现代 LLM 的演进与实践）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
+博客系列：[《Transformer 与 LLM：结构、实现与演进》](https://arganzheng.life/transformer-and-llm-structure-implementation-and-evolution.html)（十四篇：01–04 基本原理与实现、05–14 现代 LLM 的演进与实践）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
 
 ## 预训练 01：一次预训练是怎么跑起来的（`pretrain_e2e/`）
 
@@ -65,7 +65,7 @@ python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=Fals
 | `bf16_update_swallowed.py` | 同上 | BF16 权重更新被吃掉，为什么要 FP32 master | PyTorch |
 | `gemm_error_vs_k.py` | 同上 | GEMM 误差随 k 的增长 | PyTorch |
 | `llm_cost_06_dtype_state.py` | 同上 | dtype 字节表与训练状态显存 | 无 |
-| `llm_cost_07_quant_specdec_lora.py` | [12 投机解码——草稿、验证与收益条件](https://arganzheng.life/speculative-decoding-and-lora.html)；量化、LoRA 两组函数的讲解已并入博客的[《高效推理与压缩》03](https://arganzheng.life/post-training-quantization-gptq-awq-and-rotation.html)与[《LoRA 专题》](https://arganzheng.life/lora-for-sft-from-low-rank-hypothesis-to-serving.html) | 时间模型与投机解码加速比；量化字节数；LoRA 参数 | 无 |
+| `llm_cost_07_quant_specdec_lora.py` | [12 投机解码——草稿、验证与收益条件](https://arganzheng.life/speculative-decoding-draft-verify-and-payoff.html)；量化、LoRA 两组函数的讲解已并入博客的[《高效推理与压缩》03](https://arganzheng.life/post-training-quantization-gptq-awq-and-rotation.html)与[《LoRA 专题》](https://arganzheng.life/lora-for-sft-from-low-rank-hypothesis-to-serving.html) | 时间模型与投机解码加速比；量化字节数；LoRA 参数 | 无 |
 | `llm_cost_08_multimodal.py` | [13 多模态：vision encoder 的算量与 image token 的 KV 代价](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
 | `vlm_cost_numbers.py` | 同上 | 文章里多模态各表的理论数字（BF16，H100 SXM） | 无 |
 | `tools/gen_patch_merge_svg.py` | 同上 | 生成文中 patch → merge → token 的示意图 | 无 |

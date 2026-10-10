@@ -1,6 +1,6 @@
 # Transformer 与 LLM：结构、实现与算量 — 配套代码
 
-博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十五篇：01–04 结构与实现、05–11 结构的演进、12–15 通用成本账）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
+博客系列：[《Transformer 与 LLM：结构、实现与算量》](https://arganzheng.life/transformer-and-llm-for-infra-engineers.html)（十四篇：01–04 基本原理与实现、05–14 现代 LLM 的演进与实践）与紧接着的[《预训练：从 tokenizer 到训练配方》](https://arganzheng.life/pretraining-from-tokenizer-to-training-recipe.html)（六篇：01 端到端实跑、02–05 分词 / scaling law / 数据 / 配方、06 总结）。
 
 ## 预训练 01：一次预训练是怎么跑起来的（`pretrain_e2e/`）
 
@@ -47,26 +47,26 @@ python train.py --dataset=shakespeare_char --out_dir=out-shakespeare-char-base -
 python sample.py --out_dir=out-shakespeare-char-base --device=mps --compile=False
 ```
 
-## 第二、三段：结构的演进与成本账（05–15，脚本保留原版本号）
+## 第二段：现代 LLM 的演进与实践（05–14，脚本保留原版本号）
 
-两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，随主题增加函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 02–05）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里保留十二个版本文件，文章拆分不改变脚本版本号，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号；多模态调整为第 10 篇后，脚本文件名与导入关系保持不变，下表按脚本版本排列。
+两个系列共用一个贯穿脚本 `llm_cost.py`：从第五篇的参数量开始，随主题增加函数，前八版算完模型作为计算对象的成本表，第九到十二版（预训练系列 02–05）再算训练侧的账。文章里每一版都是独立可运行的完整代码，这里保留十二个版本文件，文章拆分不改变脚本版本号，另加各篇的独立实验。文件名里的编号是脚本版本号（01–12），不是文章编号；系列几次重排篇号（多模态现为第 13 篇、Roofline 前移为第 06 篇）后，脚本文件名与导入关系保持不变，下表按脚本版本排列。
 
 | 文件 | 文章 | 内容 | 依赖 |
 |---|---|---|---|
-| `llm_cost_01_params.py` | [05 今天的模型长什么样——从 GPT-2 到 Llama 与 DeepSeek](https://arganzheng.life/transformer-anatomy-and-parameter-count.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
+| `llm_cost_01_params.py` | [05 从 GPT-2 到 Llama 与 DeepSeek——读真实模型的配置与参数量](https://arganzheng.life/transformer-anatomy-and-parameter-count.html) | 从超参数 / `config.json` 算逐组件参数量 | 无 |
 | `tools/gen_gqa_mapping_svg.py` | 同上 | MHA / GQA / MQA 的 Q head 到 KV head 映射图；默认输出到 `out/`，也可传输出目录 | 无 |
-| `llm_cost_02_flops_roofline.py` | [12 前向的算量与访存量](https://arganzheng.life/transformer-flops-bytes-and-roofline.html) | 每 token FLOPs、prefill / decode 的时间下界 | 无 |
-| `llm_cost_03_attention_kv.py` | [06 Attention 变体与 KV cache](https://arganzheng.life/attention-variants-and-kv-cache.html) | MHA / GQA / MQA / MLA 的 KV 字节数与并发上限 | 无 |
-| `llm_cost_04_long_context.py` | [08 长上下文的成本与结构手段](https://arganzheng.life/long-context-cost-and-structural-remedies.html) | 上下文长度扫描：KV、prefill、attention 占比 | 无 |
+| `llm_cost_02_flops_roofline.py` | [06 前向的算量与访存量](https://arganzheng.life/transformer-flops-bytes-and-roofline.html) | 每 token FLOPs、prefill / decode 的时间下界 | 无 |
+| `llm_cost_03_attention_kv.py` | [08 Attention 变体与 KV cache](https://arganzheng.life/attention-variants-and-kv-cache.html) | MHA / GQA / MQA / MLA 的 KV 字节数与并发上限 | 无 |
+| `llm_cost_04_long_context.py` | [09 长上下文的成本与结构手段](https://arganzheng.life/long-context-cost-and-structural-remedies.html) | 上下文长度扫描：KV、prefill、attention 占比 | 无 |
 | `rope_numpy.py` | [07 位置编码与外推](https://arganzheng.life/positional-encoding-and-long-context.html) | RoPE 的 NumPy 实现、相对性验证、PI / NTK-aware / YaRN 波长表 | NumPy |
-| `llm_cost_05_moe.py` | [09 MoE 的路由、激活参数量与通信形态](https://arganzheng.life/moe-compute-and-communication.html) | 总参数 / 激活参数、期望激活专家数、EP all-to-all 字节数 | 无 |
+| `llm_cost_05_moe.py` | [10 MoE 的路由、激活参数量与通信形态](https://arganzheng.life/moe-compute-and-communication.html) | 总参数 / 激活参数、期望激活专家数、EP all-to-all 字节数 | 无 |
 | `moe_layer_minimal.py` | 同上 | 最小 MoE 层：softmax 路由 + top-k + 共享专家 | PyTorch |
-| `fp_formats.py` | [13 浮点格式、数值稳定性与混合精度](https://arganzheng.life/floating-point-formats-and-mixed-precision.html) | 逐位构造 FP32 / FP16 / BF16 / FP8 | NumPy, PyTorch |
+| `fp_formats.py` | [14 浮点格式、数值稳定性与混合精度](https://arganzheng.life/floating-point-formats-and-mixed-precision.html) | 逐位构造 FP32 / FP16 / BF16 / FP8 | NumPy, PyTorch |
 | `bf16_update_swallowed.py` | 同上 | BF16 权重更新被吃掉，为什么要 FP32 master | PyTorch |
 | `gemm_error_vs_k.py` | 同上 | GEMM 误差随 k 的增长 | PyTorch |
 | `llm_cost_06_dtype_state.py` | 同上 | dtype 字节表与训练状态显存 | 无 |
-| `llm_cost_07_quant_specdec_lora.py` | [14 量化](https://arganzheng.life/quantization-speculative-decoding-and-lora.html)、[15 投机解码与 LoRA](https://arganzheng.life/speculative-decoding-and-lora.html) | 量化字节数、投机解码加速比、LoRA 参数 | 无 |
-| `llm_cost_08_multimodal.py` | [11 多模态：vision encoder 的算量与 image token 的 KV 代价](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
+| `llm_cost_07_quant_specdec_lora.py` | [12 投机解码——草稿、验证与收益条件](https://arganzheng.life/speculative-decoding-and-lora.html)；量化、LoRA 两组函数的讲解已并入博客的[《高效推理与压缩》03](https://arganzheng.life/post-training-quantization-gptq-awq-and-rotation.html)与[《LoRA 专题》](https://arganzheng.life/lora-for-sft-from-low-rank-hypothesis-to-serving.html) | 时间模型与投机解码加速比；量化字节数；LoRA 参数 | 无 |
+| `llm_cost_08_multimodal.py` | [13 多模态：vision encoder 的算量与 image token 的 KV 代价](https://arganzheng.life/multimodal-vision-encoder-cost-and-image-token-kv.html) | vision encoder 参数与 FLOPs、image token 数与其在 decoder 的成本（复用第七版） | 无 |
 | `vlm_cost_numbers.py` | 同上 | 文章里多模态各表的理论数字（BF16，H100 SXM） | 无 |
 | `tools/gen_patch_merge_svg.py` | 同上 | 生成文中 patch → merge → token 的示意图 | 无 |
 | `bpe_from_scratch.py` | [预训练 02 分词与词表](https://arganzheng.life/tokenizer-vocabulary-and-token-efficiency.html) | 从零实现 byte-level BPE；玩具例子；词表大小 → bytes/token 扫描（约 2 分钟，`--quick` 10 秒） | 无 |

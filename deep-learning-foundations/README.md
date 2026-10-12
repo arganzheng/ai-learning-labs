@@ -1,17 +1,18 @@
 # 深度学习基础：从反向传播到残差 — 配套实验
 
-博客系列：[总纲](https://arganzheng.life/deep-learning-foundations.html)。八篇正文各配实验，文中的每个数字都由这些脚本跑出来。
+博客系列：[总纲](https://arganzheng.life/deep-learning-foundations.html)。九篇正文各配实验，文中的每个数字都由这些脚本跑出来。
 
 | 脚本 | 文章 | 依赖 | 完整运行 |
 |---|---|---|---|
-| `01_backprop.py` | [手推反向传播](https://arganzheng.life/backpropagation-by-hand.html) | NumPy（`torch` 子实验可选） | 5 s |
-| `case_activation_functions.py` | [激活函数：从 sigmoid 到 SwiGLU](https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html) | NumPy + PyTorch（CPU） | 3 min |
-| `02_init_norm_residual.py` | [初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |
-| `03_optimizers.py` | [优化器：从 SGD 到 AdamW](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
-| `04_regularization.py` | [正则化与泛化](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |
-| `05_cnn.py` | [CNN：从 LeNet 到 ResNet 与 ViT](https://arganzheng.life/cnn-from-lenet-to-resnet-and-vit.html) | PyTorch（`resnet` 子实验需 torchvision） | 10 min |
-| `case_embedding_word2vec.py` | [Embedding 与表示学习](https://arganzheng.life/embedding-and-representation-learning.html) | PyTorch（CPU） | 5 min |
-| `06_rnn_attention.py` | [RNN、LSTM 与 attention 的诞生](https://arganzheng.life/rnn-lstm-and-the-birth-of-attention.html) | PyTorch | 6 min |
+| `case_evolution_xor.py` | [深度学习基础（01）：深度模型演进史——从感知机到 Transformer](https://arganzheng.life/evolution-of-deep-models-from-perceptron-to-transformer.html) | NumPy + Matplotlib | 几秒 |
+| `01_backprop.py` | [深度学习基础（02）：反向传播——手推一个两层网络](https://arganzheng.life/backpropagation-by-hand.html) | NumPy（`torch` 子实验可选） | 5 s |
+| `case_activation_functions.py` | [深度学习基础（03）：激活函数——从 sigmoid 到 SwiGLU](https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html) | NumPy + PyTorch（CPU） | 3 min |
+| `02_init_norm_residual.py` | [深度学习基础（04）：训练为什么不稳定——初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |
+| `03_optimizers.py` | [深度学习基础（05）：优化器——从 SGD 到 AdamW 与学习率调度](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
+| `04_regularization.py` | [深度学习基础（06）：正则化与泛化——为什么参数比样本多却不过拟合](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |
+| `05_cnn.py` | [深度学习基础（07）：CNN——从 LeNet 到 ResNet，再到 ViT](https://arganzheng.life/cnn-from-lenet-to-resnet-and-vit.html) | PyTorch（`resnet` 子实验需 torchvision） | 10 min |
+| `case_embedding_word2vec.py` | [深度学习基础（08）：Embedding 与表示学习——从 one-hot 到上下文表示](https://arganzheng.life/embedding-and-representation-learning.html) | PyTorch（CPU） | 5 min |
+| `06_rnn_attention.py` | [深度学习基础（09）：RNN——从 LSTM 到 attention 的诞生](https://arganzheng.life/rnn-lstm-and-the-birth-of-attention.html) | PyTorch | 6 min |
 
 时间是普通笔记本 CPU 上的量级，不需要 GPU；完整 text8 案例约 5 分钟，其他实验耗时因设备而异。
 
@@ -19,15 +20,16 @@
 
 | 脚本 | 文章 | 产出 |
 |---|---|---|
-| `case_01_mnist_mlp.py` | 01 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
-| `case_activation_functions.py` | 02 | 六种激活函数及导数曲线；20 × 256 深层 MLP 的梯度、准确率与 ReLU 死亡单元 |
-| `case_02_deep_mlp.py` | 03 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
-| `case_03_optimizers_mnist.py` | 04 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
-| `case_04_regularization_plots.py` | 05 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
-| `case_05_lenet5.py` | 06 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
-| `case_embedding_word2vec.py` | 07 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
-| `case_06_char_lstm_and_alignment.py` | 08 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |
-| `tools/paper_figures.py` | 02–08 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
+| `case_evolution_xor.py` | 01 | 感知机、ADALINE 与两层 MLP 对照 XOR；AND 线性可分控制、训练曲线与决策区域（`out/dl-evolution-xor.svg`） |
+| `case_01_mnist_mlp.py` | 02 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
+| `case_activation_functions.py` | 03 | 六种激活函数及导数曲线；20 × 256 深层 MLP 的梯度、准确率与 ReLU 死亡单元 |
+| `case_02_deep_mlp.py` | 04 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
+| `case_03_optimizers_mnist.py` | 05 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
+| `case_04_regularization_plots.py` | 06 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
+| `case_05_lenet5.py` | 07 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
+| `case_embedding_word2vec.py` | 08 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
+| `case_06_char_lstm_and_alignment.py` | 09 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |
+| `tools/paper_figures.py` | 04–10 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
 
 `_plot.py` 是画图的公共设置（与 `classical-ml/_plot.py` 相同）。
 
@@ -47,9 +49,9 @@ python 03_optimizers.py -h                # 列出子实验
 
 ```text
 dlf/            系列贯穿的迷你框架（NumPy）
-  nn.py         Linear / ReLU / softmax-CE / MLP、梯度检查、FLOPs 计数        ← 01
-  layers.py     LayerNorm / RMSNorm / Residual / Dropout / Embedding、深层 MLP  ← 02, 04
-  optim.py      SGD / Momentum / Adam / AdamW、warmup+cosine、梯度裁剪          ← 03
+  nn.py         Linear / ReLU / softmax-CE / MLP、梯度检查、FLOPs 计数        ← 02
+  layers.py     LayerNorm / RMSNorm / Residual / Dropout / Embedding、深层 MLP  ← 04, 06
+  optim.py      SGD / Momentum / Adam / AdamW、warmup+cosine、梯度裁剪          ← 05
   data.py       MNIST 下载与加载、字符级语料
   cli.py        --quick 与子实验选择
 0X_*.py         每篇文章的实验脚本，只依赖 dlf 与（05/06）torch
@@ -58,4 +60,4 @@ expected/       作者机器上的完整输出
 
 ## 动手扩展
 
-每篇文章末尾都有"值得自己动手的扩展"，都可以在这些脚本上直接改：换激活函数看梯度检查是否仍通过（01）、把 `prenorm` 换成 RMSNorm（02）、给 SGD 加 cosine schedule 与 Adam 对比（03）、扫训练步数看 epoch-wise double descent（04）、把 `ConvNet` 的通道数加倍看 plain/residual 差距（05）、在 seq2seq 上换成 dot-product attention（06）。
+每篇文章末尾都有"值得自己动手的扩展"，都可以在这些脚本上直接改：换激活函数看梯度检查是否仍通过（03）、把 `prenorm` 换成 RMSNorm（04）、给 SGD 加 cosine schedule 与 Adam 对比（05）、扫训练步数看 epoch-wise double descent（06）、把 `ConvNet` 的通道数加倍看 plain/residual 差距（07）、在 seq2seq 上换成 dot-product attention（09）。

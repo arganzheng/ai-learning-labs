@@ -2,13 +2,14 @@
 
 https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html
 
-    python case_02_activation_functions.py
+    python case_activation_functions.py
 
-固定种子，在同一个 20 × 256 MLP 上比较初始化梯度与 250 步后的准确率；
-同时输出激活函数曲线到 out/activation-functions.svg。
+三个固定种子，在同一个 20 × 256 MLP 上比较初始化梯度与 250 步后的
+准确率；同时输出激活函数曲线到 out/activation-functions.svg。
 """
 import argparse
 import math
+import statistics
 
 import numpy as np
 import torch
@@ -18,7 +19,7 @@ from torch.nn import functional as F
 from _plot import C, plt, save
 from dlf import data
 
-SEED = 2026
+SEEDS = (2026, 2027, 2028)
 HIDDEN_LAYERS = 20
 WIDTH = 256
 TRAIN_LIMIT = 12000
@@ -78,19 +79,19 @@ def plot_activation_curves():
         "SiLU": (x * sigmoid, sigmoid + x * sigmoid * (1 - sigmoid), C["teal"]),
     }
 
-    fig, axes = plt.subplots(2, 1, figsize=(7.6, 4.6), sharex=True)
-    for name, (values, derivatives, color) in curves.items():
-        axes[0].plot(x, values, color=color, linewidth=1.5, label=name)
-        axes[1].plot(x, derivatives, color=color, linewidth=1.5, label=name)
-    axes[0].set_ylabel("激活值")
-    axes[0].set_title("六种激活函数及其导数")
-    axes[0].legend(ncol=3, loc="upper left")
-    axes[1].set_xlabel("输入 x")
-    axes[1].set_ylabel("导数")
-    for ax in axes:
+    fig, axes = plt.subplots(2, 3, figsize=(12, 6.4), sharex=True, sharey=True)
+    for ax, (name, (values, derivatives, color)) in zip(axes.flat, curves.items()):
+        ax.plot(x, values, color=color, linewidth=1.6, label="函数")
+        ax.plot(x, derivatives, color=color, linewidth=1.4, linestyle="--", label="导数")
+        ax.set_title(name)
+        ax.legend(loc="upper left", frameon=False, fontsize=8)
         ax.axhline(0, color=C["gray"], linewidth=0.6)
         ax.axvline(0, color=C["gray"], linewidth=0.6)
         ax.grid(alpha=0.2)
+    axes[0, 0].set_ylabel("激活值 / 导数")
+    axes[1, 0].set_ylabel("激活值 / 导数")
+    for ax in axes[1]:
+        ax.set_xlabel("输入 x")
     save(fig, "activation-functions")
 
 
@@ -148,42 +149,65 @@ def run_experiment():
     train_y = torch.from_numpy(train_y[:TRAIN_LIMIT])
     test_x = torch.from_numpy(test_x)
     test_y = torch.from_numpy(test_y)
-    batches = torch.randint(
-        TRAIN_LIMIT,
-        (STEPS, BATCH_SIZE),
-        generator=torch.Generator().manual_seed(SEED + 1),
-    )
-
     print(
         f"=== MNIST：20 × 256 MLP，Kaiming-normal，Adam lr=1e-3，"
-        f"{STEPS} 步 × batch {BATCH_SIZE}，固定种子 {SEED} ==="
+        f"{STEPS} 步 × batch {BATCH_SIZE}，种子 {', '.join(map(str, SEEDS))} ==="
     )
-    print("activation     first-hidden-grad   last-hidden-grad   ratio    test-acc   dead-ReLU")
-    for activation_name in ACTIVATIONS:
-        torch.manual_seed(SEED)
-        model = DeepMLP(activation_name)
-        first_grad, last_grad = initial_gradient_norms(
-            model, train_x[:BATCH_SIZE], train_y[:BATCH_SIZE]
+    print(
+        "activation     first-hidden-grad   last-hidden-grad   ratio"
+        "    test-acc mean [min–max]    dead-ReLU mean [min–max]"
+    )
+    gradients = {}
+    results = {name: [] for name in ACTIVATIONS}
+    for seed in SEEDS:
+        batches = torch.randint(
+            TRAIN_LIMIT,
+            (STEPS, BATCH_SIZE),
+            generator=torch.Generator().manual_seed(seed + 1),
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-        for indices in batches:
-            optimizer.zero_grad(set_to_none=True)
-            loss = F.cross_entropy(model(train_x[indices]), train_y[indices])
-            loss.backward()
-            optimizer.step()
-        test_accuracy = accuracy(model, test_x, test_y)
-        dead_fraction = (
-            relu_dead_fraction(model, test_x[:1024])
-            if activation_name == "ReLU"
-            else float("nan")
+        for activation_name in ACTIVATIONS:
+            torch.manual_seed(seed)
+            model = DeepMLP(activation_name)
+            first_grad, last_grad = initial_gradient_norms(
+                model, train_x[:BATCH_SIZE], train_y[:BATCH_SIZE]
+            )
+            if seed == SEEDS[0]:
+                gradients[activation_name] = (first_grad, last_grad)
+            optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+            for indices in batches:
+                optimizer.zero_grad(set_to_none=True)
+                loss = F.cross_entropy(model(train_x[indices]), train_y[indices])
+                loss.backward()
+                optimizer.step()
+            test_accuracy = accuracy(model, test_x, test_y)
+            dead_fraction = (
+                relu_dead_fraction(model, test_x[:1024])
+                if activation_name == "ReLU"
+                else float("nan")
+            )
+            results[activation_name].append((test_accuracy, dead_fraction))
+
+    for activation_name, runs in results.items():
+        first_grad, last_grad = gradients[activation_name]
+        accuracies = [run[0] for run in runs]
+        acc_text = (
+            f"{statistics.mean(accuracies) * 100:5.2f}% "
+            f"[{min(accuracies) * 100:.2f}, {max(accuracies) * 100:.2f}]"
         )
-        dead = f"{dead_fraction * 100:6.2f}%" if math.isfinite(dead_fraction) else "    —"
+        dead_values = [run[1] for run in runs if math.isfinite(run[1])]
+        dead_text = (
+            f"{statistics.mean(dead_values) * 100:5.2f}% "
+            f"[{min(dead_values) * 100:.2f}, {max(dead_values) * 100:.2f}]"
+            if dead_values
+            else "—"
+        )
         print(
             f"{activation_name:<12} {first_grad:17.3e} {last_grad:17.3e} "
             f"{first_grad / max(last_grad, 1e-30):8.2e} "
-            f"{test_accuracy * 100:8.2f}%   {dead}"
+            f"{acc_text:25} {dead_text}"
         )
 
+    print(f"初始化梯度列取种子 {SEEDS[0]}。")
     print("ReLU 死亡单元定义：测试集前 1024 张图上，该隐藏单元对所有输入都输出 0。")
     print("过大学习率示范：")
     dead_relu_demo()

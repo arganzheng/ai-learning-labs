@@ -1,10 +1,11 @@
 # 深度学习基础：从反向传播到残差 — 配套实验
 
-博客系列：[总纲](https://arganzheng.life/deep-learning-foundations.html)。六篇文章各配一个脚本，文中的每个数字都由这些脚本跑出来。
+博客系列：[总纲](https://arganzheng.life/deep-learning-foundations.html)。七篇正文各配实验，文中的每个数字都由这些脚本跑出来。
 
 | 脚本 | 文章 | 依赖 | 完整运行 |
 |---|---|---|---|
 | `01_backprop.py` | [手推反向传播](https://arganzheng.life/backpropagation-by-hand.html) | NumPy（`torch` 子实验可选） | 5 s |
+| `case_02_activation_functions.py` | [激活函数：从 sigmoid 到 SwiGLU](https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html) | NumPy + PyTorch（CPU） | 3 min |
 | `02_init_norm_residual.py` | [初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |
 | `03_optimizers.py` | [优化器：从 SGD 到 AdamW](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
 | `04_regularization.py` | [正则化与泛化](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |
@@ -18,6 +19,7 @@
 | 脚本 | 文章 | 产出 |
 |---|---|---|
 | `case_01_mnist_mlp.py` | 01 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
+| `case_02_activation_functions.py` | 02 | 六种激活函数及导数曲线；20 × 256 深层 MLP 的梯度、准确率与 ReLU 死亡单元 |
 | `case_02_deep_mlp.py` | 02 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
 | `case_03_optimizers_mnist.py` | 03 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
 | `case_04_regularization_plots.py` | 04 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |

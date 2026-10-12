@@ -10,10 +10,10 @@
 | `03_optimizers.py` | [优化器：从 SGD 到 AdamW](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
 | `04_regularization.py` | [正则化与泛化](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |
 | `05_cnn.py` | [CNN：从 LeNet 到 ResNet 与 ViT](https://arganzheng.life/cnn-from-lenet-to-resnet-and-vit.html) | PyTorch（`resnet` 子实验需 torchvision） | 10 min |
-| `case_embedding_word2vec.py` | [Embedding 与表示学习](https://arganzheng.life/embedding-and-representation-learning.html) | PyTorch（CPU） | 1 min |
+| `case_embedding_word2vec.py` | [Embedding 与表示学习](https://arganzheng.life/embedding-and-representation-learning.html) | PyTorch（CPU） | 5 min |
 | `06_rnn_attention.py` | [RNN、LSTM 与 attention 的诞生](https://arganzheng.life/rnn-lstm-and-the-birth-of-attention.html) | PyTorch | 6 min |
 
-时间是 8 核笔记本 CPU 上的量级，不需要 GPU。
+时间是普通笔记本 CPU 上的量级，不需要 GPU；完整 text8 案例约 5 分钟，其他实验耗时因设备而异。
 
 ## 案例与图
 
@@ -25,7 +25,7 @@
 | `case_03_optimizers_mnist.py` | 04 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
 | `case_04_regularization_plots.py` | 05 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
 | `case_05_lenet5.py` | 06 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
-| `case_embedding_word2vec.py` | 07 | text8 skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
+| `case_embedding_word2vec.py` | 07 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
 | `case_06_char_lstm_and_alignment.py` | 08 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |
 | `tools/paper_figures.py` | 02–08 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
 

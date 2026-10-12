@@ -1,11 +1,11 @@
-"""案例（深度学习基础 02）：六种激活函数的梯度与 MNIST 深层 MLP。
+"""案例（深度学习基础 03）：激活函数族的曲线与 MNIST 深层 MLP。
 
 https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html
 
     python case_activation_functions.py
 
 三个固定种子，在同一个 20 × 256 MLP 上比较初始化梯度与 250 步后的
-准确率；同时输出激活函数曲线到 out/activation-functions.svg。
+准确率；同时输出函数族曲线到 out/activation-*.svg。
 """
 import argparse
 import math
@@ -15,6 +15,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from matplotlib.patches import FancyBboxPatch
 
 from _plot import C, plt, save
 from dlf import data
@@ -93,6 +94,205 @@ def plot_activation_curves():
     for ax in axes[1]:
         ax.set_xlabel("输入 x")
     save(fig, "activation-functions")
+
+
+def _format_axes(ax, title, ylabel="Activation"):
+    ax.set_title(title, fontsize=16)
+    ax.set_xlabel("Input x", fontsize=15)
+    ax.set_ylabel(ylabel, fontsize=15)
+    ax.tick_params(labelsize=14)
+    ax.axhline(0, color=C["gray"], linewidth=0.7)
+    ax.axvline(0, color=C["gray"], linewidth=0.7)
+    ax.grid(alpha=0.2)
+
+
+def _plot_function_and_derivative(name, x, functions, derivatives, colors, legends):
+    fig, axes = plt.subplots(
+        1, 2, figsize=(11, 5.2), sharex=True, constrained_layout=False,
+    )
+    for label, values, derivative, color in zip(legends, functions, derivatives, colors):
+        axes[0].plot(x, values, color=color, linewidth=2.4, label=label)
+        axes[1].plot(x, derivative, color=color, linewidth=2.4, linestyle="--", label=label)
+    _format_axes(axes[0], f"{name}: functions")
+    _format_axes(axes[1], f"{name}: derivatives", "Derivative")
+    handles, _ = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, legends, frameon=False, fontsize=15,
+        ncol=min(2, len(legends)), loc="upper center",
+        bbox_to_anchor=(0.5, 0.99),
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.82))
+    return fig, axes
+
+
+def plot_sigmoid_tanh():
+    x = np.linspace(-6, 6, 1201)
+    sigmoid = 1 / (1 + np.exp(-x))
+    tanh = np.tanh(x)
+    fig, axes = _plot_function_and_derivative(
+        "Sigmoid and tanh", x,
+        [sigmoid, tanh], [sigmoid * (1 - sigmoid), 1 - tanh**2],
+        [C["blue"], C["orange"]], ["sigmoid", "tanh"],
+    )
+    for ax in axes:
+        ax.axvspan(-6, -3, color=C["gray"], alpha=0.12)
+        ax.axvspan(3, 6, color=C["gray"], alpha=0.12)
+    axes[1].scatter([0, 0], [0.25, 1], color=[C["blue"], C["orange"]], zorder=4)
+    axes[1].annotate("sigmoid: 0.25", (0, 0.25), xytext=(0.45, 0.08), fontsize=15)
+    axes[1].annotate("tanh: 1", (0, 1), xytext=(0.45, 0.84), fontsize=15)
+    save(fig, "activation-sigmoid-tanh")
+
+
+def plot_relu():
+    x = np.linspace(-5, 5, 1001)
+    values = np.maximum(x, 0)
+    derivative = np.where(x > 0, 1, 0)
+    fig, axes = _plot_function_and_derivative(
+        "ReLU", x, [values], [derivative], [C["green"]], ["ReLU"],
+    )
+    for ax in axes:
+        ax.axvspan(-5, 0, color=C["red"], alpha=0.10)
+    axes[0].text(-4.7, 3.6, "zero-gradient region (x < 0)", fontsize=15)
+    save(fig, "activation-relu")
+
+
+def plot_relu_variants():
+    x = np.linspace(-5, 5, 1001)
+    leaky = np.where(x > 0, x, 0.1 * x)
+    prelu = np.where(x > 0, x, 0.25 * x)
+    elu = np.where(x > 0, x, np.expm1(x))
+    relu = np.maximum(x, 0)
+    functions = [leaky, prelu, elu, relu]
+    derivatives = [
+        np.where(x > 0, 1, 0.1),
+        np.where(x > 0, 1, 0.25),
+        np.where(x > 0, 1, np.exp(x)),
+        np.where(x > 0, 1, 0),
+    ]
+    colors = [C["purple"], C["blue"], C["orange"], C["gray"]]
+    labels = ["Leaky (α=0.1)", "PReLU (α=0.25 example)",
+              "ELU (α=1)", "ReLU reference"]
+    fig, axes = _plot_function_and_derivative(
+        "ReLU variants", x, functions, derivatives, colors, labels,
+    )
+    for ax in axes:
+        ax.lines[3].set_linewidth(1.2)
+    save(fig, "activation-relu-variants")
+
+
+def plot_smooth_activations():
+    x = np.linspace(-5, 5, 6001)
+    cdf = np.array([0.5 * (1 + math.erf(value / math.sqrt(2))) for value in x])
+    pdf = np.exp(-(x**2) / 2) / math.sqrt(2 * math.pi)
+    sigmoid = 1 / (1 + np.exp(-x))
+    gelu = x * cdf
+    silu = x * sigmoid
+    gelu_new_inner = math.sqrt(2 / math.pi) * (x + 0.044715 * x**3)
+    gelu_new_tanh = np.tanh(gelu_new_inner)
+    gelu_new = 0.5 * x * (1 + gelu_new_tanh)
+    gelu_new_derivative = (
+        0.5 * (1 + gelu_new_tanh)
+        + 0.5 * x * (1 - gelu_new_tanh**2)
+        * math.sqrt(2 / math.pi) * (1 + 3 * 0.044715 * x**2)
+    )
+    derivatives = [
+        cdf + x * pdf,
+        sigmoid + x * sigmoid * (1 - sigmoid),
+        gelu_new_derivative,
+        np.where(x > 0, 1, 0),
+    ]
+    labels = ["GELU", "SiLU", "gelu_new", "ReLU reference"]
+    colors = [C["red"], C["teal"], C["purple"], C["gray"]]
+    fig, axes = _plot_function_and_derivative(
+        "Smooth activations", x, [gelu, silu, gelu_new, np.maximum(x, 0)],
+        derivatives, colors, labels,
+    )
+    gelu_min = int(np.argmin(gelu))
+    silu_min = int(np.argmin(silu))
+    for index, label, color in (
+        (gelu_min, "GELU: (-0.752, -0.170)", C["red"]),
+        (silu_min, "SiLU: (-1.278, -0.278)", C["teal"]),
+    ):
+        is_gelu = label.startswith("GELU")
+        y = gelu[index] if is_gelu else silu[index]
+        axes[0].scatter([x[index]], [y], color=color, zorder=4)
+        text_y = 0.55 if is_gelu else 0.12
+        axes[0].annotate(
+            label, (x[index], y), xytext=(-4.5, text_y), fontsize=15,
+            arrowprops={"arrowstyle": "-", "color": color, "lw": 1},
+        )
+    for ax in axes:
+        ax.lines[3].set_linewidth(1.2)
+    save(fig, "activation-smooth")
+
+
+def plot_glu_family():
+    fig, (diagram, gates) = plt.subplots(
+        1, 2, figsize=(11, 5.2), gridspec_kw={"width_ratios": [1.15, 1]},
+    )
+    diagram.set_xlim(0, 10)
+    diagram.set_ylim(0, 10)
+    diagram.axis("off")
+    diagram.set_title("FFN projections", fontsize=11)
+
+    def box(ax, center, text, width=2.1, height=0.9):
+        x, y = center
+        patch = FancyBboxPatch(
+            (x - width / 2, y - height / 2), width, height,
+            boxstyle="round,pad=0.12", facecolor="#f4f7fb",
+            edgecolor="#7a8ca5", linewidth=1.1,
+        )
+        ax.add_patch(patch)
+        ax.text(x, y, text, ha="center", va="center", fontsize=15)
+
+    def arrow(ax, start, end):
+        ax.annotate("", xy=end, xytext=start,
+                    arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 1})
+
+    diagram.text(0.2, 7.8, "Ordinary FFN", fontsize=17, weight="bold")
+    box(diagram, (2.0, 6.4), "W_in\n→ d_ff", width=2.4, height=1.15)
+    box(diagram, (5.0, 6.4), "activation", width=2.4, height=1.15)
+    box(diagram, (8.0, 6.4), "W_out\n→ d_model", width=2.4, height=1.15)
+    arrow(diagram, (3.2, 6.4), (3.8, 6.4))
+    arrow(diagram, (6.2, 6.4), (6.8, 6.4))
+    diagram.text(0.2, 5.35, "Gated FFN", fontsize=17, weight="bold")
+    box(diagram, (2.0, 4.25), "w1 gate", width=2.4, height=1.05)
+    box(diagram, (2.0, 2.35), "w3 value", width=2.4, height=1.05)
+    box(diagram, (5.1, 3.3), "act(gate)\n⊙ value", width=2.7, height=1.15)
+    box(diagram, (8.1, 3.3), "w2\n→ d_model", width=2.4, height=1.15)
+    arrow(diagram, (3.2, 4.25), (3.75, 3.65))
+    arrow(diagram, (3.2, 2.35), (3.75, 2.95))
+    arrow(diagram, (6.45, 3.3), (6.9, 3.3))
+    diagram.text(5.1, 1.05, "d_gate ≈ 2/3 d_ff for matched parameters",
+                 ha="center", fontsize=15)
+
+    x = np.linspace(-5, 5, 1001)
+    sigmoid = 1 / (1 + np.exp(-x))
+    functions = [sigmoid, x, np.maximum(x, 0),
+                 x * np.array([0.5 * (1 + math.erf(v / math.sqrt(2))) for v in x]),
+                 x * sigmoid]
+    labels = ["GLU: sigmoid", "Bilinear: x", "ReGLU: ReLU",
+              "GEGLU: GELU", "SwiGLU: SiLU"]
+    colors = [C["blue"], C["gray"], C["green"], C["red"], C["teal"]]
+    gates.set_title("Gate functions", fontsize=16)
+    for values, label, color in zip(functions, labels, colors):
+        gates.plot(x, values, color=color, linewidth=2.2, label=label)
+    gates.axhline(0, color=C["gray"], linewidth=0.7)
+    gates.axvline(0, color=C["gray"], linewidth=0.7)
+    gates.set_xlabel("Input x", fontsize=15)
+    gates.set_ylabel("Gate output", fontsize=15)
+    gates.tick_params(labelsize=15)
+    gates.grid(alpha=0.2)
+    gates.legend(frameon=True, framealpha=0.9, fontsize=15, loc="upper left")
+    save(fig, "activation-glu-family")
+
+
+def plot_function_families():
+    plot_sigmoid_tanh()
+    plot_relu()
+    plot_relu_variants()
+    plot_smooth_activations()
+    plot_glu_family()
 
 
 @torch.no_grad()
@@ -218,6 +418,7 @@ def main():
     parser.add_argument("--plot-only", action="store_true", help="只生成激活函数曲线图")
     args = parser.parse_args()
     plot_activation_curves()
+    plot_function_families()
     if not args.plot_only:
         run_experiment()
 

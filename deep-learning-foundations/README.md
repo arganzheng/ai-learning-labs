@@ -25,7 +25,7 @@
 | `case_activation_functions.py` | 03 | 六种激活函数及导数曲线；20 × 256 深层 MLP 的梯度、准确率与 ReLU 死亡单元 |
 | `case_02_deep_mlp.py` | 04 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
 | `case_02_concept_figures.py` | 04 | 文章概念图与模拟：连乘链示意、a^L 深度曲线、64 层初始化方差模拟、归一化统计轴、LN vs RMSNorm 手算、BN 序列与 batch 噪声、残差路径（`out/init-norm-*.svg`） |
-| `case_03_optimizers_mnist.py` | 05 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状 |
+| `case_03_optimizers_mnist.py` | 05 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状；`--schedules` 只出 cosine / WSD 概念图（out/optimizer-cosine-wsd.svg，不训练） |
 | `case_04_regularization_plots.py` | 06 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
 | `case_05_lenet5.py` | 07 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
 | `case_embedding_word2vec.py` | 08 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |

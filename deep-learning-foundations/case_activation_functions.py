@@ -221,17 +221,18 @@ def plot_smooth_activations():
 
     gelu_min = int(np.argmin(gelu))
     silu_min = int(np.argmin(silu))
-    for index, label, color in (
-        (gelu_min, "GELU: (-0.752, -0.170)", vermilion),
-        (silu_min, "SiLU: (-1.278, -0.278)", green),
+    # 最小值标注放到图例下方的空白处，用细引线指到曲线上，避免文字压线
+    for index, label, color, text_y in (
+        (gelu_min, "GELU min: (-0.752, -0.170)", vermilion, 2.6),
+        (silu_min, "SiLU min: (-1.278, -0.278)", green, 1.7),
     ):
         is_gelu = label.startswith("GELU")
         y = gelu[index] if is_gelu else silu[index]
         axes[0].scatter([x[index]], [y], color=color, zorder=4)
-        text_y = 0.55 if is_gelu else 0.12
         axes[0].annotate(
-            label, (x[index], y), xytext=(-4.5, text_y), fontsize=13,
-            arrowprops={"arrowstyle": "-", "color": color, "lw": 1},
+            label, (x[index], y), xytext=(-4.85, text_y), fontsize=11.5,
+            color=color,
+            arrowprops={"arrowstyle": "-", "color": color, "lw": 0.9},
         )
     print(f"  gelu_new - GELU 在 [-5,5] 最大绝对误差 "
           f"{np.abs(error).max():.3e}（x1e-4 轴）")

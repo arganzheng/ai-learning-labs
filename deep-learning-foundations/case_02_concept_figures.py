@@ -59,13 +59,13 @@ def new_diagram(figsize, xlim, ylim):
 
 def plot_chain():
     """FIGURE 1：一条链——前向方差连乘、反向 Jacobian 连乘、三种方案的位置。"""
-    fig, ax = new_diagram((11, 6.2), (0, 108), (0, 100))
+    fig, ax = new_diagram((11, 6.6), (0, 108), (0, 100))
 
     # ---- 前向链（上）----
-    y_fwd = 66
-    ax.text(50, 96, "Forward: variance is a product of per-layer factors",
-            ha="center", fontsize=13)
-    ax.text(50, 90, r"$\mathrm{Var}(h_L) = \mathrm{Var}(x)\, a_1 a_2 \cdots a_L$",
+    y_fwd = 62
+    ax.text(54, 97, "前向：方差是每层因子的连乘", ha="center", fontsize=14)
+    ax.text(54, 91,
+            r"$\mathrm{Var}(h_L) = \mathrm{Var}(x)\, a_1 a_2 \cdots a_L$",
             ha="center", fontsize=14)
     xs = {"x": 5, "f1": 15, "n1": 24, "h1": 31, "f2": 41, "n2": 50,
           "h2": 57, "dots": 66, "fL": 76, "nL": 85, "hL": 93}
@@ -88,21 +88,22 @@ def plot_chain():
         arrow(ax, (xs[a] + half.get(a, 3.6), y_fwd),
               (xs[b] - half.get(b, 3.6), y_fwd))
     for key, sub in (("f1", "$a_1$"), ("f2", "$a_2$"), ("fL", "$a_L$")):
-        ax.text(xs[key], y_fwd - 6.2, f"$\\times$ {sub}", ha="center",
+        ax.text(xs[key], y_fwd - 6.4, f"$\\times$ {sub}", ha="center",
                 va="top", fontsize=11, color=BLUE)
 
-    # ---- 反向链（下）：箭头向左 ----
+    # ---- 反向链（下）：箭头向左；每个因子被残差扩成 I + J^T ----
     y_bwd = 30
-    ax.text(50, 44, "Backward: the gradient is a product of Jacobians",
-            ha="center", fontsize=13)
-    ax.text(50, 38,
-            r"$\partial L / \partial x \;=\; J_1^{T} J_2^{T} \cdots J_L^{T}\;"
-            r"\partial L / \partial h_L$",
+    ax.text(54, 47, "反向：梯度是 Jacobian 的连乘", ha="center", fontsize=14)
+    ax.text(54, 41,
+            r"$\partial L / \partial x \;=\; J_1^{\top} J_2^{\top} \cdots"
+            r" J_L^{\top}\;\partial L / \partial h_L$",
             ha="center", fontsize=14)
     bx = {"gx": 5, "j1": 24, "dots": 41, "j2": 57, "jL": 76, "ghL": 93}
-    for key, label in (("jL", "$J_L^{T}$"), ("j2", "$J_2^{T}$"),
-                       ("j1", "$J_1^{T}$")):
-        box(ax, (bx[key], y_bwd), label, width=9, height=6, fontsize=13)
+    for key, label in (("jL", "$J_L^{\\top}$"), ("j2", "$J_2^{\\top}$"),
+                       ("j1", "$J_1^{\\top}$")):
+        box(ax, (bx[key], y_bwd), label, width=9, height=7.6, fontsize=13)
+        ax.text(bx[key], y_bwd - 2.1, "→ " + label.replace("$J_", "$I+J_"),
+                ha="center", va="center", fontsize=8, color=GREEN)
     ax.text(bx["ghL"], y_bwd, "$\\partial L / \\partial h_L$", ha="center",
             va="center", fontsize=12)
     ax.text(bx["dots"], y_bwd, "$\\cdots$", ha="center", va="center",
@@ -115,40 +116,35 @@ def plot_chain():
     for a, b in bedges:
         arrow(ax, (bx[a] - bhalf.get(a, 4.6), y_bwd),
               (bx[b] + bhalf.get(b, 4.6), y_bwd))
-    for key, sub in (("j1", "$I + J_1^{T}$"), ("j2", "$I + J_2^{T}$"),
-                     ("jL", "$I + J_L^{T}$")):
-        ax.text(bx[key], y_bwd - 6.2, f"→ {sub}", ha="center", va="top",
-                fontsize=10, color=GREEN)
 
-    # ---- 三个方案的注解 ----
-    ax.text(22, 80, "Initialization", ha="center", fontsize=13, color=BLUE,
+    # ---- 三个方案的注解：标题与正文分行，拉开间距 ----
+    ax.text(20, 82.5, "初始化", ha="center", fontsize=13, color=BLUE,
             weight="bold")
-    ax.text(22, 76.5, "choose the std of W so that\nevery $a_l \\approx 1$"
-            " at $t=0$", ha="center", fontsize=10.5, color=BLUE)
-    arrow(ax, (18, 74.0), (xs["f1"], y_fwd + 4.5), color=BLUE, style="->",
+    ax.text(20, 79.3, "选 $W$ 的标准差，\n让 $t=0$ 时每个 $a_l \\approx 1$",
+            ha="center", va="top", fontsize=10.5, color=BLUE)
+    arrow(ax, (15.5, 73.5), (xs["f1"], y_fwd + 4.6), color=BLUE, style="->",
           connectionstyle="arc3,rad=0.2")
-    arrow(ax, (28, 74.0), (xs["f2"], y_fwd + 4.5), color=BLUE, style="->",
+    arrow(ax, (24.5, 73.5), (xs["f2"], y_fwd + 4.6), color=BLUE, style="->",
           connectionstyle="arc3,rad=-0.2")
 
-    ax.text(76, 80, "Normalization", ha="center", fontsize=13, color=ORANGE,
+    ax.text(80, 82.5, "归一化", ha="center", fontsize=13, color=ORANGE,
             weight="bold")
-    ax.text(76, 76.5, "pull the variance back to 1 after each layer;\n"
-            "the forward chain is cut once per layer", ha="center",
-            fontsize=10.5, color=ORANGE)
-    arrow(ax, (70, 74.0), (xs["n2"], y_fwd + 4.5), color=ORANGE,
+    ax.text(80, 79.3, "每层之后把方差拉回 1，\n前向的连乘链每层被切断一次",
+            ha="center", va="top", fontsize=10.5, color=ORANGE)
+    arrow(ax, (74, 73.5), (xs["n2"], y_fwd + 4.6), color=ORANGE,
           connectionstyle="arc3,rad=0.2")
-    arrow(ax, (82, 74.0), (xs["nL"], y_fwd + 4.5), color=ORANGE,
+    arrow(ax, (86, 73.5), (xs["nL"], y_fwd + 4.6), color=ORANGE,
           connectionstyle="arc3,rad=-0.2")
 
-    ax.text(50, 9, "Residual connection", ha="center", fontsize=13,
-            color=GREEN, weight="bold")
-    ax.text(50, 5.5, "each backward factor becomes $I + J_l^{T}$:"
-            " a path that does not multiply any $J$",
-            ha="center", fontsize=10.5, color=GREEN)
-    arrow(ax, (38, 11.5), (bx["j1"], y_bwd - 4.5), color=GREEN,
-          connectionstyle="arc3,rad=-0.2")
-    arrow(ax, (62, 11.5), (bx["jL"], y_bwd - 4.5), color=GREEN,
-          connectionstyle="arc3,rad=0.2")
+    ax.text(54, 11, "残差", ha="center", fontsize=13, color=GREEN,
+            weight="bold")
+    ax.text(54, 8, "反向每个因子从 $J_l^{\\top}$ 变成 $I + J_l^{\\top}$，"
+            "多一条不乘任何 $J$ 的直通路（$I$：单位矩阵）",
+            ha="center", va="top", fontsize=10.5, color=GREEN)
+    arrow(ax, (44, 12.5), (bx["j1"], y_bwd - 5.4), color=GREEN,
+          connectionstyle="arc3,rad=-0.15")
+    arrow(ax, (64, 12.5), (bx["jL"], y_bwd - 5.4), color=GREEN,
+          connectionstyle="arc3,rad=0.15")
 
     save(fig, "init-norm-chain")
 

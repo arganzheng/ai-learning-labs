@@ -1,10 +1,14 @@
 """案例（DL 03）：同一个 MNIST MLP，四种优化器 × 学习率扫描，再加 warmup——把曲线画出来。
 https://arganzheng.life/optimizers-from-sgd-to-adamw.html
 
-    python case_03_optimizers_mnist.py
+    python case_03_optimizers_mnist.py                 # 训练 + 出图
+    python case_03_optimizers_mnist.py --schedules     # 只出调度概念图（不训练）
 
-复用 03_optimizers.py 的 dlf.optim；输出 out/case-03-*.svg。
+复用 03_optimizers.py 的 dlf.optim；输出 out/case-03-*.svg 与
+out/optimizer-cosine-wsd.svg。
 """
+import sys
+
 import numpy as np
 
 from _plot import C, plt, save
@@ -102,5 +106,65 @@ def main():
     save(fig, "case-03-schedules")
 
 
+def plot_cosine_wsd():
+    """概念图：cosine 与 WSD 的学习率曲线（文章第六章，不训练）。
+
+    左：warmup 后 cosine 平滑衰减到峰值的 10%（终点 T 预先定死）；
+    右：WSD warmup 后恒定、最后 20% 衰减，另画两条提前分叉的衰减支路，
+    表示"恒定段可以随时结束"。只用颜色区分，统一实线。
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.4))
+    warm, T = 0.08, 1.0
+    for ax, mode in ((axes[0], "cosine"), (axes[1], "wsd")):
+        t = np.linspace(0, T, 2001)
+        if mode == "cosine":
+            lr = np.where(t < warm, t / warm,
+                          0.1 + 0.9 * (1 + np.cos(np.pi * (t - warm)
+                                        / (T - warm))) / 2)
+            ax.plot(t, lr, color=C["blue"], lw=2.2)
+            ax.annotate("$T$", (T, 0), xytext=(T - 0.015, -0.09),
+                        fontsize=13)
+            ax.set_title("cosine（要预先知道 $T$）", fontsize=13)
+        else:
+            decay_start = 0.8
+            lr = np.where(t < warm, t / warm,
+                          np.where(t < decay_start, 1.0,
+                                   1 - 0.9 * (t - decay_start)
+                                   / (T - decay_start)))
+            ax.plot(t, lr, color=C["blue"], lw=2.2,
+                    label="衰减从 80% 处开始")
+            # 两条提前分叉的衰减支路：同样的形状，从恒定段中途分叉
+            for frac, color in ((0.5, C["orange"]), (0.65, C["green"])):
+                T_end = frac + (T - decay_start)
+                t2 = np.linspace(frac, T_end, 400)
+                ax.plot(t2, 1 - 0.9 * (t2 - frac) / (T_end - frac),
+                        color=color, lw=2.2,
+                        label=f"提前分叉（{frac:.0%} 处）")
+                ax.plot([frac, frac], [1.0, 1.0], color=color, lw=2.2)
+                ax.scatter([frac], [1.0], color=color, zorder=5)
+            ax.legend(fontsize=9, frameon=True, framealpha=0.9,
+                      loc="lower left")
+            ax.set_title("WSD（恒定段可随时延长 / 分叉）", fontsize=13)
+        ax.plot([0, warm], [0, 1], color=C["blue"], lw=2.2)
+        ax.set_xlim(0, T + 0.03)
+        ax.set_ylim(-0.06, 1.12)
+        ax.set_xlabel("训练步 $t$", fontsize=12)
+        ax.set_ylabel("学习率（相对峰值）", fontsize=12)
+        ax.set_xticks([warm, T] if mode == "cosine" else [warm, 0.8, T])
+        ax.set_xticklabels(
+            ["warmup", "$T$"] if mode == "cosine"
+            else ["warmup", "衰减开始", "$T$"], fontsize=10)
+        ax.set_yticks([0, 0.1, 1.0])
+        ax.set_yticklabels(["0", "10%", "峰值"], fontsize=10)
+        ax.grid(alpha=0.2)
+        for spine in ("top", "right"):
+            ax.spines[spine].set_visible(False)
+    fig.tight_layout()
+    save(fig, "optimizer-cosine-wsd")
+
+
 if __name__ == "__main__":
-    main()
+    if "--schedules" in sys.argv:
+        plot_cosine_wsd()
+    else:
+        main()

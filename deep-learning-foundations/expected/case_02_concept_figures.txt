@@ -1,0 +1,19 @@
+  图已保存 out/init-norm-chain.svg
+  a^L 引用值：0.5^64 = 5.42e-20，0.9^128 = 1.39e-06，1.1^128 = 1.99e+05
+  图已保存 out/init-norm-product.svg
+  图已保存 out/init-norm-init-variance.svg
+  模拟（seed 2026，width 256，batch 1024，Linear+ReLU 64 层）：
+    σ_w²=1/n：层 1 std 0.585，层 64 std 2.16e-10
+    σ_w²=2/n：层 1 std 0.828，层 64 std 1.05
+    σ_w²=3/n：层 1 std 1.01，层 64 std 2.97e+05
+    理论：σ_w²=1/n 时 std 每层乘 √0.5，64 层 = 2^-32 = 2.33e-10
+  图已保存 out/init-norm-axes.svg
+  手算 x=[2,4,6,8]：LN 均值 5 方差 5 → [-1.342 -0.447  0.447  1.342]
+    RMS = 5.477 → [0.365 0.73  1.095 1.461]
+  对照 x=[-3,-1,1,3]（均值 0）：LN → [-1.342 -0.447  0.447  1.342]；RMSNorm → [-1.342 -0.447  0.447  1.342]（相同）
+  图已保存 out/init-norm-ln-vs-rms.svg
+  图已保存 out/init-norm-bn-sequence.svg
+  batch-mean std @ m=2: sim 0.708，理论 1/√m = 0.707
+  batch-mean std @ m=32: sim 0.175，理论 1/√m = 0.177
+  batch-mean std @ m=256: sim 0.062，理论 1/√m = 0.062
+  图已保存 out/init-norm-residual-paths.svg

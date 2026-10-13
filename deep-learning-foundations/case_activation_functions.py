@@ -181,48 +181,60 @@ def plot_relu_variants():
 
 
 def plot_smooth_activations():
+    # 读者反馈：gelu_new 与精确 GELU 在函数图上完全重合（最大差 4.73e-4），
+    # 改成三栏：函数、导数、tanh 近似的误差。只用颜色区分曲线。
+    vermilion = "#D55E00"
+    green = "#009E73"
+    blue = "#0072B2"
+    purple = "#CC79A7"
+
     x = np.linspace(-5, 5, 6001)
     cdf = np.array([0.5 * (1 + math.erf(value / math.sqrt(2))) for value in x])
     pdf = np.exp(-(x**2) / 2) / math.sqrt(2 * math.pi)
     sigmoid = 1 / (1 + np.exp(-x))
     gelu = x * cdf
     silu = x * sigmoid
+    relu = np.maximum(x, 0)
     gelu_new_inner = math.sqrt(2 / math.pi) * (x + 0.044715 * x**3)
-    gelu_new_tanh = np.tanh(gelu_new_inner)
-    gelu_new = 0.5 * x * (1 + gelu_new_tanh)
-    gelu_new_derivative = (
-        0.5 * (1 + gelu_new_tanh)
-        + 0.5 * x * (1 - gelu_new_tanh**2)
-        * math.sqrt(2 / math.pi) * (1 + 3 * 0.044715 * x**2)
-    )
+    gelu_new = 0.5 * x * (1 + np.tanh(gelu_new_inner))
+    error = gelu_new - gelu
+
+    fig, axes = plt.subplots(1, 3, figsize=(11, 4.0))
+    colors = [vermilion, green, blue]
+    labels = ["GELU", "SiLU", "ReLU reference"]
+    functions = [gelu, silu, relu]
     derivatives = [
         cdf + x * pdf,
         sigmoid + x * sigmoid * (1 - sigmoid),
-        gelu_new_derivative,
         np.where(x > 0, 1, 0),
     ]
-    labels = ["GELU", "SiLU", "gelu_new", "ReLU reference"]
-    colors = [C["red"], C["teal"], C["purple"], C["gray"]]
-    fig, axes = _plot_function_and_derivative(
-        "Smooth activations", x, [gelu, silu, gelu_new, np.maximum(x, 0)],
-        derivatives, colors, labels,
-    )
+    for values, label, color in zip(functions, labels, colors):
+        axes[0].plot(x, values, color=color, linewidth=2.2, label=label)
+    for values, label, color in zip(derivatives, labels, colors):
+        axes[1].plot(x, values, color=color, linewidth=2.2, label=label)
+    axes[2].plot(x, error * 1e4, color=purple, linewidth=2.2)
+
+    _format_axes(axes[0], "Smooth activations: functions")
+    _format_axes(axes[1], "Smooth activations: derivatives", "Derivative")
+    _format_axes(axes[2], "tanh approximation error", "gelu_new - GELU (x1e-4)")
+    axes[0].legend(frameon=True, framealpha=0.9, fontsize=13, loc="upper left")
+
     gelu_min = int(np.argmin(gelu))
     silu_min = int(np.argmin(silu))
     for index, label, color in (
-        (gelu_min, "GELU: (-0.752, -0.170)", C["red"]),
-        (silu_min, "SiLU: (-1.278, -0.278)", C["teal"]),
+        (gelu_min, "GELU: (-0.752, -0.170)", vermilion),
+        (silu_min, "SiLU: (-1.278, -0.278)", green),
     ):
         is_gelu = label.startswith("GELU")
         y = gelu[index] if is_gelu else silu[index]
         axes[0].scatter([x[index]], [y], color=color, zorder=4)
         text_y = 0.55 if is_gelu else 0.12
         axes[0].annotate(
-            label, (x[index], y), xytext=(-4.5, text_y), fontsize=15,
+            label, (x[index], y), xytext=(-4.5, text_y), fontsize=13,
             arrowprops={"arrowstyle": "-", "color": color, "lw": 1},
         )
-    for ax in axes:
-        ax.lines[3].set_linewidth(1.2)
+    print(f"  gelu_new - GELU 在 [-5,5] 最大绝对误差 "
+          f"{np.abs(error).max():.3e}（x1e-4 轴）")
     save(fig, "activation-smooth")
 
 

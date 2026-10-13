@@ -353,7 +353,7 @@ def plot_bn_sequence():
     ax.set_ylabel("std of batch mean", fontsize=13)
     ax.set_title("BN statistics are noisy at small m", fontsize=14)
     ax.grid(alpha=0.2, which="both")
-    ax.legend(frameon=True, framealpha=0.9, fontsize=10.5, loc="upper right")
+    ax.legend(frameon=True, framealpha=0.9, fontsize=10.5, loc="lower left")
     ax.annotate("inference: batch = 1, one token\n"
                 "→ must reuse training running stats",
                 xy=(1, 1.0), xytext=(8, 0.7), fontsize=9.5, color="#555555",

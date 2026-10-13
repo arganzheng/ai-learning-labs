@@ -227,6 +227,12 @@ def plot_smooth_activations():
 
 
 def plot_glu_family():
+    # Okabe-Ito 色盲友好配色，配合线型区分 x>0 处几乎重合的曲线
+    blue = "#0072B2"
+    orange = "#E69F00"
+    vermilion = "#D55E00"
+    bluegreen = "#009E73"
+
     fig, (diagram, gates) = plt.subplots(
         1, 2, figsize=(11, 5.2), gridspec_kw={"width_ratios": [1.15, 1]},
     )
@@ -235,7 +241,7 @@ def plot_glu_family():
     diagram.axis("off")
     diagram.set_title("FFN projections", fontsize=11)
 
-    def box(ax, center, text, width=2.1, height=0.9):
+    def box(ax, center, text, width=2.4, height=1.05):
         x, y = center
         patch = FancyBboxPatch(
             (x - width / 2, y - height / 2), width, height,
@@ -243,47 +249,69 @@ def plot_glu_family():
             edgecolor="#7a8ca5", linewidth=1.1,
         )
         ax.add_patch(patch)
-        ax.text(x, y, text, ha="center", va="center", fontsize=15)
+        ax.text(x, y, text, ha="center", va="center", fontsize=14)
 
     def arrow(ax, start, end):
         ax.annotate("", xy=end, xytext=start,
                     arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 1})
 
-    diagram.text(0.2, 7.8, "Ordinary FFN", fontsize=17, weight="bold")
-    box(diagram, (2.0, 6.4), "W_in\n→ d_ff", width=2.4, height=1.15)
-    box(diagram, (5.0, 6.4), "activation", width=2.4, height=1.15)
-    box(diagram, (8.0, 6.4), "W_out\n→ d_model", width=2.4, height=1.15)
-    arrow(diagram, (3.2, 6.4), (3.8, 6.4))
-    arrow(diagram, (6.2, 6.4), (6.8, 6.4))
-    diagram.text(0.2, 5.35, "Gated FFN", fontsize=17, weight="bold")
-    box(diagram, (2.0, 4.25), "w1 gate", width=2.4, height=1.05)
-    box(diagram, (2.0, 2.35), "w3 value", width=2.4, height=1.05)
-    box(diagram, (5.1, 3.3), "act(gate)\n⊙ value", width=2.7, height=1.15)
-    box(diagram, (8.1, 3.3), "w2\n→ d_model", width=2.4, height=1.15)
-    arrow(diagram, (3.2, 4.25), (3.75, 3.65))
-    arrow(diagram, (3.2, 2.35), (3.75, 2.95))
-    arrow(diagram, (6.45, 3.3), (6.9, 3.3))
-    diagram.text(5.1, 1.05, "d_gate ≈ 2/3 d_ff for matched parameters",
-                 ha="center", fontsize=15)
+    def code_name(ax, x, y, text):
+        ax.text(x, y, text, ha="center", va="top", fontsize=10.5,
+                color=C["gray"], style="italic")
+
+    diagram.text(0.2, 8.9, "Ordinary FFN", fontsize=16, weight="bold")
+    diagram.text(0.55, 7.5, "x", ha="center", va="center", fontsize=14)
+    box(diagram, (2.3, 7.5), "W1\nd → $d_{ff}$")
+    box(diagram, (5.1, 7.5), "activation")
+    box(diagram, (8.0, 7.5), "W2\n$d_{ff}$ → d")
+    arrow(diagram, (0.85, 7.5), (1.15, 7.5))
+    arrow(diagram, (3.45, 7.5), (3.95, 7.5))
+    arrow(diagram, (6.25, 7.5), (6.85, 7.5))
+
+    diagram.text(0.2, 6.1, "Gated FFN", fontsize=16, weight="bold")
+    diagram.text(0.55, 4.2, "x", ha="center", va="center", fontsize=14)
+    box(diagram, (2.3, 5.0), "W gate\nd → $d_g$")
+    box(diagram, (2.3, 3.1), "V value\nd → $d_g$")
+    box(diagram, (5.2, 4.05), "g(xW)\n⊙ xV", width=2.6, height=1.15)
+    box(diagram, (8.1, 4.05), "W2\n$d_g$ → d")
+    code_name(diagram, 2.3, 4.28, "w1 / gate_proj")
+    code_name(diagram, 2.3, 2.38, "w3 / up_proj")
+    code_name(diagram, 8.1, 3.3, "w2 / down_proj")
+    arrow(diagram, (0.85, 4.4), (1.1, 4.85))
+    arrow(diagram, (0.85, 4.0), (1.1, 3.35))
+    arrow(diagram, (3.5, 5.0), (3.9, 4.45))
+    arrow(diagram, (3.5, 3.1), (3.9, 3.65))
+    arrow(diagram, (6.5, 4.05), (6.95, 4.05))
+    diagram.text(5.1, 1.35,
+                 "$d_g \\approx \\frac{2}{3}\\, d_{ff}$ keeps parameters "
+                 "matched ($3\\,d\\,d_g \\approx 2\\,d\\,d_{ff}$)",
+                 ha="center", fontsize=12.5, color=C["gray"])
 
     x = np.linspace(-5, 5, 1001)
     sigmoid = 1 / (1 + np.exp(-x))
-    functions = [sigmoid, x, np.maximum(x, 0),
-                 x * np.array([0.5 * (1 + math.erf(v / math.sqrt(2))) for v in x]),
-                 x * sigmoid]
-    labels = ["GLU: sigmoid", "Bilinear: x", "ReGLU: ReLU",
-              "GEGLU: GELU", "SwiGLU: SiLU"]
-    colors = [C["blue"], C["gray"], C["green"], C["red"], C["teal"]]
+    curves = [
+        # 先画的在下层：SwiGLU 粗实线垫底，GEGLU/ReGLU/Bilinear 用线型区分
+        (x * sigmoid, "SwiGLU: SiLU", bluegreen, "-", 3.6),
+        (x * np.array([0.5 * (1 + math.erf(v / math.sqrt(2))) for v in x]),
+         "GEGLU: GELU", vermilion, "-", 2.0),
+        (np.maximum(x, 0), "ReGLU: ReLU", orange, "--", 2.0),
+        (x, "Bilinear: x", C["gray"], ":", 2.0),
+        (sigmoid, "GLU: sigmoid", blue, "-", 2.2),
+    ]
     gates.set_title("Gate functions", fontsize=16)
-    for values, label, color in zip(functions, labels, colors):
-        gates.plot(x, values, color=color, linewidth=2.2, label=label)
+    for values, label, color, style, width in curves:
+        gates.plot(x, values, color=color, linewidth=width,
+                   linestyle=style, label=label)
     gates.axhline(0, color=C["gray"], linewidth=0.7)
     gates.axvline(0, color=C["gray"], linewidth=0.7)
     gates.set_xlabel("Input x", fontsize=15)
     gates.set_ylabel("Gate output", fontsize=15)
     gates.tick_params(labelsize=15)
     gates.grid(alpha=0.2)
-    gates.legend(frameon=True, framealpha=0.9, fontsize=15, loc="upper left")
+    handles, labels = gates.get_legend_handles_labels()
+    order = [4, 3, 2, 1, 0]
+    gates.legend([handles[i] for i in order], [labels[i] for i in order],
+                 frameon=True, framealpha=0.9, fontsize=13, loc="upper left")
     save(fig, "activation-glu-family")
 
 

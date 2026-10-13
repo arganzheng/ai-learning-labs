@@ -122,8 +122,6 @@ def plot_cosine_wsd():
                           0.1 + 0.9 * (1 + np.cos(np.pi * (t - warm)
                                         / (T - warm))) / 2)
             ax.plot(t, lr, color=C["blue"], lw=2.2)
-            ax.annotate("$T$", (T, 0), xytext=(T - 0.015, -0.09),
-                        fontsize=13)
             ax.set_title("cosine（要预先知道 $T$）", fontsize=13)
         else:
             decay_start = 0.8

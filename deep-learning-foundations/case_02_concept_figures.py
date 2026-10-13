@@ -101,8 +101,11 @@ def plot_chain():
     bx = {"gx": 5, "j1": 24, "dots": 41, "j2": 57, "jL": 76, "ghL": 93}
     for key, label in (("jL", "$J_L^{\\top}$"), ("j2", "$J_2^{\\top}$"),
                        ("j1", "$J_1^{\\top}$")):
-        box(ax, (bx[key], y_bwd), label, width=9, height=7.6, fontsize=13)
-        ax.text(bx[key], y_bwd - 2.1, "→ " + label.replace("$J_", "$I+J_"),
+        box(ax, (bx[key], y_bwd), "", width=9, height=10.5, fontsize=13)
+        ax.text(bx[key], y_bwd + 1.9, label, ha="center", va="center",
+                fontsize=13)
+        ax.text(bx[key], y_bwd - 2.7,
+                "→ " + label.replace("$J_", "$I+J_"),
                 ha="center", va="center", fontsize=8, color=GREEN)
     ax.text(bx["ghL"], y_bwd, "$\\partial L / \\partial h_L$", ha="center",
             va="center", fontsize=12)
@@ -141,9 +144,9 @@ def plot_chain():
     ax.text(54, 8, "反向每个因子从 $J_l^{\\top}$ 变成 $I + J_l^{\\top}$，"
             "多一条不乘任何 $J$ 的直通路（$I$：单位矩阵）",
             ha="center", va="top", fontsize=10.5, color=GREEN)
-    arrow(ax, (44, 12.5), (bx["j1"], y_bwd - 5.4), color=GREEN,
+    arrow(ax, (44, 12.5), (bx["j1"], y_bwd - 6.6), color=GREEN,
           connectionstyle="arc3,rad=-0.15")
-    arrow(ax, (64, 12.5), (bx["jL"], y_bwd - 5.4), color=GREEN,
+    arrow(ax, (64, 12.5), (bx["jL"], y_bwd - 6.6), color=GREEN,
           connectionstyle="arc3,rad=0.15")
 
     save(fig, "init-norm-chain")

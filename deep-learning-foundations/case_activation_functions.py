@@ -227,11 +227,12 @@ def plot_smooth_activations():
 
 
 def plot_glu_family():
-    # Okabe-Ito 色盲友好配色，配合线型区分 x>0 处几乎重合的曲线
+    # Okabe-Ito 色盲友好配色；用户要求只用颜色区分，统一实线
     blue = "#0072B2"
+    grey = "#7F7F7F"
     orange = "#E69F00"
-    vermilion = "#D55E00"
-    bluegreen = "#009E73"
+    reddish_purple = "#CC79A7"
+    green = "#009E73"
 
     fig, (diagram, gates) = plt.subplots(
         1, 2, figsize=(11, 5.2), gridspec_kw={"width_ratios": [1.15, 1]},
@@ -290,28 +291,23 @@ def plot_glu_family():
     x = np.linspace(-5, 5, 1001)
     sigmoid = 1 / (1 + np.exp(-x))
     curves = [
-        # 先画的在下层：SwiGLU 粗实线垫底，GEGLU/ReGLU/Bilinear 用线型区分
-        (x * sigmoid, "SwiGLU: SiLU", bluegreen, "-", 3.6),
+        (sigmoid, "GLU: sigmoid", blue),
+        (x, "Bilinear: x", grey),
+        (np.maximum(x, 0), "ReGLU: ReLU", orange),
         (x * np.array([0.5 * (1 + math.erf(v / math.sqrt(2))) for v in x]),
-         "GEGLU: GELU", vermilion, "-", 2.0),
-        (np.maximum(x, 0), "ReGLU: ReLU", orange, "--", 2.0),
-        (x, "Bilinear: x", C["gray"], ":", 2.0),
-        (sigmoid, "GLU: sigmoid", blue, "-", 2.2),
+         "GEGLU: GELU", reddish_purple),
+        (x * sigmoid, "SwiGLU: SiLU", green),
     ]
     gates.set_title("Gate functions", fontsize=16)
-    for values, label, color, style, width in curves:
-        gates.plot(x, values, color=color, linewidth=width,
-                   linestyle=style, label=label)
+    for values, label, color in curves:
+        gates.plot(x, values, color=color, linewidth=2.2, label=label)
     gates.axhline(0, color=C["gray"], linewidth=0.7)
     gates.axvline(0, color=C["gray"], linewidth=0.7)
     gates.set_xlabel("Input x", fontsize=15)
     gates.set_ylabel("Gate output", fontsize=15)
     gates.tick_params(labelsize=15)
     gates.grid(alpha=0.2)
-    handles, labels = gates.get_legend_handles_labels()
-    order = [4, 3, 2, 1, 0]
-    gates.legend([handles[i] for i in order], [labels[i] for i in order],
-                 frameon=True, framealpha=0.9, fontsize=13, loc="upper left")
+    gates.legend(frameon=True, framealpha=0.9, fontsize=13, loc="upper left")
     save(fig, "activation-glu-family")
 
 

@@ -62,7 +62,7 @@ def double_descent_schematic():
             + 2.6 * np.exp(-0.5 * (cap - 3.6) ** 2 / 0.28)
             + 0.55 / (1 + np.exp(1.4 * (cap - 4.2)))
             + 0.18)
-    train = 0.85 / (1 + np.exp(2.2 * (cap - 3.6))) + 0.02
+    train = 0.85 / (1 + np.exp(6.0 * (cap - 3.0))) + 0.02
     fig, ax = plt.subplots(figsize=(7.6, 3.4))
     ax.plot(cap, test, color=BLUE, lw=LW, label="测试误差")
     ax.plot(cap, train, color=ORANGE, lw=LW, label="训练误差")
@@ -103,12 +103,14 @@ def min_norm():
     fig, ax = plt.subplots(figsize=(5.4, 4.6))
     t = np.linspace(-1.5, 6.5, 100)
     ax.plot(t, (5 - t) / 2, color=GRAY, lw=1.6)
-    ax.text(6.2, -0.95, "$w_1 + 2 w_2 = 5$（所有插值解）",
+    ax.text(4.6, -1.02, "$w_1 + 2 w_2 = 5$（所有插值解）",
             fontsize=9.5, color=GRAY, ha="center")
     ax.plot(traj[:, 0], traj[:, 1], color=BLUE, lw=LW)
     ax.plot(traj[::6, 0], traj[::6, 1], "o", ms=4, color=BLUE)
     ax.plot(0, 0, "o", ms=7, color="#222222")
-    ax.text(-0.05, -0.28, "初始化 $(0,0)$", fontsize=9)
+    ax.annotate("初始化 $(0,0)$", (0, 0), xytext=(-1.05, -0.8),
+                fontsize=9, color="#333333",
+                arrowprops=dict(arrowstyle="-", color="#888888", lw=0.8))
     ax.plot(*w_min, "o", ms=8, color=ORANGE)
     ax.text(w_min[0] + 0.12, w_min[1] + 0.18,
             f"最小范数解 $w^*=(1,2)$\n$\\|w^*\\|=\\sqrt{{5}}\\approx2.236$",

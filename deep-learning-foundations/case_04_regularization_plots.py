@@ -47,14 +47,18 @@ def exp_reg(X, y, Xt, yt):
           "这就是过拟合的形状；weight decay 让它几乎不再上升；dropout 单独用反而更差（这个网络只有一层隐藏层，drop 掉一半直接伤容量）；"
           "早停在四条曲线上各挑最低点，都在第 10–40 个 epoch——训 300 个 epoch 是白训。测试准确率却几乎不动（88.7%–89.7%）：loss 上升是模型对错的样本越来越自信，不是错得更多。")
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0))
+    fig, axes = plt.subplots(1, 3, figsize=(10.6, 3.0))
     cols = [C["red"], C["blue"], C["orange"], C["green"]]
     for (name, (eps, trl, tel, tea)), col in zip(curves.items(), cols):
-        axes[0].plot(eps, tel, c=col, lw=1.3, label=name); axes[0].plot(eps, trl, c=col, lw=0.8, ls=":")
-        axes[1].plot(eps, [a * 100 for a in tea], c=col, lw=1.2, label=name)
-    axes[0].set_xlabel("epoch"); axes[0].set_ylabel("loss（实线测试，虚线训练）"); axes[0].set_ylim(0, 0.7); axes[0].legend(fontsize=7)
-    axes[0].set_title("1,000 张训练图：训练 loss 归零，测试 loss 掉头")
-    axes[1].set_xlabel("epoch"); axes[1].set_ylabel("测试准确率 %"); axes[1].set_ylim(85, 92); axes[1].set_title("准确率几乎不动：错的样本越来越自信")
+        axes[0].plot(eps, trl, c=col, lw=2.2, label=name)
+        axes[1].plot(eps, tel, c=col, lw=2.2, label=name)
+        b = int(np.argmin(tel))
+        axes[1].plot(eps[b], tel[b], "o", ms=6, color=col)
+        axes[2].plot(eps, [a * 100 for a in tea], c=col, lw=2.2, label=name)
+    axes[0].set_xlabel("epoch"); axes[0].set_ylabel("训练 loss"); axes[0].set_title("训练 loss：四条曲线都归零")
+    axes[1].set_xlabel("epoch"); axes[1].set_ylabel("测试 loss"); axes[1].set_ylim(0, 0.7); axes[1].legend(fontsize=7)
+    axes[1].set_title("测试 loss：圆点 = 每条的最优早停点")
+    axes[2].set_xlabel("epoch"); axes[2].set_ylabel("测试准确率 %"); axes[2].set_ylim(85, 92); axes[2].set_title("准确率几乎不动：错的样本越来越自信")
     save(fig, "case-04-regularizers")
 
 
@@ -78,11 +82,11 @@ def exp_dd(X, y, Xt, yt):
 
     fig, ax = plt.subplots(figsize=(7.6, 3.0))
     ws = [r[0] for r in res]
-    ax.plot(ws, [r[3] * 100 for r in res], "o-", c=C["red"], label="测试错误率 %")
-    ax.plot(ws, [r[2] * 100 for r in res], "s--", c=C["blue"], label="训练错误率 %")
-    ax2 = ax.twinx(); ax2.plot(ws, [r[4] for r in res], "^:", c=C["orange"], label="测试 loss"); ax2.set_ylabel("测试 loss", color=C["orange"]); ax2.spines["right"].set_visible(True)
+    ax.plot(ws, [r[3] * 100 for r in res], "o-", c=C["red"], lw=2.2, label="测试错误率 %")
+    ax.plot(ws, [r[2] * 100 for r in res], "s-", c=C["blue"], lw=2.2, label="训练错误率 %")
+    ax2 = ax.twinx(); ax2.plot(ws, [r[4] for r in res], "^-", c=C["orange"], lw=2.2, label="测试 loss"); ax2.set_ylabel("测试 loss", color=C["orange"]); ax2.spines["right"].set_visible(True)
     ax.set_xscale("log", base=2); ax.set_xticks(ws); ax.set_xticklabels(ws); ax.set_xlabel("隐藏层宽度")
-    ax.set_ylabel("错误率 %"); ax.axvline(12, ls="--", c=C["gray"], lw=0.8); ax.text(13, 28, "插值阈值：\n训练错误率刚到 0\n参数 ≈ 样本数", fontsize=7.5, color=C["gray"])
+    ax.set_ylabel("错误率 %"); ax.axvline(12, c=C["gray"], lw=0.8); ax.text(14, 12, "插值阈值：\n训练错误率刚到 0\n参数 ≈ 样本数", fontsize=7.5, color=C["gray"])
     ax.legend(loc="upper right", fontsize=7); ax2.legend(loc="upper center", fontsize=7)
     ax.set_title("4,000 张、20% 错标签：测试误差先降、再升、再降")
     save(fig, "case-04-double-descent")

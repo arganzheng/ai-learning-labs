@@ -27,6 +27,7 @@
 | `case_02_concept_figures.py` | 04 | 文章概念图与模拟：连乘链示意、a^L 深度曲线、64 层初始化方差模拟、归一化统计轴、LN vs RMSNorm 手算、BN 序列与 batch 噪声、残差路径（`out/init-norm-*.svg`） |
 | `case_03_optimizers_mnist.py` | 05 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状；`--schedules` 只出 cosine / WSD 概念图（out/optimizer-cosine-wsd.svg，不训练） |
 | `case_04_regularization_plots.py` | 06 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
+| `case_04_concept_figures.py` | 06 | 文章概念图与工作实例：N/D 数轴、double descent 示意、最小范数解 GD 轨迹、label smoothing 的 loss–gap 曲线、小语言模型 2 万字符曲线（`out/reg-*.svg`，不训练） |
 | `case_05_lenet5.py` | 07 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
 | `case_embedding_word2vec.py` | 08 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
 | `case_06_char_lstm_and_alignment.py` | 09 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |

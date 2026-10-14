@@ -232,8 +232,8 @@ def run_diagrams():
     patches, inner = [], []
     box(ax, patches, inner, (1, 17), 28, 10, "576 个 patch 特征\n作 key / value", L["blue"], fs=7.5)
     box(ax, patches, inner, (1, 3), 28, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"], fs=7.5)
-    box(ax, patches, inner, (37, 8), 34, 14, "cross-attention\nsoftmax(QKᵀ/√d)·V", L["gray"], fs=8)
-    box(ax, patches, inner, (81, 10), 34, 10, "32 个输出 token\n每个 = patch 的加权平均", L["green"], fs=7.5)
+    box(ax, patches, inner, (37, 8), 34, 14, "cross-attention\nsoftmax(QKᵀ/√d)\n· V", L["gray"], fs=7)
+    box(ax, patches, inner, (81, 10), 34, 10, "32 个输出 token\n每个 = patch\n的加权平均", L["green"], fs=7)
     arrow(ax, 29.5, 22, 36.5, 17)
     arrow(ax, 29.5, 8, 36.5, 13)
     arrow(ax, 71.5, 15, 80.5, 15)

@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 plt.rcParams.update({
     "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
-    "svg.fonttype": "none",          # 文字保留为 <text>，浏览器用本地字体渲染，文件小
+    "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
     "font.size": 9,
     "axes.titlesize": 10,
     "axes.labelsize": 9,

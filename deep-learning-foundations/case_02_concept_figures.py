@@ -67,8 +67,8 @@ def plot_chain():
     ax.text(54, 91,
             r"$\mathrm{Var}(h_L) = \mathrm{Var}(x)\, a_1 a_2 \cdots a_L$",
             ha="center", fontsize=14)
-    xs = {"x": 5, "f1": 15, "n1": 24, "h1": 31, "f2": 41, "n2": 50,
-          "h2": 57, "dots": 66, "fL": 76, "nL": 85, "hL": 93}
+    xs = {"x": 4, "f1": 13, "n1": 25, "h1": 33, "f2": 43, "n2": 55,
+          "h2": 63, "dots": 70, "fL": 79, "nL": 91, "hL": 100}
     ax.text(xs["x"], y_fwd, "$x$", ha="center", va="center", fontsize=15)
     for key, label in (("f1", "$f_1$"), ("f2", "$f_2$"), ("fL", "$f_L$")):
         box(ax, (xs[key], y_fwd), label, width=7, height=6, fontsize=14)
@@ -101,19 +101,19 @@ def plot_chain():
     bx = {"gx": 5, "j1": 24, "dots": 41, "j2": 57, "jL": 76, "ghL": 93}
     for key, label in (("jL", "$J_L^{\\top}$"), ("j2", "$J_2^{\\top}$"),
                        ("j1", "$J_1^{\\top}$")):
-        box(ax, (bx[key], y_bwd), "", width=9, height=10.5, fontsize=13)
-        ax.text(bx[key], y_bwd + 1.9, label, ha="center", va="center",
+        box(ax, (bx[key], y_bwd), "", width=12, height=11.5, fontsize=13)
+        ax.text(bx[key], y_bwd + 2.2, label, ha="center", va="center",
                 fontsize=13)
-        ax.text(bx[key], y_bwd - 2.7,
+        ax.text(bx[key], y_bwd - 3.0,
                 "→ " + label.replace("$J_", "$I+J_"),
-                ha="center", va="center", fontsize=8, color=GREEN)
+                ha="center", va="center", fontsize=11, color=GREEN)
     ax.text(bx["ghL"], y_bwd, "$\\partial L / \\partial h_L$", ha="center",
             va="center", fontsize=12)
     ax.text(bx["dots"], y_bwd, "$\\cdots$", ha="center", va="center",
             fontsize=14)
     ax.text(bx["gx"], y_bwd, "$\\partial L / \\partial x$", ha="center",
             va="center", fontsize=12)
-    bhalf = {"ghL": 5, "gx": 5, "dots": 2}
+    bhalf = {"ghL": 5, "gx": 5, "dots": 2, "j1": 6, "j2": 6, "jL": 6}
     bedges = [("ghL", "jL"), ("jL", "j2"), ("j2", "dots"), ("dots", "j1"),
               ("j1", "gx")]
     for a, b in bedges:

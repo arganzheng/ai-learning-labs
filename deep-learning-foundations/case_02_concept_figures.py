@@ -553,6 +553,115 @@ def plot_one_layer_variance():
           f"E[h²] = {e_h2:.2f}")
 
 
+def plot_one_layer_steps():
+    """FIGURE 9：一层方差放大的两步示意（对应 §1「1、前向方差逐层相乘」）。"""
+    fig, ax = new_diagram((9.0, 3.0), (0, 120), (0, 40))
+    patches, inner = [], []
+
+    def bx_(center, text, **kw):
+        p, t = box(ax, center, text, **kw)
+        patches.append(p)
+        inner.append(t)
+        return p, t
+
+    # 输入列
+    in_x, sum_x = 12, 58
+    ys = [32, 24, 16, 8]
+    labels_in = [r"$x_1$", r"$x_2$", "$\\vdots$", r"$x_{n_{in}}$"]
+    for i, (y, lab) in enumerate(zip(ys, labels_in)):
+        if i == 2:
+            ax.text(in_x, y, lab, ha="center", va="center", fontsize=11)
+        else:
+            c = plt.Circle((in_x, y), 2.0, facecolor=BOX_FC,
+                           edgecolor=BOX_EC, linewidth=1.1, zorder=3)
+            ax.add_patch(c)
+            patches.append(c)
+            inner.append(ax.text(in_x, y, lab, ha="center", va="center",
+                                 fontsize=10, zorder=4))
+    ax.text(in_x, 37.5, "$n_{in}$ 个输入，每个方差 $\\sigma_x^2$",
+            ha="center", va="center", fontsize=9)
+
+    # 加权连线 → Σ
+    sum_y = 20
+    sigma = plt.Circle((sum_x, sum_y), 2.6, facecolor=BOX_FC,
+                       edgecolor=BOX_EC, linewidth=1.1, zorder=3)
+    ax.add_patch(sigma)
+    patches.append(sigma)
+    inner.append(ax.text(sum_x, sum_y, "$\\Sigma$", ha="center",
+                         va="center", fontsize=12, zorder=4))
+    wlabs = [r"$W_{i1}$", r"$W_{i2}$", None, r"$W_{i,n_{in}}$"]
+    for i, y in enumerate(ys):
+        if i == 2:
+            continue
+        ax.plot([in_x + 2.1, sum_x - 2.7], [y, sum_y], color=C["gray"],
+                lw=1.2, solid_capstyle="round", zorder=1)
+        if wlabs[i]:
+            mx, my = (in_x + 2.1 + sum_x - 2.7) / 2, (y + sum_y) / 2
+            ax.text(mx, my + 1.6, wlabs[i], ha="center", va="center",
+                    fontsize=9)
+    ax.text(34, 36.2, "每一项 $W_{ij}x_j$：方差 $\\sigma_w^2\\sigma_x^2$",
+            ha="center", va="center", fontsize=9)
+
+    # Σ → z_i → φ → h_i
+    z_x, phi_x, h_x = 72, 90, 110
+    arrow(ax, (sum_x + 2.7, sum_y), (z_x - 3.6, sum_y))
+    ax.text(z_x, sum_y, "$z_i$", ha="center", va="center", fontsize=11)
+    ax.text((sum_x + z_x) / 2, sum_y - 5.2,
+            "$n_{in}$ 项相加：Var$(z_i)=n_{in}\\sigma_w^2\\sigma_x^2$",
+            ha="center", va="center", fontsize=9)
+    arrow(ax, (z_x + 3.6, sum_y), (phi_x - 6.4, sum_y))
+    bx_((phi_x, sum_y), "$\\phi$（如 ReLU）", width=13, height=6,
+        fontsize=10, fc="#fdeee0", ec=ORANGE)
+    arrow(ax, (phi_x + 6.4, sum_y), (h_x - 3.6, sum_y))
+    ax.text(h_x, sum_y, "$h_i$", ha="center", va="center", fontsize=11)
+    ax.text((phi_x + h_x) / 2, sum_y - 8.2,
+            "二阶矩 $\\times\\,c_\\phi$（ReLU：$1/2$）",
+            ha="center", va="center", fontsize=9)
+
+    # 底部两条彩色带 + 总结
+    ax.plot([8, 74], [2.5, 2.5], color=ORANGE, lw=2.2)
+    ax.text(41, 0.2, "第一步 Linear：$\\times\\ n_{in}\\sigma_w^2$",
+            ha="center", va="top", fontsize=10, color=ORANGE)
+    ax.plot([76, 112], [2.5, 2.5], color=GREEN, lw=2.2)
+    ax.text(94, 0.2, "第二步 激活：$\\times\\ c_\\phi$",
+            ha="center", va="top", fontsize=10, color=GREEN)
+    ax.text(60, -4.6,
+            "一层合起来：$a_l=n_{in}\\sigma_w^2 c_\\phi$",
+            ha="center", va="top", fontsize=10, color="black")
+
+    ax.set_ylim(-8, 40)
+
+    # ---- 布局自检：标签与框/圆、标签与标签之间不得重叠 ----
+    from matplotlib.transforms import Bbox
+    fig.canvas.draw()
+    rend = fig.canvas.get_renderer()
+    box_exts = [p.get_window_extent(rend) for p in patches]
+    labels = [t for t in ax.texts if t not in inner and t.get_text()]
+    lab_exts = [t.get_window_extent(rend) for t in labels]
+
+    def padded(e, pad=2):
+        return Bbox.from_extents(e.x0 - pad, e.y0 - pad,
+                                 e.x1 + pad, e.y1 + pad)
+
+    for t, e in zip(labels, lab_exts):
+        for b in box_exts:
+            assert not padded(e).overlaps(b), (
+                f"label overlaps box: {t.get_text()!r}")
+    for i in range(len(labels)):
+        for j in range(i + 1, len(labels)):
+            assert not padded(lab_exts[i]).overlaps(lab_exts[j]), (
+                f"labels overlap: {labels[i].get_text()!r} / "
+                f"{labels[j].get_text()!r}")
+    for p, t in zip(patches, inner):
+        pe = p.get_window_extent(rend)
+        te = t.get_window_extent(rend)
+        assert (te.x0 >= pe.x0 + 1 and te.x1 <= pe.x1 - 1
+                and te.y0 >= pe.y0 + 1 and te.y1 <= pe.y1 - 1), (
+                f"text overflows its box: {t.get_text()!r}")
+
+    save(fig, "init-norm-one-layer-steps")
+
+
 def main():
     plot_chain()
     plot_product()
@@ -562,6 +671,7 @@ def main():
     plot_bn_sequence()
     plot_residual_paths()
     plot_one_layer_variance()
+    plot_one_layer_steps()
 
 
 if __name__ == "__main__":

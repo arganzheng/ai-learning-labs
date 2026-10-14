@@ -147,9 +147,9 @@ def run_diagrams():
         for p, t in zip(patches, inner):
             pe = p.get_window_extent(rend)
             te = t.get_window_extent(rend)
-            assert (te.x0 >= pe.x0 + 1 and te.x1 <= pe.x1 - 1
-                    and te.y0 >= pe.y0 + 1 and te.y1 <= pe.y1 - 1), (
-                        f"text overflows its box: {t.get_text()!r}")
+            assert (te.x0 >= pe.x0 + 6 and te.x1 <= pe.x1 - 6
+                    and te.y0 >= pe.y0 + 6 and te.y1 <= pe.y1 - 6), (
+                        f"text within 6 px of box edge: {t.get_text()!r}")
         for e in box_exts + lab_exts:
             assert figbox.contains(e.x0, e.y0) and figbox.contains(e.x1, e.y1), (
                 "artist leaves the figure canvas")
@@ -228,15 +228,15 @@ def run_diagrams():
     fig = plt.figure(figsize=(10.5, 3.0))
     gs = fig.add_gridspec(1, 4, width_ratios=[3.6, 1.5, 1.5, 1.5], wspace=0.25)
     ax = fig.add_subplot(gs[0])
-    ax.set_xlim(0, 100); ax.set_ylim(0, 30); ax.axis("off")
+    ax.set_xlim(0, 116); ax.set_ylim(0, 30); ax.axis("off")
     patches, inner = [], []
-    box(ax, patches, inner, (1, 17), 24, 10, "576 个 patch 特征\n作 key / value", L["blue"], fs=7.5)
-    box(ax, patches, inner, (1, 3), 24, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"], fs=7.5)
-    box(ax, patches, inner, (36, 8), 30, 14, "cross-attention\nsoftmax(QKᵀ/√d) · V", L["gray"], fs=8)
-    box(ax, patches, inner, (77, 10), 22, 10, "32 个输出 token\n= patch 的加权平均", L["green"], fs=7.5)
-    arrow(ax, 25.5, 22, 35.5, 18)
-    arrow(ax, 25.5, 8, 35.5, 12)
-    arrow(ax, 66.5, 15, 76.5, 15)
+    box(ax, patches, inner, (1, 17), 28, 10, "576 个 patch 特征\n作 key / value", L["blue"], fs=7.5)
+    box(ax, patches, inner, (1, 3), 28, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"], fs=7.5)
+    box(ax, patches, inner, (37, 8), 34, 14, "cross-attention\nsoftmax(QKᵀ/√d)·V", L["gray"], fs=8)
+    box(ax, patches, inner, (81, 10), 34, 10, "32 个输出 token\n每个 = patch 的加权平均", L["green"], fs=7.5)
+    arrow(ax, 29.5, 22, 36.5, 17)
+    arrow(ax, 29.5, 8, 36.5, 13)
+    arrow(ax, 71.5, 15, 80.5, 15)
     check_layout(fig, ax, patches, inner)
     titles = ["query 0 → 左上角物体", "query 7 → 文字带", "query 15 → 右下角背景"]
     vmax = att.max()

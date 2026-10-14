@@ -115,66 +115,137 @@ def run_budget():
 
 def run_diagrams():
     from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+    from matplotlib.transforms import Bbox
 
-    def box(ax, xy, w, h, text, fc, fs=8):
+    L = {"blue": "#dbe7f5", "orange": "#fde8d0", "green": "#dcefd9",
+         "gray": "#eeeeee", "dark": "#222222"}
+
+    def check_layout(fig, axes, patches, inner):
+        """断言：标签不压框不互压，框不互压，框内文字留边，所有元素不出图。"""
+        fig.canvas.draw()
+        rend = fig.canvas.get_renderer()
+        W, H = fig.canvas.get_width_height()
+        figbox = Bbox.from_extents(0, 0, W, H)
+        box_exts = [p.get_window_extent(rend) for p in patches]
+        labels = []
+        for a in np.atleast_1d(axes):
+            labels += [t for t in a.texts if t not in inner and t.get_text()]
+        lab_exts = [t.get_window_extent(rend) for t in labels]
+        for t, e in zip(labels, lab_exts):
+            for b in box_exts:
+                assert not Bbox.from_extents(e.x0 - 2, e.y0 - 2, e.x1 + 2, e.y1 + 2).overlaps(b), (
+                    f"label overlaps box: {t.get_text()!r}")
+        for i in range(len(lab_exts)):
+            for j in range(i + 1, len(lab_exts)):
+                assert not lab_exts[i].overlaps(lab_exts[j]), "labels overlap"
+        for i in range(len(box_exts)):
+            for j in range(i + 1, len(box_exts)):
+                a, b = box_exts[i], box_exts[j]
+                nested = (a.contains(b.x0, b.y0) and a.contains(b.x1, b.y1)) or \
+                         (b.contains(a.x0, a.y0) and b.contains(a.x1, a.y1))
+                assert nested or not a.overlaps(b), "boxes overlap"
+        for p, t in zip(patches, inner):
+            pe = p.get_window_extent(rend)
+            te = t.get_window_extent(rend)
+            assert (te.x0 >= pe.x0 + 1 and te.x1 <= pe.x1 - 1
+                    and te.y0 >= pe.y0 + 1 and te.y1 <= pe.y1 - 1), (
+                        f"text overflows its box: {t.get_text()!r}")
+        for e in box_exts + lab_exts:
+            assert figbox.contains(e.x0, e.y0) and figbox.contains(e.x1, e.y1), (
+                "artist leaves the figure canvas")
+
+    def box(ax, patches, inner, xy, w, h, text, fc, fs=8):
         x, y = xy
-        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02",
-                                    facecolor=fc, edgecolor=C["gray"], linewidth=1))
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs)
+        p = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02",
+                           facecolor=fc, edgecolor="#999999", linewidth=1)
+        ax.add_patch(p)
+        patches.append(p)
+        inner.append(ax.text(x + w / 2, y + h / 2, text, ha="center", va="center",
+                             fontsize=fs, color=L["dark"]))
 
-    def arrow(ax, x1, x2, y):
-        ax.add_patch(FancyArrowPatch((x1, y), (x2, y), arrowstyle="-|>",
-                                     mutation_scale=12, color=C["gray"], linewidth=1.2))
+    def arrow(ax, x1, y1, x2, y2):
+        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
+                                     mutation_scale=12, color="#888888", linewidth=1.2))
 
     print("=== 3. LLaVA-1.5 的 MLP projector：真实维度 ===")
     n_patch, dv, d = 576, 1024, 4096
-    p = n_patch * 0 + dv * d + d + d * d + d
+    p = dv * d + d + d * d + d
     print(f"  图 336×336×3 → patch 14×14 → {n_patch} 个 {dv} 维向量")
     print(f"  MLP：Linear({dv}→{d}) + GELU + Linear({d}→{d})，参数 {p:,} ≈ {p/1e6:.0f}M")
     print(f"  输出 {n_patch} 个 {d} 维 token，与文本 token 首尾相接进 decoder")
 
-    # 图：MLP projector 的流程与形状
-    fig, ax = plt.subplots(figsize=(9.5, 2.2))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 22); ax.axis("off")
-    box(ax, (1, 6), 13, 10, "一张图\n336×336×3", C["light"])
-    arrow(ax, 14, 18, 11)
-    box(ax, (18, 6), 16, 10, "ViT 切块\n24×24 = 576 个 patch", C["blue"])
-    arrow(ax, 34, 38, 11)
-    box(ax, (38, 6), 13, 10, "576 行\n每行 1024 维", C["blue"])
-    arrow(ax, 51, 55, 11)
-    box(ax, (55, 2), 18, 18, "同一个 MLP\nLinear 1024→4096\nGELU\nLinear 4096→4096\n（每行独立，≈21M 参数）", C["orange"], fs=7.5)
-    arrow(ax, 73, 77, 11)
-    box(ax, (77, 6), 13, 10, "576 行\n每行 4096 维", C["green"])
-    arrow(ax, 90, 93, 11)
-    box(ax, (93, 6), 6, 10, "文本 token\n序列拼接", C["green"], fs=7.5)
+    fig, ax = plt.subplots(figsize=(10.5, 2.4))
+    ax.set_xlim(0, 110); ax.set_ylim(0, 24); ax.axis("off")
+    patches, inner = [], []
+    box(ax, patches, inner, (1, 7), 13, 10, "一张图\n336×336×3", L["gray"])
+    arrow(ax, 14.5, 12, 17.5, 12)
+    box(ax, patches, inner, (18, 7), 15, 10, "ViT 切块\n24×24 = 576\n个 patch", L["blue"], fs=7.5)
+    arrow(ax, 33.5, 12, 36.5, 12)
+    box(ax, patches, inner, (37, 7), 12, 10, "576 行\n每行 1024 维", L["blue"], fs=7.5)
+    arrow(ax, 49.5, 12, 52.5, 12)
+    # MLP：外框 + 三个堆叠子框
+    big = FancyBboxPatch((53, 0.5), 24, 23, boxstyle="round,pad=0.02",
+                         facecolor=L["orange"], edgecolor="#999999", linewidth=1)
+    ax.add_patch(big); patches.append(big)
+    ax.text(65, 21.3, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
+            fontsize=7.5, color=L["dark"])
+    inner.append(ax.texts[-1])
+    for i, sub in enumerate(["Linear 1024→4096", "GELU", "Linear 4096→4096"]):
+        sp = FancyBboxPatch((56, 14.5 - i * 4.7), 18, 3.6, boxstyle="round,pad=0.02",
+                            facecolor="white", edgecolor="#999999", linewidth=1)
+        ax.add_patch(sp); patches.append(sp)
+        inner.append(ax.text(65, 16.3 - i * 4.7, sub, ha="center", va="center",
+                             fontsize=7.5, color=L["dark"]))
+    arrow(ax, 77.5, 12, 80.5, 12)
+    box(ax, patches, inner, (81, 7), 12, 10, "576 行\n每行 4096 维", L["green"], fs=7.5)
+    arrow(ax, 93.5, 12, 96.5, 12)
+    box(ax, patches, inner, (97, 7), 12, 10, "与文本 token\n序列拼接", L["green"], fs=7.5)
+    check_layout(fig, ax, patches, inner)
     save(fig, "02-mlp-projector")
 
-    print("\n=== 4. resampler 的 toy：32 个 query 在 24×24 个 patch 上的注意力 ===")
-    torch.manual_seed(0)
-    G = 24
-    K = 32
-    h = torch.randn(G * G, 16)                        # 24×24 = 576 个 patch 特征（toy）
-    queries = torch.randn(K, 16)                      # 32 个可学习 query（toy：随机初始化，未训练）
-    att = torch.softmax(queries @ h.T / 16 ** 0.5, -1)   # [32, 576]
-    print(f"  每个 query 输出 = 576 个 patch 的加权和；权重最大 {att.max():.3f}、最小 {att.min():.3f}（均匀是 {1/576:.4f}）")
+    print("\n=== 4. resampler 的构造 toy：32 个 query 各读一块区域 ===")
+    G, K, dv2 = 24, 32, 16
+    yy, xx = np.mgrid[0:G, 0:G]
+    keys = 0.3 * np.random.RandomState(0).randn(G * G, dv2)
+    v_obj, v_txt, v_bg = np.eye(3, dv2, 0), np.eye(3, dv2, 1), np.eye(3, dv2, 2)
+    obj = (yy < 9) & (xx < 9)                       # 左上角一个「物体」
+    txt = (yy >= 12) & (yy <= 14)                   # 中间一条「文字带」
+    bg = (yy > 17) & (xx > 17)                      # 右下角一块「背景」
+    keys[obj.reshape(-1)] += 3 * v_obj[0]
+    keys[txt.reshape(-1)] += 3 * v_txt[0]
+    keys[bg.reshape(-1)] += 3 * v_bg[0]
+    queries = 0.2 * np.random.RandomState(1).randn(K, dv2)
+    for q, v in [(0, v_obj), (7, v_txt), (15, v_bg)]:
+        queries[q] += 5 * v[0]                          # 构造：各对不同区域有亲和度
+    att = torch.softmax(torch.tensor(queries).float() @ torch.tensor(keys).float().T / dv2 ** 0.5, -1).numpy()
+    print("  三个展示 query 的前 5% patch 权重占比（均匀时应 ≈5%）：")
+    for q in (0, 7, 15):
+        m = np.sort(att[q])[::-1][: int(0.05 * G * G)].sum()
+        print(f"    query {q}: {m:.0%}")
+        assert m >= 0.30, "query 权重不够集中——热力图又会变成均匀洗色"
     print(f"  不论图有多少 patch，输出永远是 {K} 个 token")
 
-    # 图：左=流程；右=3 个 query 的注意力热力（24×24）
-    fig = plt.figure(figsize=(9.5, 2.6))
-    gs = fig.add_gridspec(1, 4, width_ratios=[3.4, 1.5, 1.5, 1.5])
+    fig = plt.figure(figsize=(10.5, 3.0))
+    gs = fig.add_gridspec(1, 4, width_ratios=[3.6, 1.5, 1.5, 1.5], wspace=0.25)
     ax = fig.add_subplot(gs[0])
-    ax.set_xlim(0, 100); ax.set_ylim(0, 24); ax.axis("off")
-    box(ax, (1, 7), 22, 10, "576 个 patch 特征\n（key / value）", C["blue"])
-    box(ax, (45, 13), 20, 8, "32 个可学习 query\n（模型参数，与图无关）", C["orange"], fs=7.5)
-    box(ax, (45, 1), 20, 8, "32 个输出 token\n= patch 的加权平均", C["green"], fs=7.5)
-    ax.add_patch(FancyArrowPatch((56, 13), (40, 15), arrowstyle="-|>", mutation_scale=12, color=C["gray"]))
-    ax.add_patch(FancyArrowPatch((40, 9), (56, 9), arrowstyle="-|>", mutation_scale=12, color=C["gray"]))
-    ax.text(48, 11, "softmax(QKᵀ/√d) · V", fontsize=7, ha="center", color=C["gray"])
+    ax.set_xlim(0, 100); ax.set_ylim(0, 30); ax.axis("off")
+    patches, inner = [], []
+    box(ax, patches, inner, (1, 17), 24, 10, "576 个 patch 特征\n作 key / value", L["blue"], fs=7.5)
+    box(ax, patches, inner, (1, 3), 24, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"], fs=7.5)
+    box(ax, patches, inner, (36, 8), 30, 14, "cross-attention\nsoftmax(QKᵀ/√d) · V", L["gray"], fs=8)
+    box(ax, patches, inner, (77, 10), 22, 10, "32 个输出 token\n= patch 的加权平均", L["green"], fs=7.5)
+    arrow(ax, 25.5, 22, 35.5, 18)
+    arrow(ax, 25.5, 8, 35.5, 12)
+    arrow(ax, 66.5, 15, 76.5, 15)
+    check_layout(fig, ax, patches, inner)
+    titles = ["query 0 → 左上角物体", "query 7 → 文字带", "query 15 → 右下角背景"]
+    vmax = att.max()
     for i, q in enumerate([0, 7, 15]):
         a2 = fig.add_subplot(gs[i + 1])
-        a2.imshow(att[q].reshape(G, G).numpy(), cmap="Oranges", vmin=0, vmax=att.max())
-        a2.set_title(f"query {q} 的权重\nmax {att[q].max():.3f}", fontsize=7.5)
+        im = a2.imshow(att[q].reshape(G, G), cmap="Oranges", vmin=0, vmax=vmax)
+        a2.set_title(f"{titles[i]}\nmax {att[q].max():.2f}", fontsize=7.5)
         a2.set_xticks([]); a2.set_yticks([])
+        fig.colorbar(im, ax=a2, fraction=0.046, pad=0.04)
     save(fig, "02-resampler-attention")
 
 

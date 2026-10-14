@@ -24,8 +24,11 @@
   输出 576 个 4096 维 token，与文本 token 首尾相接进 decoder
   图已保存 out/02-mlp-projector.svg
 
-=== 4. resampler 的 toy：32 个 query 在 24×24 个 patch 上的注意力 ===
-  每个 query 输出 = 576 个 patch 的加权和；权重最大 0.074、最小 0.000（均匀是 0.0017）
+=== 4. resampler 的构造 toy：32 个 query 各读一块区域 ===
+  三个展示 query 的前 5% patch 权重占比（均匀时应 ≈5%）：
+    query 0: 45%
+    query 7: 46%
+    query 15: 68%
   不论图有多少 patch，输出永远是 32 个 token
   图已保存 out/02-resampler-attention.svg
 

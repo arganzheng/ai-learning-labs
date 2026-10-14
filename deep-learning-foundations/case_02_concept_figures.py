@@ -36,10 +36,8 @@ def box(ax, center, text, width=6, height=5, fontsize=13, fc=BOX_FC,
         boxstyle="round,pad=0.8", facecolor=fc, edgecolor=ec, linewidth=1.1,
     )
     ax.add_patch(patch)
-    if math:
-        ax.text(x, y, text, ha="center", va="center", fontsize=fontsize)
-    else:
-        ax.text(x, y, text, ha="center", va="center", fontsize=fontsize)
+    label = ax.text(x, y, text, ha="center", va="center", fontsize=fontsize)
+    return patch, label
 
 
 def arrow(ax, start, end, color=C["gray"], lw=1.2, style="->",
@@ -58,96 +56,168 @@ def new_diagram(figsize, xlim, ylim):
 
 
 def plot_chain():
-    """FIGURE 1：一条链——前向方差连乘、反向 Jacobian 连乘、三种方案的位置。"""
-    fig, ax = new_diagram((11, 6.6), (0, 108), (0, 100))
+    """FIGURE 1：一段前向链、一段反向链，三种方案各作用在哪一环。"""
+    fig, ax = new_diagram((12, 8.6), (0, 144), (8, 131))
+    X = 72  # 水平中点
 
-    # ---- 前向链（上）----
-    y_fwd = 62
-    ax.text(54, 97, "前向：方差是每层因子的连乘", ha="center", fontsize=14)
-    ax.text(54, 91,
+    patches, inner = [], []
+
+    def bx_(center, text, **kw):
+        p, t = box(ax, center, text, **kw)
+        patches.append(p)
+        inner.append(t)
+
+    # ---- 面板 A：前向，方差逐层乘 a_l；两行对照 ----
+    ax.text(X, 129, "前向：方差逐层乘 $a_l$", ha="center", fontsize=18,
+            weight="bold")
+    ax.text(X, 123,
             r"$\mathrm{Var}(h_L) = \mathrm{Var}(x)\, a_1 a_2 \cdots a_L$",
-            ha="center", fontsize=14)
-    xs = {"x": 4, "f1": 13, "n1": 25, "h1": 33, "f2": 43, "n2": 55,
-          "h2": 63, "dots": 70, "fL": 79, "nL": 91, "hL": 100}
-    ax.text(xs["x"], y_fwd, "$x$", ha="center", va="center", fontsize=15)
-    for key, label in (("f1", "$f_1$"), ("f2", "$f_2$"), ("fL", "$f_L$")):
-        box(ax, (xs[key], y_fwd), label, width=7, height=6, fontsize=14)
-    for key in ("n1", "n2", "nL"):
-        box(ax, (xs[key], y_fwd), "Norm", width=7, height=6, fontsize=9,
-            fc="#fdeee0", ec=ORANGE)
-    ax.text(xs["h1"], y_fwd, "$h_1$", ha="center", va="center", fontsize=14)
-    ax.text(xs["h2"], y_fwd, "$h_2$", ha="center", va="center", fontsize=14)
-    ax.text(xs["dots"], y_fwd, "$\\cdots$", ha="center", va="center",
-            fontsize=14)
-    ax.text(xs["hL"], y_fwd, "$h_L$", ha="center", va="center", fontsize=15)
-    half = {"x": 2, "h1": 2, "h2": 2, "dots": 2, "hL": 2.6}
-    edges = [("x", "f1"), ("f1", "n1"), ("n1", "h1"), ("h1", "f2"),
-             ("f2", "n2"), ("n2", "h2"), ("h2", "dots"), ("dots", "fL"),
-             ("fL", "nL"), ("nL", "hL")]
-    for a, b in edges:
-        arrow(ax, (xs[a] + half.get(a, 3.6), y_fwd),
-              (xs[b] - half.get(b, 3.6), y_fwd))
-    for key, sub in (("f1", "$a_1$"), ("f2", "$a_2$"), ("fL", "$a_L$")):
-        ax.text(xs[key], y_fwd - 6.4, f"$\\times$ {sub}", ha="center",
-                va="top", fontsize=11, color=BLUE)
+            ha="center", fontsize=17)
 
-    # ---- 反向链（下）：箭头向左；每个因子被残差扩成 I + J^T ----
-    y_bwd = 30
-    ax.text(54, 47, "反向：梯度是 Jacobian 的连乘", ha="center", fontsize=14)
-    ax.text(54, 41,
+    # 行 1：只靠初始化
+    y1 = 114
+    ax.text(13, y1, "只靠初始化", ha="right", va="center", fontsize=13,
+            color=BLUE)
+    # 与行 2 共用列网格：x | f_1 | 归一化槽位(空) | h_1 | ⋯ | f_L | 槽位(空) | h_L
+    xs = {"x": 18, "f1": 28, "h1": 72, "dots": 80, "fL": 92, "hL": 136}
+    ax.text(xs["x"], y1, "$x$", ha="center", va="center", fontsize=18)
+    for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
+        bx_((xs[key], y1), label, width=7, height=6, fontsize=17)
+        ax.text(xs[key], y1 - 8, "Linear + 非线性", ha="center",
+                va="top", fontsize=13, color=GREY)
+    ax.text(xs["h1"], y1, "$h_1$", ha="center", va="center", fontsize=17)
+    ax.text(xs["dots"], y1, "$\\cdots$", ha="center", va="center",
+            fontsize=17)
+    ax.text(xs["hL"], y1, "$h_L$", ha="center", va="center", fontsize=18)
+    half = {"x": 2, "h1": 2, "dots": 2, "hL": 2.6}
+    edges = [("x", "f1"), ("f1", "h1"), ("h1", "dots"), ("dots", "fL"),
+             ("fL", "hL")]
+    for a, b in edges:
+        arrow(ax, (xs[a] + half.get(a, 3.6), y1),
+              (xs[b] - half.get(b, 3.6), y1))
+    for a, sub in (("f1", "$a_1$"), ("fL", "$a_L$")):
+        mid = (xs[a] + 3.6 + xs[{"f1": "h1", "fL": "hL"}[a]] - 2.6) / 2
+        ax.text(mid, y1 - 2.6, "方差 $\\times$ " + sub, ha="center",
+                va="top", fontsize=13)
+
+    # 初始化注解（蓝）：在 a_1 标签正下方，垂直箭头指到标签底下
+    a1_mid = (xs["f1"] + 3.6 + xs["h1"] - 2.6) / 2
+    ax.text(a1_mid, 100, "初始化", ha="center", fontsize=16, color=BLUE,
+            weight="bold")
+    ax.text(a1_mid, 95.5, "选 $W$ 的标准差，\n让 $t=0$ 时每个 $a_l \\approx 1$",
+            ha="center", va="top", fontsize=13, color=BLUE)
+    arrow(ax, (a1_mid, 102.6), (a1_mid, y1 - 7.2), color=BLUE)
+
+    # 行 2：加归一化
+    y2 = 80
+    ax.text(13, y2, "加归一化", ha="right", va="center", fontsize=13,
+            color=ORANGE)
+    xs2 = {"x": 18, "f1": 28, "n1": 50, "h1": 72, "dots": 80, "fL": 92,
+           "nL": 114, "hL": 136}
+    ax.text(xs2["x"], y2, "$x$", ha="center", va="center", fontsize=18)
+    for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
+        bx_((xs2[key], y2), label, width=7, height=6, fontsize=17)
+        ax.text(xs2[key], y2 - 8, "Linear + 非线性", ha="center",
+                va="top", fontsize=13, color=GREY)
+    for key in ("n1", "nL"):
+        bx_((xs2[key], y2), "归一化", width=10, height=6, fontsize=15,
+            fc="#fdeee0", ec=ORANGE)
+    ax.text(xs2["n1"], y2 - 8, "BN / LN / RMSNorm", ha="center",
+            va="top", fontsize=13, color=ORANGE)
+    ax.text(xs2["h1"], y2, "$h_1$", ha="center", va="center", fontsize=17)
+    ax.text(xs2["dots"], y2, "$\\cdots$", ha="center", va="center",
+            fontsize=17)
+    ax.text(xs2["hL"], y2, "$h_L$", ha="center", va="center", fontsize=18)
+    h2 = {"x": 2, "h1": 2, "dots": 2, "hL": 2.6, "n1": 5.8, "nL": 5.8}
+    edges2 = [("x", "f1"), ("f1", "n1"), ("n1", "h1"), ("h1", "dots"),
+              ("dots", "fL"), ("fL", "nL"), ("nL", "hL")]
+    for a, b in edges2:
+        arrow(ax, (xs2[a] + h2.get(a, 3.6), y2),
+              (xs2[b] - h2.get(b, 3.6), y2))
+    for a, b in (("f1", "n1"), ("fL", "nL")):
+        mid = (xs2[a] + 3.6 + xs2[b] - 5.8) / 2
+        sub = "$a_1$" if a == "f1" else "$a_L$"
+        ax.text(mid, y2 - 2.6, "方差 $\\times$ " + sub, ha="center",
+                va="top", fontsize=13)
+    for a, b in (("n1", "h1"), ("nL", "hL")):
+        mid = (xs2[a] + 5.8 + xs2[b] - 2.6) / 2
+        ax.text(mid, y2 - 2.6, "方差回到 1", ha="center", va="top",
+                fontsize=13, color=ORANGE)
+
+    ax.text(X, 66, "初始化是每个网络都要做的一步，只决定 $a_l$ 的起点；\n"
+            "归一化是另外加进结构的部件。Transformer 实际用 Pre-Norm——"
+            "归一化放在 $f_l$ 之前、残差分支里（见第六章）",
+            ha="center", va="top", fontsize=13, color="#555555")
+
+    # ---- 面板 B：反向，Jacobian 连乘；两行对照 ----
+    ax.text(X, 53, "反向：梯度是 Jacobian 的连乘", ha="center",
+            fontsize=18, weight="bold")
+    ax.text(X, 47,
             r"$\partial L / \partial x \;=\; J_1^{\top} J_2^{\top} \cdots"
             r" J_L^{\top}\;\partial L / \partial h_L$",
-            ha="center", fontsize=14)
-    bx = {"gx": 5, "j1": 24, "dots": 41, "j2": 57, "jL": 76, "ghL": 93}
-    for key, label in (("jL", "$J_L^{\\top}$"), ("j2", "$J_2^{\\top}$"),
-                       ("j1", "$J_1^{\\top}$")):
-        box(ax, (bx[key], y_bwd), "", width=12, height=11.5, fontsize=13)
-        ax.text(bx[key], y_bwd + 2.2, label, ha="center", va="center",
-                fontsize=13)
-        ax.text(bx[key], y_bwd - 3.0,
-                "→ " + label.replace("$J_", "$I+J_"),
-                ha="center", va="center", fontsize=11, color=GREEN)
-    ax.text(bx["ghL"], y_bwd, "$\\partial L / \\partial h_L$", ha="center",
-            va="center", fontsize=12)
-    ax.text(bx["dots"], y_bwd, "$\\cdots$", ha="center", va="center",
-            fontsize=14)
-    ax.text(bx["gx"], y_bwd, "$\\partial L / \\partial x$", ha="center",
-            va="center", fontsize=12)
-    bhalf = {"ghL": 5, "gx": 5, "dots": 2, "j1": 6, "j2": 6, "jL": 6}
-    bedges = [("ghL", "jL"), ("jL", "j2"), ("j2", "dots"), ("dots", "j1"),
-              ("j1", "gx")]
+            ha="center", fontsize=17)
+    bxs = {"gx": 18, "j1": 50, "dots": 79, "jL": 108, "ghL": 136}
+    ax.text(13, 36, "无残差", ha="right", va="center", fontsize=13,
+            color=GREY)
+    for key, label in (("jL", "$J_L^{\\top}$"), ("j1", "$J_1^{\\top}$")):
+        bx_((bxs[key], 36), label, width=9, height=6, fontsize=16)
+    ax.text(bxs["ghL"], 36, "$\\partial L / \\partial h_L$", ha="center",
+            va="center", fontsize=15)
+    ax.text(bxs["dots"], 36, "$\\cdots$", ha="center", va="center",
+            fontsize=17)
+    ax.text(bxs["gx"], 36, "$\\partial L / \\partial x$", ha="center",
+            va="center", fontsize=15)
+    bhalf = {"ghL": 5, "gx": 5, "dots": 2}
+    bedges = [("ghL", "jL"), ("jL", "dots"), ("dots", "j1"), ("j1", "gx")]
     for a, b in bedges:
-        arrow(ax, (bx[a] - bhalf.get(a, 4.6), y_bwd),
-              (bx[b] + bhalf.get(b, 4.6), y_bwd))
+        arrow(ax, (bxs[a] - bhalf.get(a, 4.6), 36),
+              (bxs[b] + bhalf.get(b, 4.6), 36))
+    ax.text(13, 22, "有残差", ha="right", va="center", fontsize=13,
+            color=GREEN)
+    for key, label in (("jL", "$I+J_L^{\\top}$"), ("j1", "$I+J_1^{\\top}$")):
+        bx_((bxs[key], 22), label, width=12, height=6, fontsize=15,
+            fc="#e6f4ee", ec=GREEN)
+    ax.text(bxs["ghL"], 22, "$\\partial L / \\partial h_L$", ha="center",
+            va="center", fontsize=15)
+    ax.text(bxs["dots"], 22, "$\\cdots$", ha="center", va="center",
+            fontsize=17)
+    ax.text(bxs["gx"], 22, "$\\partial L / \\partial x$", ha="center",
+            va="center", fontsize=15)
+    bhalf2 = {"ghL": 5, "gx": 5, "dots": 2, "j1": 6.2, "jL": 6.2}
+    for a, b in bedges:
+        arrow(ax, (bxs[a] - bhalf2.get(a, 4.6), 22),
+              (bxs[b] + bhalf2.get(b, 4.6), 22), color=GREEN)
+    ax.text(X, 13, "残差让反向每个因子多一项 $I$：连乘展开后总有一条不乘"
+            "任何 $J$ 的直通路（$I$ 是单位矩阵）",
+            ha="center", va="top", fontsize=13, color=GREEN)
 
-    # ---- 三个方案的注解：标题与正文分行，拉开间距 ----
-    ax.text(20, 82.5, "初始化", ha="center", fontsize=13, color=BLUE,
-            weight="bold")
-    ax.text(20, 79.3, "选 $W$ 的标准差，\n让 $t=0$ 时每个 $a_l \\approx 1$",
-            ha="center", va="top", fontsize=10.5, color=BLUE)
-    arrow(ax, (15.5, 73.5), (xs["f1"], y_fwd + 4.6), color=BLUE, style="->",
-          connectionstyle="arc3,rad=0.2")
-    arrow(ax, (24.5, 73.5), (xs["f2"], y_fwd + 4.6), color=BLUE, style="->",
-          connectionstyle="arc3,rad=-0.2")
+    # ---- 布局自检：标签与框、标签与标签之间不得重叠 ----
+    from matplotlib.transforms import Bbox
+    fig.canvas.draw()
+    rend = fig.canvas.get_renderer()
+    box_exts = [p.get_window_extent(rend) for p in patches]
+    labels = [t for t in ax.texts if t not in inner and t.get_text()]
+    lab_exts = [t.get_window_extent(rend) for t in labels]
 
-    ax.text(80, 82.5, "归一化", ha="center", fontsize=13, color=ORANGE,
-            weight="bold")
-    ax.text(80, 79.3, "每层之后把方差拉回 1，\n前向的连乘链每层被切断一次",
-            ha="center", va="top", fontsize=10.5, color=ORANGE)
-    arrow(ax, (74, 73.5), (xs["n2"], y_fwd + 4.6), color=ORANGE,
-          connectionstyle="arc3,rad=0.2")
-    arrow(ax, (86, 73.5), (xs["nL"], y_fwd + 4.6), color=ORANGE,
-          connectionstyle="arc3,rad=-0.2")
+    def padded(e, pad=2):
+        return Bbox.from_extents(e.x0 - pad, e.y0 - pad,
+                                 e.x1 + pad, e.y1 + pad)
 
-    ax.text(54, 11, "残差", ha="center", fontsize=13, color=GREEN,
-            weight="bold")
-    ax.text(54, 8, "反向每个因子从 $J_l^{\\top}$ 变成 $I + J_l^{\\top}$，"
-            "多一条不乘任何 $J$ 的直通路（$I$：单位矩阵）",
-            ha="center", va="top", fontsize=10.5, color=GREEN)
-    arrow(ax, (44, 12.5), (bx["j1"], y_bwd - 6.6), color=GREEN,
-          connectionstyle="arc3,rad=-0.15")
-    arrow(ax, (64, 12.5), (bx["jL"], y_bwd - 6.6), color=GREEN,
-          connectionstyle="arc3,rad=0.15")
+    for t, e in zip(labels, lab_exts):
+        for b in box_exts:
+            assert not padded(e).overlaps(b), (
+                f"label overlaps box: {t.get_text()!r}")
+    for i in range(len(labels)):
+        for j in range(i + 1, len(labels)):
+            assert not padded(lab_exts[i]).overlaps(lab_exts[j]), (
+                f"labels overlap: {labels[i].get_text()!r} / "
+                f"{labels[j].get_text()!r}")
+    for p, t in zip(patches, inner):
+        pe = p.get_window_extent(rend)
+        te = t.get_window_extent(rend)
+        assert (te.x0 >= pe.x0 + 2 and te.x1 <= pe.x1 - 2
+                and te.y0 >= pe.y0 + 2 and te.y1 <= pe.y1 - 2), (
+                f"text overflows its box: {t.get_text()!r}")
 
     save(fig, "init-norm-chain")
 

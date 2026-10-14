@@ -17,3 +17,5 @@
   batch-mean std @ m=32: sim 0.175，理论 1/√m = 0.177
   batch-mean std @ m=256: sim 0.062，理论 1/√m = 0.062
   图已保存 out/init-norm-residual-paths.svg
+  图已保存 out/init-norm-one-layer.svg
+  一层模拟（n_in=256，σ_w²=2/256，4096×256）：Var(x) = 1.00，Var(z) = 2.01，E[h²] = 1.00

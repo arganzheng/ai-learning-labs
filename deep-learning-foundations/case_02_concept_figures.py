@@ -476,6 +476,83 @@ def plot_residual_paths():
     save(fig, "init-norm-residual-paths")
 
 
+def plot_one_layer_variance():
+    """FIGURE 8：一层 Linear + ReLU 里方差怎么变（对应 a_l = n_in σ_w² c_φ）。"""
+    rng = np.random.default_rng(20261014)
+    x = rng.normal(0.0, 1.0, (4096, 256))
+    W = rng.normal(0.0, math.sqrt(2.0 / 256), (256, 256))
+    z = x @ W.T
+    h = np.maximum(z, 0.0)
+
+    var_x = float(x.var())
+    var_z = float(z.var())
+    e_h2 = float((h ** 2).mean())
+
+    fig, axes = plt.subplots(1, 3, figsize=(9.2, 3.0), layout="none")
+    fig.subplots_adjust(left=0.05, right=0.97, top=0.80, bottom=0.18,
+                        wspace=0.55)
+    data = [
+        (x.ravel(), BLUE, f"输入 $x$：Var = {var_x:.2f}"),
+        (z.ravel(), ORANGE, f"Linear 之后 $z$：Var = {var_z:.2f}"),
+        (h.ravel(), GREEN,
+         f"ReLU 之后 $h$：$\\mathbb{{E}}[h^2] = {e_h2:.2f}$"),
+    ]
+    bars3 = None
+    for ax, (v, color, title) in zip(axes, data):
+        _, _, patches = ax.hist(v, bins=61, color=color, edgecolor=color,
+                                linewidth=1.0)
+        ax.set_title(title, fontsize=10)
+        ax.set_yticks([])
+        ax.set_xlabel("取值", fontsize=9)
+        if ax is axes[2]:
+            bars3 = patches
+
+    # 第 3 幅：0 处的单根柱是 ReLU 置零的那一半
+    ax3 = axes[2]
+    zero_bar = max(bars3, key=lambda p: p.get_height())
+    ax3.annotate("一半置 0",
+                 xy=(zero_bar.get_x() + zero_bar.get_width() / 2,
+                     zero_bar.get_height()),
+                 xytext=(0.55, 0.75), textcoords="axes fraction",
+                 fontsize=9, color=GREY, ha="center", va="center",
+                 arrowprops={"arrowstyle": "->", "color": GREY, "lw": 1.1})
+
+    fig.canvas.draw()
+    for a, b, lab in ((axes[0], axes[1], "$\\times\\ n_{in}\\sigma_w^2$"),
+                      (axes[1], axes[2], "$\\times\\ c_{\\mathrm{ReLU}}=1/2$")):
+        pa, pb = a.get_position(), b.get_position()
+        y = (pa.y0 + pa.y1) / 2
+        a.annotate("", xy=(pb.x0 - 0.012, y), xytext=(pa.x1 + 0.004, y),
+                   xycoords=fig.transFigure, textcoords=fig.transFigure,
+                   annotation_clip=False,
+                   arrowprops={"arrowstyle": "->", "color": C["gray"],
+                               "lw": 1.4})
+        fig.text((pa.x1 + pb.x0) / 2, y + 0.045, lab,
+                 ha="center", va="bottom", fontsize=9, color="#444444")
+
+    # ---- 布局自检：文字之间不得互相压 ----
+    from matplotlib.transforms import Bbox
+    rend = fig.canvas.get_renderer()
+    texts = list(fig.texts)
+    for ax in axes:
+        texts += [ax.title, ax.xaxis.label, ax.yaxis.label]
+        texts += [t for t in ax.texts if t.get_text()]
+    texts = [t for t in texts if t.get_text()]
+    exts = [t.get_window_extent(rend) for t in texts]
+    for i in range(len(texts)):
+        for j in range(i + 1, len(texts)):
+            e_i = Bbox.from_extents(exts[i].x0 - 2, exts[i].y0 - 2,
+                                    exts[i].x1 + 2, exts[i].y1 + 2)
+            assert not e_i.overlaps(exts[j]), (
+                f"labels overlap: {texts[i].get_text()!r} / "
+                f"{texts[j].get_text()!r}")
+
+    save(fig, "init-norm-one-layer")
+    print(f"  一层模拟（n_in=256，σ_w²=2/256，4096×256）："
+          f"Var(x) = {var_x:.2f}，Var(z) = {var_z:.2f}，"
+          f"E[h²] = {e_h2:.2f}")
+
+
 def main():
     plot_chain()
     plot_product()
@@ -484,6 +561,7 @@ def main():
     plot_ln_vs_rms()
     plot_bn_sequence()
     plot_residual_paths()
+    plot_one_layer_variance()
 
 
 if __name__ == "__main__":

@@ -29,6 +29,10 @@ def save(fig, name):
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().splitlines()
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(l.rstrip() for l in lines) + "\n")
     if os.environ.get("PLOT_PNG"):
         os.makedirs(os.environ["PLOT_PNG"], exist_ok=True)
         fig.savefig(os.path.join(os.environ["PLOT_PNG"], f"{name}.png"), dpi=110, bbox_inches="tight")

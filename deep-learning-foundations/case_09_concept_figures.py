@@ -192,23 +192,24 @@ def plot_ppmi_svd():
 
 # ---------------------------------------------------------------- 全景图
 
-# 对象 → 家族索引；位置没有有意义的连线，单独标注
-FAM_ORDER = ["计数与分解", "预测", "上下文", "对比"]
-FAM_SUBS = ["LSA · PPMI+SVD · GloVe", "Word2Vec · fastText · LM",
-            "ELMo · GPT · BERT", "SBERT · SimCSE · CLIP"]
-FAM_COLORS = [ORANGE, BLUE, SKY, GREEN]
-OBJS = [("词", "五", [0, 1]),
+# 两条轴：嵌入什么（对象）→ 用什么信号得到向量（七种信号）
+FAM_ORDER = ["计数分解", "预测", "重建", "对比", "自蒸馏", "有监督", "固定公式"]
+FAM_SUBS = ["LSA · GloVe · 矩阵分解", "Word2Vec · BERT · GPT · MAE",
+            "AE · VAE", "CLIP · SimCSE · TransE · 双塔",
+            "BYOL · DINO", "ImageNet · NLI · CTR", "正弦 · RoPE"]
+FAM_COLORS = [ORANGE, BLUE, SKY, GREEN, PURPLE, VERMILION, GREY]
+OBJS = [("词", "四、五", [0, 1]),
         ("子词", "六", [1]),
-        ("句子 / 文本", "八", [2, 3]),
-        ("图像", "九", [3]),
+        ("句子 / 文本", "八", [1, 3, 5]),
+        ("图像（ViT patch）", "九", [1, 2, 3, 4, 5]),
+        ("位置", "九", [6, 1]),
         ("图节点与实体", "九", [1, 3]),
-        ("ID 与类别特征", "九", [0, 3]),
-        ("位置", "九", [])]  # 位置固定垫底，旁边注一句
+        ("ID 与类别特征", "九", [0, 3, 5])]
 
 
 def _best_obj_order():
-    """枚举 6 个有连线对象的顺序，使对象→家族连线的交叉最少。"""
-    heads = OBJS[:-1]
+    """枚举 7 个对象的顺序，使对象→信号连线的交叉最少。"""
+    heads = OBJS
     fam_y = {f: len(FAM_ORDER) - 1 - f for f in range(len(FAM_ORDER))}
 
     def crossings(order):
@@ -233,15 +234,15 @@ def _best_obj_order():
 
 
 def plot_landscape():
-    """FIGURE：embedding 全景——嵌入什么 → 怎么得到 → 向量空间。"""
-    ordered = _best_obj_order() + [OBJS[-1]]
+    """FIGURE：embedding 全景——嵌入什么 → 用哪种信号得到 → 向量空间。"""
+    ordered = _best_obj_order()
     n = len(ordered)
     pitch = 8.2
     top = (n - 1) * pitch
-    fam_pitch = 11.5
-    fam_top = 3 * fam_pitch
+    fam_pitch = pitch * n / len(FAM_ORDER)
+    fam_top = (len(FAM_ORDER) - 1) * fam_pitch
 
-    fig, ax = new_diagram((9.2, 4.6), (0, 118), (-4, top + 5))
+    fig, ax = new_diagram((9.4, 5.4), (0, 118), (-4, top + 10))
     patches, inner = [], []
 
     def bx_(center, text, **kw):
@@ -254,32 +255,151 @@ def plot_landscape():
     fam_y = {f: fam_top - f * fam_pitch for f in range(len(FAM_ORDER))}
 
     for name, sec, _ in ordered:
-        bx_((13, obj_y[name]), f"{name}\n第{sec}章", width=19,
-            height=5.4, fontsize=9)
+        bx_((13, obj_y[name]), f"{name}\n第{sec}章", width=21,
+            height=5.4, fontsize=8.5)
     for f, (fam, sub, color) in enumerate(zip(FAM_ORDER, FAM_SUBS,
                                               FAM_COLORS)):
-        bx_((60, fam_y[f]), f"{fam}\n{sub}", width=30, height=6.4,
-            fontsize=9, fc="#ffffff", ec=color)
-    vec_y = (fam_top + fam_y[3]) / 2
+        bx_((60, fam_y[f]), f"{fam}\n{sub}", width=31, height=5.6,
+            fontsize=8, fc="#ffffff", ec=color)
+    vec_y = fam_top / 2
     bx_((99, vec_y), "d 维向量空间", width=19, height=top * 0.62,
         fontsize=11)
 
-    # 对象 → 家族：连线的颜色取目标家族的颜色
+    # 对象 → 信号：连线的颜色取目标信号的颜色
     for name, sec, fams in ordered:
         for f in fams:
-            ax.plot([23.5, 44.5], [obj_y[name], fam_y[f]],
+            ax.plot([25, 43.5], [obj_y[name], fam_y[f]],
                     color=FAM_COLORS[f], lw=1.1, zorder=1, alpha=0.6)
     for f in range(len(FAM_ORDER)):
-        arrow(ax, (76.5, fam_y[f]), (88.5, fam_y[f]),
+        arrow(ax, (77.5, fam_y[f]), (88.5, fam_y[f]),
               color=FAM_COLORS[f])
-    ax.text(12.5, obj_y["位置"] - 4.6,
-            "固定公式或随模型一起训", ha="center", va="top",
-            fontsize=7.5, color=GREY)
-    ax.text(48, top + 3.4, "嵌入什么 → 用什么信号得到向量",
+    ax.text(50, top + 5.6, "嵌入什么 → 用什么信号得到向量",
             ha="center", va="center", fontsize=10, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-landscape")
+
+
+# ------------------------------------------------------------- 负采样手算
+
+def negsample_numbers(k=5, d=8, steps=15, lr=0.2, seed=0):
+    """中心词「追」、正样本上下文「猫」、k 个噪声词；几轮 SGD 后的 σ 分数。"""
+    rng = np.random.default_rng(seed)
+    center = "追"; pos = "猫"; negs = ["球", "狗", "鱼", "跑", "睡"]
+    words = [center, pos] + negs
+    vin = {w: rng.normal(0, 0.1, d) for w in words}   # 中心词表
+    vout = {w: rng.normal(0, 0.1, d) for w in words}  # 上下文（输出）表
+    sig = lambda x: 1 / (1 + np.exp(-x))
+    before = {w: sig(vout[w] @ vin[center]) for w in [pos] + negs}
+    for _ in range(steps):
+        vc = vin[center]
+        g_in = (sig(vout[pos] @ vc) - 1) * vout[pos]
+        g_out = {}
+        g_out[pos] = (sig(vout[pos] @ vc) - 1) * vc
+        for n in negs:
+            s = sig(vout[n] @ vc)
+            g_in += s * vout[n]
+            g_out[n] = s * vc
+        vin[center] -= lr * g_in
+        for w in [pos] + negs:
+            vout[w] -= lr * g_out[w]
+    after = {w: sig(vout[w] @ vin[center]) for w in [pos] + negs}
+    for w in [pos] + negs:
+        print(f"neg-sampling {center}-{w}: before={before[w]:.3f} "
+              f"after={after[w]:.3f}")
+    return center, pos, negs, before, after
+
+
+def plot_negsample():
+    """FIGURE：一个正样本对 + 5 个负样本，σ 分数一上一下。"""
+    center, pos, negs, before, after = negsample_numbers()
+    n = len(negs)
+    pitch = 9.0
+    top = n * pitch
+
+    fig, ax = new_diagram((7.6, 3.4), (0, 100), (-8, top + 8))
+    patches, inner = [], []
+
+    def bx_(center_, text, **kw):
+        p, t = box(ax, center_, text, **kw)
+        patches.append(p)
+        inner.append(t)
+        return p, t
+
+    mid = top / 2
+    bx_((16, mid), f"中心词\n{center}", width=15, height=7,
+        fontsize=10, fc="#eef3fa")
+    bx_((60, top), f"正样本：{pos}\nσ = {after[pos]:.2f}",
+        width=24, height=6.2, fontsize=9.5, fc="#ffffff", ec=GREEN)
+    arrow(ax, (24.5, mid + 1.6), (46.5, top - 0.4), color=GREEN)
+    for i, w in enumerate(negs):
+        y = top - pitch * (i + 1) - 1.0
+        bx_((60, y), f"负样本 {i + 1}：{w}  σ = {after[w]:.2f}",
+            width=27, height=5.2, fontsize=9, fc="#ffffff", ec=VERMILION)
+        ax.plot([24.5, 45.5], [mid - 1.2, y + 0.6],
+                color=VERMILION, lw=1.1, zorder=1, alpha=0.6)
+    bx_((88, mid), "目标：\n正样本推上去\n负样本压下来", width=19,
+        height=11, fontsize=9)
+    arrow(ax, (74.5, top), (78, mid + 3), color=GREEN)
+    arrow(ax, (74.5, 0), (78, mid - 3), color=VERMILION)
+    ax.text(50, top + 5.4, "随机初始化 + 15 步 SGD 之后的 σ 分数",
+            ha="center", va="center", fontsize=8.5, color="#444444")
+
+    check_layout(fig, ax, patches, inner)
+    save(fig, "emb-negsample")
+
+
+# ------------------------------------------------------------- tokenizer 流水线
+
+def tokenizer_ids():
+    import tiktoken
+    enc = tiktoken.get_encoding("gpt2")
+    sent = "Embedding vectors are surprisingly useful"
+    ids = enc.encode(sent)
+    pieces = [enc.decode([t]) for t in ids]
+    print("tokenizer sentence:", repr(sent))
+    for p_, i in zip(pieces, ids):
+        print(f"token {i:>6}  {p_!r}")
+    return sent, ids, pieces
+
+
+def plot_tokenizer():
+    """FIGURE：文本 → tokenizer → token ID → 查 embedding 表 → 向量。"""
+    sent, ids, pieces = tokenizer_ids()
+    n = len(ids)
+
+    fig, ax = new_diagram((11.6, 3.6), (0, 200), (-3, 33))
+    patches, inner = [], []
+
+    def bx_(center_, text, **kw):
+        p, t = box(ax, center_, text, **kw)
+        patches.append(p)
+        inner.append(t)
+        return p, t
+
+    bx_((16, 15), f"文本\n{sent[:22]}\n{sent[22:]}", width=30, height=9.5, fontsize=8.5)
+    bx_((48, 15), "tokenizer\nBPE", width=16, height=9, fontsize=10,
+        fc="#eef3fa")
+    # token ID 序列：每个 token 一小格，宽度按 token 文本长度取
+    gap = 3.0
+    widths = [max(len(p_.strip()) * 1.55 + 3, 7) for p_ in pieces]
+    x = 62
+    cells = []
+    for (p_, tid), w_ in zip(zip(pieces, ids), widths):
+        bx_((x + w_ / 2, 15), f"{p_.strip()}\n{tid}", width=w_, height=9,
+            fontsize=7.5, fc="#ffffff", ec=BLUE)
+        x += w_ + gap
+        cells.append(x)
+    bx_((x + 12, 15), "embedding 表 E\nV × d 查行", width=22, height=9,
+        fontsize=8.5, fc="#eef3fa")
+    arrow(ax, (30.5, 15), (39, 15))
+    arrow(ax, (57, 15), (61, 15))
+    arrow(ax, (cells[-1], 15), (x + 0.5, 15))
+    ax.text(50, 27, "文本 → token ID → 查表 → 每行一个 d 维向量",
+            ha="center", va="center", fontsize=9.5, color="#444444")
+
+    check_layout(fig, ax, patches, inner)
+    save(fig, "emb-tokenizer-pipeline")
 
 
 # ---------------------------------------------------------------- 监督信号
@@ -357,6 +477,8 @@ def main():
     plot_ppmi_svd()
     plot_landscape()
     plot_signals()
+    plot_negsample()
+    plot_tokenizer()
 
 
 if __name__ == "__main__":

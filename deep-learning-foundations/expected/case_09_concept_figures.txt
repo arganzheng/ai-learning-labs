@@ -27,3 +27,19 @@
   图已保存 out/emb-ppmi-svd-toy.svg
   图已保存 out/emb-landscape.svg
   图已保存 out/emb-supervision-signals.svg
+neg-sampling 追-猫: before=0.502 after=0.894
+neg-sampling 追-球: before=0.510 after=0.129
+neg-sampling 追-狗: before=0.507 after=0.119
+neg-sampling 追-鱼: before=0.502 after=0.149
+neg-sampling 追-跑: before=0.495 after=0.118
+neg-sampling 追-睡: before=0.501 after=0.115
+  图已保存 out/emb-negsample.svg
+tokenizer sentence: 'Embedding vectors are surprisingly useful'
+token  31567  'Emb'
+token   6048  'edd'
+token    278  'ing'
+token  30104  ' vectors'
+token    389  ' are'
+token  12362  ' surprisingly'
+token   4465  ' useful'
+  图已保存 out/emb-tokenizer-pipeline.svg

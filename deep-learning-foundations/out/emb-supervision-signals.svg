@@ -39,7 +39,7 @@ Q 9.194994 33.608743 9.194994 39.800374
 L 9.194994 82.257273
 Q 9.194994 88.448904 13.84998 88.448904
 z
-" clip-path="url(#p79d979f038)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p82153866c9)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 116.259672 88.448904
@@ -52,7 +52,7 @@ Q 111.604686 33.608743 111.604686 39.800374
 L 111.604686 82.257273
 Q 111.604686 88.448904 116.259672 88.448904
 z
-" clip-path="url(#p79d979f038)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p82153866c9)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 13.84998 166.286552
@@ -65,7 +65,7 @@ Q 9.194994 111.446391 9.194994 117.638022
 L 9.194994 160.094921
 Q 9.194994 166.286552 13.84998 166.286552
 z
-" clip-path="url(#p79d979f038)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p82153866c9)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 116.259672 166.286552
@@ -78,7 +78,7 @@ Q 111.604686 111.446391 111.604686 117.638022
 L 111.604686 160.094921
 Q 111.604686 166.286552 116.259672 166.286552
 z
-" clip-path="url(#p79d979f038)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p82153866c9)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <text style="fill: #7f7f7f; font: 8px 'Heiti SC', 'Heiti TC', 'Arial Unicode MS', 'DejaVu Sans'; text-anchor: middle" x="86.99976" y="183.797695" transform="rotate(-0 86.99976 183.797695)">前文 → 下一个词 / mask 处</text>
@@ -129,7 +129,7 @@ Q 178.784982 63.68238 178.784982 69.874011
 L 178.784982 122.945134
 Q 178.784982 129.136766 183.439968 129.136766
 z
-" clip-path="url(#p0f2909dafa)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pcfbcfc9e69)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_9">
     <path d="M 237.969804 129.136766
@@ -142,7 +142,7 @@ Q 233.314818 63.68238 233.314818 69.874011
 L 233.314818 122.945134
 Q 233.314818 129.136766 237.969804 129.136766
 z
-" clip-path="url(#p0f2909dafa)" style="fill: #fdeee0; stroke: #e69f00; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pcfbcfc9e69)" style="fill: #fdeee0; stroke: #e69f00; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_10">
     <path d="M 284.519664 129.136766
@@ -155,7 +155,7 @@ Q 279.864678 63.68238 279.864678 69.874011
 L 279.864678 122.945134
 Q 279.864678 129.136766 284.519664 129.136766
 z
-" clip-path="url(#p0f2909dafa)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pcfbcfc9e69)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <text style="fill: #7f7f7f; font: 8px 'Heiti SC', 'Heiti TC', 'Arial Unicode MS', 'DejaVu Sans'; text-anchor: middle" x="252.59976" y="183.797695" transform="rotate(-0 252.59976 183.797695)">x → z → 还原 x</text>
@@ -219,7 +219,7 @@ Q 341.72499 67.220455 341.72499 73.412086
 L 341.72499 119.40706
 Q 341.72499 125.598691 346.379976 125.598691
 z
-" clip-path="url(#p13fe142256)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p71969bc73b)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_14">
     <path d="M 444.79968 89.333423
@@ -232,7 +232,7 @@ Q 440.144694 36.2623 440.144694 42.453931
 L 440.144694 83.141792
 Q 440.144694 89.333423 444.79968 89.333423
 z
-" clip-path="url(#p13fe142256)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p71969bc73b)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_15">
     <path d="M 444.79968 160.094921
@@ -245,7 +245,7 @@ Q 440.144694 107.023797 440.144694 113.215429
 L 440.144694 153.90329
 Q 440.144694 160.094921 444.79968 160.094921
 z
-" clip-path="url(#p13fe142256)" style="fill: #fdeee0; stroke: #d55e00; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p71969bc73b)" style="fill: #fdeee0; stroke: #d55e00; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_12">
     <text style="fill: #7f7f7f; font: 8px 'Heiti SC', 'Heiti TC', 'Arial Unicode MS', 'DejaVu Sans'; text-anchor: middle" x="418.19976" y="183.797695" transform="rotate(-0 418.19976 183.797695)">正例近、负例远</text>
@@ -305,7 +305,7 @@ Q 509.984982 34.493262 509.984982 40.684893
 L 509.984982 81.372754
 Q 509.984982 87.564386 514.639968 87.564386
 z
-" clip-path="url(#p8cba2bcb53)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pb951bcf467)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_19">
     <path d="M 514.639968 165.402033
@@ -318,7 +318,7 @@ Q 509.984982 112.33091 509.984982 118.522541
 L 509.984982 159.210402
 Q 509.984982 165.402033 514.639968 165.402033
 z
-" clip-path="url(#p8cba2bcb53)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pb951bcf467)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_20">
     <path d="M 605.079696 87.564386
@@ -331,7 +331,7 @@ Q 600.42471 34.493262 600.42471 40.684893
 L 600.42471 81.372754
 Q 600.42471 87.564386 605.079696 87.564386
 z
-" clip-path="url(#p8cba2bcb53)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pb951bcf467)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_21">
     <path d="M 605.079696 165.402033
@@ -344,7 +344,7 @@ Q 600.42471 112.33091 600.42471 118.522541
 L 600.42471 159.210402
 Q 600.42471 165.402033 605.079696 165.402033
 z
-" clip-path="url(#p8cba2bcb53)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pb951bcf467)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_17">
     <text style="fill: #7f7f7f; font: 8px 'Heiti SC', 'Heiti TC', 'Arial Unicode MS', 'DejaVu Sans'; text-anchor: middle" x="583.79976" y="183.797695" transform="rotate(-0 583.79976 183.797695)">无负样本，teacher 走 EMA</text>
@@ -407,7 +407,7 @@ Q 682.234962 63.68238 682.234962 69.874011
 L 682.234962 122.945134
 Q 682.234962 129.136766 686.889948 129.136766
 z
-" clip-path="url(#pc4332d1d88)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p3dbf110bff)" style="fill: #f4f7fb; stroke: #7a8ca5; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_25">
     <path d="M 773.339688 129.136766
@@ -420,7 +420,7 @@ Q 768.684702 63.68238 768.684702 69.874011
 L 768.684702 122.945134
 Q 768.684702 129.136766 773.339688 129.136766
 z
-" clip-path="url(#pc4332d1d88)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p3dbf110bff)" style="fill: #e6f4ee; stroke: #009e73; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_23">
     <text style="fill: #7f7f7f; font: 8px 'Heiti SC', 'Heiti TC', 'Arial Unicode MS', 'DejaVu Sans'; text-anchor: middle" x="749.39976" y="183.797695" transform="rotate(-0 749.39976 183.797695)">x → 标签 y</text>
@@ -454,19 +454,19 @@ L 763.737397 98.209573
   </g>
  </g>
  <defs>
-  <clipPath id="p79d979f038">
+  <clipPath id="p82153866c9">
    <rect x="7.2" y="22.11" width="159.59952" height="166.28952"/>
   </clipPath>
-  <clipPath id="p0f2909dafa">
+  <clipPath id="pcfbcfc9e69">
    <rect x="172.8" y="22.11" width="159.59952" height="166.28952"/>
   </clipPath>
-  <clipPath id="p13fe142256">
+  <clipPath id="p71969bc73b">
    <rect x="338.4" y="22.11" width="159.59952" height="166.28952"/>
   </clipPath>
-  <clipPath id="p8cba2bcb53">
+  <clipPath id="pb951bcf467">
    <rect x="504" y="22.11" width="159.59952" height="166.28952"/>
   </clipPath>
-  <clipPath id="pc4332d1d88">
+  <clipPath id="p3dbf110bff">
    <rect x="669.6" y="22.11" width="159.59952" height="166.28952"/>
   </clipPath>
  </defs>

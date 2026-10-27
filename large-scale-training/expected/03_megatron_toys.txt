@@ -1,0 +1,33 @@
+===== groups =====
+world_size=8, parallel_size(tp,cp,ep,dp,pp)=[2, 1, 1, 2, 2], order='tp-cp-ep-dp-pp'
+网格坐标：rank = tp_r + dp_r*2 + pp_r*4  (CP=EP=1 退化)
+  rank0..7 的 (tp,dp,pp)： [(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0), (0, 0, 1), (1, 0, 1), (0, 1, 1), (1, 1, 1)]
+tp 组（4 个，各 2 卡）: [[0, 1], [2, 3], [4, 5], [6, 7]]
+dp 组（4 个，各 2 卡）: [[0, 2], [1, 3], [4, 6], [5, 7]]
+pp 组（4 个，各 2 卡）: [[0, 4], [1, 5], [2, 6], [3, 7]]
+dp-cp 组（4 个，各 2 卡）: [[0, 2], [1, 3], [4, 6], [5, 7]]
+
+===== buffer =====
+[ref] W1.grad sum = -29.2470  W1.data sum = -2.8398
+[ref] W2.grad sum = 143.7692  W2.data sum = -0.2789
+[ref] WL.grad sum = -39.3689  WL.data sum = -1.4853
+numel=22 pad=0 param_data/grad_data 各 22 个元素
+buffer 内偏移（反向顺序，元素下标）: {'WL': (0, 12), 'W2': (12, 16), 'W1': (16, 22)}
+分片边界=11：WL(0..11) 跨片——元素 0..10 归 rank0、11..11 归 rank1
+micro-batch 0: loss=62.5726，各参数 dW 已累加进 main_grad
+micro-batch 1: loss=47.3393，各参数 dW 已累加进 main_grad
+rank0 拿到 grad_data[0:11]（reduce-scatter）
+rank0 Adam 更新了 fp32 主参数分片（11 个元素）
+rank0 all-gather 后 param_data sum=-4.6088
+  WL: 并行 vs 单进程 max|diff| = 0.00156
+  W2: 并行 vs 单进程 max|diff| = 0.00156
+  W1: 并行 vs 单进程 max|diff| = 0.00625
+两步 Adam + reduce-scatter/all-gather 与单进程一致: True
+
+===== 1f1b =====
+stage0: warmup ['F0'] | steady ['F1', 'B0', 'F2', 'B1', 'F3', 'B2', 'F4', 'B3', 'F5', 'B4', 'F6', 'B5', 'F7', 'B6'] | cooldown ['B7']
+          序列: F0 F1 B0 F2 B1 F3 B2 F4 B3 F5 B4 F6 B5 F7 B6 B7
+stage1: warmup [] | steady ['F0', 'B0', 'F1', 'B1', 'F2', 'B2', 'F3', 'B3', 'F4', 'B4', 'F5', 'B5', 'F6', 'B6', 'F7', 'B7'] | cooldown []
+          序列: F0 B0 F1 B1 F2 B2 F3 B3 F4 B4 F5 B5 F6 B6 F7 B7
+warmup 数 = pp_size - stage - 1：stage0 预热 1 个前向，stage1 不预热直接交替
+

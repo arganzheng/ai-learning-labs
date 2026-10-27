@@ -9,7 +9,7 @@
 """
 import matplotlib.patches as mpatches
 
-from _plot import C, box, plt, save, text
+from _plot import ARROW_LABEL_SIZE, C, box, plt, save, text
 
 
 # ---------------------------------------------------------------- F1
@@ -54,7 +54,7 @@ def f1():
     for a, b, lab in [(0, 1, "TP"), (4, 5, "TP"), (2, 3, "TP"), (6, 7, "TP")]:
         (x1, y1), (x2, y2) = edge(a, "r"), edge(b, "l")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
-        text(ax, (x1 + x2) / 2, y1 + 0.032, lab, ha="center", fontsize=10, color=C["blue"])
+        text(ax, (x1 + x2) / 2, y1 + 0.032, lab, ha="center", fontsize=ARROW_LABEL_SIZE, color=C["blue"])
     # DP：同一 stage 同一 TP 位、跨左右两个副本——弧线走卡片外侧，不穿文字
     for a, b in [(0, 2), (1, 3)]:
         (x1, _), (_, yt) = edge(a, "t"), edge(b, "t")
@@ -62,18 +62,18 @@ def f1():
         ax.annotate("", xy=(x2, yt + 0.008), xytext=(x1, yt + 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=-0.25"))
-        text(ax, (x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=10, color=C["orange"])
+        text(ax, (x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=ARROW_LABEL_SIZE, color=C["orange"])
     for a, b in [(4, 6), (5, 7)]:
         (x1, _), (_, yb) = edge(a, "b"), edge(b, "b")
         (x2, _) = edge(b, "b")
         ax.annotate("", xy=(x2, yb - 0.008), xytext=(x1, yb - 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=0.25"))
-        text(ax, (x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=10, color=C["orange"])
+        text(ax, (x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=ARROW_LABEL_SIZE, color=C["orange"])
     for a, b in [(0, 4), (1, 5), (2, 6), (3, 7)]:
         (x1, y1), (x2, y2) = edge(a, "b"), edge(b, "t")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["green"], lw=1.4))
-        text(ax, x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=10, color=C["green"])
+        text(ax, x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color=C["green"])
 
     text(ax, 0.56, -0.11, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡　PP = 同一 DP 副本同一 TP 位的两个 stage",
             ha="center", fontsize=10, color="#333333")
@@ -99,9 +99,9 @@ def f2():
     ]
     y = 0.02
     for name, desc, col in layers:
-        box(ax, 0.05, y, 0.9, 0.125, "", fc="white", ec=col, lw=1.3)
-        text(ax, 0.075, y + 0.086, name, ha="left", va="center", fontsize=11, weight="bold", color=col)
-        text(ax, 0.075, y + 0.036, desc, ha="left", va="center", fontsize=10, color="#333333")
+        p = box(ax, 0.05, y, 0.9, 0.125, "", fc="white", ec=col, lw=1.3)
+        text(ax, 0.075, y + 0.086, name, in_box=p, ha="left", va="center", fontsize=11, weight="bold", color=col)
+        text(ax, 0.075, y + 0.036, desc, in_box=p, ha="left", va="center", fontsize=10, color="#333333")
         y += 0.165
     ax.annotate("", xy=(0.98, 0.92), xytext=(0.98, 0.08),
                 arrowprops=dict(arrowstyle="->", color="#888888", lw=1.2))
@@ -135,13 +135,13 @@ def f3():
     # 常驻
     cell(0.15, 15.7, 0.40, "bf16 参数（完整）· fp32 梯度 buffer（完整）· fp32 主参数 + m + v（1/2）——整个训练期不释放",
          "#ffffff")
-    # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）
-    ax.annotate("", xy=(4.05, 2.43), xytext=(4.05, 2.22), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 4.2, 2.31, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=10, color="#333333")
-    ax.annotate("", xy=(9.25, 2.22), xytext=(9.25, 2.43), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 9.4, 2.31, "最后一个 micro-batch\n反向触发", ha="left", va="center", fontsize=10, color="#333333")
-    ax.annotate("", xy=(14.1, 2.22), xytext=(14.1, 2.43), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 14.25, 2.31, "step 发起", ha="left", va="center", fontsize=10, color="#333333")
+    # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）。箭头居中对准下方通信盒
+    ax.annotate("", xy=(2.5, 2.45), xytext=(2.5, 2.20), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 2.65, 2.325, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
+    ax.annotate("", xy=(10.0, 2.20), xytext=(10.0, 2.45), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 9.85, 2.325, "末个 micro-batch 反向触发", ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
+    ax.annotate("", xy=(14.05, 2.20), xytext=(14.05, 2.45), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 14.2, 2.325, "step 发起", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
     ax.set_title("一个 DP rank 的一个 step：两次 DP 通信都与计算重叠（ZeRO-1 的 2N）")
     save(fig, "megatron-f3-step-swimlane")
 
@@ -163,13 +163,12 @@ def f4():
     phase_c = {"warmup": C["blue"] + "22", "steady": C["green"] + "22", "cooldown": C["orange"] + "33"}
     seg_names = ["第 1–9 拍", "第 10–18 拍"]
 
-    def bracket(x0, x1, y, name):
+    def bracket(x0, x1, y, name, seg):
         ax.annotate("", xy=(x0, y), xytext=(x1, y),
                     arrowprops=dict(arrowstyle="-", color="#555555", lw=1.0))
         ax.plot([x0, x0], [y - 0.06, y], color="#555555", lw=1.0)
         ax.plot([x1, x1], [y - 0.06, y], color="#555555", lw=1.0)
-        yoff = 0.30 if x1 - x0 < 2 else 0.10   # 短阶段的标签抬高一行，不和相邻长阶段标签碰
-        text(ax, (x0 + x1) / 2, y + yoff, name, ha="center", fontsize=10, color="#333333")
+        text(ax, (x0 + x1) / 2, y + 0.10, name, row=f"phase{seg}", ha="center", fontsize=10, color="#333333")
 
     for seg in range(2):
         t0, t1 = seg * half, min((seg + 1) * half, n)
@@ -192,14 +191,14 @@ def f4():
                     ph = timeline[stage][t][0]
             phases.append(ph)
         yb = 4.02 - 2 * seg
-        text(ax, t1 - t0 - 0.03, yb + 0.10, seg_names[seg], ha="right", va="bottom", fontsize=9.5, color="#555555")
+        text(ax, -0.45, yb + 0.10, seg_names[seg], ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#555555")
         run_start, run_ph = 0, phases[0]
         for i in range(1, len(phases) + 1):
             ph = phases[i] if i < len(phases) else None
             if ph != run_ph:
                 if run_ph is not None:
                     bracket(run_start + 0.05, i - 0.05, yb,
-                            run_ph + ("（1F1B 交替）" if run_ph == "steady" else ""))
+                            run_ph + ("（1F1B 交替）" if run_ph == "steady" else ""), seg)
                 run_start, run_ph = i, ph
 
     text(ax, half / 2, -0.42, "灰格 = 该 stage 此拍等待", ha="center", fontsize=10, color="#333333")

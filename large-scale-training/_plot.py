@@ -38,13 +38,17 @@ C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c
      "gray": "#8a8a8a", "purple": "#7b5ea7", "light": "#dddddd"}
 
 
-_TRACKED = []          # (Text, FancyBboxPatch|None)：collide() 检查文本两两不重叠、盒内文本留边
+BOX_TEXT_SIZE = 10
+ARROW_LABEL_SIZE = BOX_TEXT_SIZE - 1   # 箭头/分组标注说明文字，比方框文字小一号
+
+_TRACKED = []          # (Text, FancyBboxPatch|None, row|None)
+_PATCHES = []          # box() 画出的全部补丁，供「标注不压盒」检查
 
 
-def text(ax, x, y, s, in_box=None, **kw):
-    """ax.text 的登记版：in_box=patch 时 collide() 会断言文字四边留 ≥6px。"""
+def text(ax, x, y, s, in_box=None, row=None, **kw):
+    """ax.text 的登记版：in_box=patch 时断言文字四边留 ≥6px；row=key 的文本断言同一基线。"""
     t = ax.text(x, y, s, **kw)
-    _TRACKED.append((t, in_box))
+    _TRACKED.append((t, in_box, row))
     return t
 
 
@@ -53,6 +57,7 @@ def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=10, lw=0.9, r=0.012
     p = FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}",
                        fc=fc, ec=ec, lw=lw, **kw)
     ax.add_patch(p)
+    _PATCHES.append(p)
     if s:
         text(ax, x + w / 2, y + h / 2, s, in_box=p, ha="center", va="center", fontsize=fs)
     return p
@@ -63,10 +68,10 @@ def collide(fig, margin=6.0):
     登记了 in_box 的文本必须在盒内且四边间距 ≥ margin（figure dpi 像素）。有违规直接抛错。"""
     fig.canvas.draw()
     ren = fig.canvas.get_renderer()
-    items = [(t, p) for t, p in _TRACKED if t.get_figure() is fig and t.get_text().strip()]
-    ext = {t: t.get_window_extent(renderer=ren) for t, _ in items}
+    items = [(t, p, row) for t, p, row in _TRACKED if t.get_figure() is fig and t.get_text().strip()]
+    ext = {t: t.get_window_extent(renderer=ren) for t, _, _ in items}
     errs = []
-    for t, p in items:
+    for t, p, _ in items:
         e = ext[t]
         if p is not None:
             b = p.get_window_extent(renderer=ren)
@@ -74,6 +79,7 @@ def collide(fig, margin=6.0):
                             ("右", b.x1 - e.x1), ("上", b.y1 - e.y1)):
                 if d < margin:
                     errs.append(f"盒内边距 {d:.0f}px<{margin:.0f}px（{side}）：{t.get_text()!r}")
+    # 文本两两不重叠
     for i in range(len(items)):
         for j in range(i + 1, len(items)):
             a, b = ext[items[i][0]], ext[items[j][0]]
@@ -81,6 +87,29 @@ def collide(fig, margin=6.0):
             ih = min(a.y1, b.y1) - max(a.y0, b.y0)
             if iw > 1 and ih > 1:
                 errs.append(f"文本重叠：{items[i][0].get_text()!r} × {items[j][0].get_text()!r}")
+    # 非盒内文本（箭头标注等）不得压到任何盒子上
+    for p in _PATCHES:
+        if p.get_figure() is not fig:
+            continue
+        b = p.get_window_extent(renderer=ren)
+        for t, own, _ in items:
+            if own is not None:
+                continue
+            e = ext[t]
+            iw = min(e.x1, b.x1) - max(e.x0, b.x0)
+            ih = min(e.y1, b.y1) - max(e.y0, b.y0)
+            if iw > 1 and ih > 1:
+                errs.append(f"标注压盒：{t.get_text()!r}")
+    # 同一 row 组的标签必须在同一基线上
+    groups = {}
+    for t, _, row in items:
+        if row is not None:
+            groups.setdefault(row, []).append(t)
+    for row, ts in groups.items():
+        y0 = ext[ts[0]].y0
+        for t in ts[1:]:
+            if abs(ext[t].y0 - y0) > 1.5:
+                errs.append(f"同排标签基线不齐（row={row}）：{t.get_text()!r}")
     if errs:
         raise AssertionError(f"{len(errs)} 处文字碰撞：\n" + "\n".join(errs))
 

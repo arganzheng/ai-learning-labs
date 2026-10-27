@@ -85,56 +85,58 @@ def f3():
          ha="center", va="center", fontsize=10.5, color="#333333")
     for i, (label, group) in enumerate(zip(labels, groups)):
         box(ax, x0 + i * (cell_w + gap), ybar, cell_w, 0.43, label,
-            fc=colors[group], ec="#555555", fs=9.5)
-    text(ax, x0 + 1.30, 3.31, "A (5)", ha="center", fontsize=9.5, color="#333333")
-    text(ax, x0 + 3.74, 3.31, "B (4)", ha="center", fontsize=9.5, color="#333333")
-    text(ax, x0 + 5.57, 3.31, "C + pad", ha="center", fontsize=9.5, color="#333333")
+            fc=colors[group], ec="#555555", fs=10)
+    text(ax, x0 + 1.30, 3.31, "A (5)", ha="center", fontsize=10, color="#333333")
+    text(ax, x0 + 3.74, 3.31, "B (4)", ha="center", fontsize=10, color="#333333")
+    text(ax, x0 + 5.57, 3.31, "C + pad", ha="center", fontsize=10, color="#333333")
 
     rank_w = 1.56
     rank_gap = 0.28
     rank_x = [0.30 + i * (rank_w + rank_gap) for i in range(4)]
     for rank, x in enumerate(rank_x):
         text(ax, x + rank_w / 2, 2.36, f"rank {rank}：元素 {rank * 3}–{rank * 3 + 2}",
-             row="rank-labels", ha="center", va="center", fontsize=9.5, color="#333333")
+             row="rank-labels", ha="center", va="center", fontsize=10, color="#333333")
         ax.annotate("", xy=(x + rank_w / 2, 1.75), xytext=(x + rank_w / 2, 2.13),
                     arrowprops=dict(arrowstyle="->", color="#555555", lw=1.0))
-        box(ax, x, 1.02, rank_w, 0.74, f"fp32 主参数副本\n3 个元素", fc="#f5f8fc", ec="#444444", fs=9.5)
+        box(ax, x, 1.02, rank_w, 0.74, f"fp32 主参数副本\n3 个元素", fc="#f5f8fc", ec="#444444", fs=10)
     text(ax, 3.8, 0.48, "每个 rank 更新自己的 fp32 段；更新后转回低精度参数分区",
          ha="center", va="center", fontsize=10.5, color="#333333")
     save(fig, "deepspeed-f3-flat-partition")
 
 
 def f4():
-    fig, ax = plt.subplots(figsize=(7.6, 4.55))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.55); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.9, 4.55))
+    ax.set_xlim(0, 7.9); ax.set_ylim(0, 4.55); ax.axis("off")
     ax.set_title("一个 Linear.weight：前向与反向按时间经过三个泳道")
-    start, step, cell_w = 0.90, 0.945, 1.00
-    compute_y, comm_y, state_y, box_h, compute_h = 3.15, 2.30, 1.16, 0.60, 0.80
+    start, step, cell_w = 0.85, 1.00, 1.00
+    compute_y, comm_y, state_y, box_h, compute_h = 3.10, 2.30, 1.16, 0.60, 0.86
     centers = [start + i * step + cell_w / 2 for i in range(7)]
-    text(ax, 0.82, compute_y + compute_h / 2, "计算", ha="right", va="center", fontsize=10.5, color="#333333")
-    text(ax, 0.82, comm_y + box_h / 2, "通信", ha="right", va="center", fontsize=10.5, color="#333333")
-    text(ax, 0.82, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.79, compute_y + compute_h / 2, "计算", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.79, comm_y + box_h / 2, "通信", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.79, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=10.5, color="#333333")
 
     comm_events = {0: "前向\nall-gather", 3: "反向\nall-gather", 5: "reduce-\nscatter"}
     compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n→ ds_tensor"}
     for i in range(7):
         x = start + i * step
         if i in comm_events:
-            box(ax, x, comm_y, cell_w, box_h, comm_events[i], fc="#ffffff", ec="#555555", fs=9)
+            box(ax, x, comm_y, cell_w, box_h, comm_events[i], fc="#ffffff", ec="#555555", fs=10)
         if i in compute_events:
             label = compute_events[i]
-            box(ax, x, compute_y, cell_w, compute_h, label, fc="#ffffff", ec="#555555", fs=9)
+            box(ax, x, compute_y, cell_w, compute_h, label, fc="#ffffff", ec="#555555", fs=10)
 
     states = [("完整 bf16", C["blue"] + "44"), ("完整 bf16", C["blue"] + "44"),
               ("空壳", "#eeeeee"), ("完整 bf16", C["blue"] + "44"),
               ("完整 bf16", C["blue"] + "44"), ("空壳", "#eeeeee"), ("空壳", "#eeeeee")]
     for i, (label, color) in enumerate(states):
-        box(ax, start + i * step, state_y, cell_w, box_h, label, fc=color, ec="#555555", fs=9.5)
+        box(ax, start + i * step, state_y, cell_w, box_h, label, fc=color, ec="#555555", fs=10)
 
-    release_x = (centers[1] + centers[2]) / 2
-    release_bwd_x = (centers[4] + centers[5]) / 2
-    text(ax, release_x, 1.98, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
-    text(ax, release_bwd_x, 1.98, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
+    release_x = start + 2 * step
+    release_bwd_x = start + 5 * step
+    text(ax, release_x, 1.98, "post-hook release", ha="center", va="center",
+         fontsize=ARROW_LABEL_SIZE, color="#333333")
+    text(ax, release_bwd_x, 1.98, "post-hook release", ha="center", va="center",
+         fontsize=ARROW_LABEL_SIZE, color="#333333")
     ax.annotate("", xy=(centers[-1], 0.73), xytext=(centers[0], 0.73),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=0.9))
     text(ax, 3.80, 0.31, "ds_tensor 常驻 1/N_d；完整 param.data 用前取回、用完释放",

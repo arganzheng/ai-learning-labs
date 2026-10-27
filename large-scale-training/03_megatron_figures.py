@@ -24,33 +24,33 @@ def f1():
     """8 卡 TP2×PP2×DP2。rank = tp + 2·dp + 4·pp。
     布局：行 = PP stage（上 stage1 layers8-15+输出层，下 stage0 layers0-7+embedding），
           列内每对相邻 rank = 一个 TP 组；左右两半 = 两个 DP 副本。"""
-    fig, ax = plt.subplots(figsize=(7.6, 5.0))
-    ax.set_xlim(0, 1); ax.set_ylim(-0.26, 1.12); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(9.0, 5.2))
+    ax.set_xlim(0, 1.04); ax.set_ylim(-0.26, 1.12); ax.axis("off")
 
-    cw, ch, gx, gy = 0.150, 0.30, 0.022, 0.10
+    cw, ch, gx, gy = 0.195, 0.35, 0.045, 0.09
     # DP 副本列：dp=0 → ranks 0,1(stage0) 4,5(stage1)；dp=1 → 2,3 / 6,7
     def rank_xy(rank):
         tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
-        x = 0.035 + dp * (2 * cw + 2 * gx + 0.06) + tp * (cw + gx)
+        x = 0.02 + dp * (2 * cw + 2 * gx + 0.05) + tp * (cw + gx)
         y = 0.16 + (1 - pp) * (ch + gy)   # stage0 在下
         return x, y
 
     card = {
-        0: ("GPU 0  tp0 dp0 pp0", "layers 0–7 + embedding\n矩阵左半 (tp0)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        1: ("GPU 1  tp1 dp0 pp0", "layers 0–7 + embedding\n矩阵右半 (tp1)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        4: ("GPU 4  tp0 dp0 pp1", "layers 8–15 + 输出层\n矩阵左半 (tp0)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        5: ("GPU 5  tp1 dp0 pp1", "layers 8–15 + 输出层\n矩阵右半 (tp1)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        2: ("GPU 2  tp0 dp1 pp0", "layers 0–7 + embedding\n矩阵左半 (tp0)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        3: ("GPU 3  tp1 dp1 pp0", "layers 0–7 + embedding\n矩阵右半 (tp1)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        6: ("GPU 6  tp0 dp1 pp1", "layers 8–15 + 输出层\n矩阵左半 (tp0)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
-        7: ("GPU 7  tp1 dp1 pp1", "layers 8–15 + 输出层\n矩阵右半 (tp1)", "bf16 参数(半层完整)\nfp32 梯度 完整\nfp32 主参+m+v ×1/2"),
+        0: ("GPU 0  tp0 dp0 pp0", "layers 0–7 + embedding\n矩阵左半（tp0）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        1: ("GPU 1  tp1 dp0 pp0", "layers 0–7 + embedding\n矩阵右半（tp1）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        4: ("GPU 4  tp0 dp0 pp1", "layers 8–15 + 输出层\n矩阵左半（tp0）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        5: ("GPU 5  tp1 dp0 pp1", "layers 8–15 + 输出层\n矩阵右半（tp1）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        2: ("GPU 2  tp0 dp1 pp0", "layers 0–7 + embedding\n矩阵左半（tp0）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        3: ("GPU 3  tp1 dp1 pp0", "layers 0–7 + embedding\n矩阵右半（tp1）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        6: ("GPU 6  tp0 dp1 pp1", "layers 8–15 + 输出层\n矩阵左半（tp0）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
+        7: ("GPU 7  tp1 dp1 pp1", "layers 8–15 + 输出层\n矩阵右半（tp1）", "bf16 参数：本卡这一半（常驻）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
     }
     for rank, (t1, t2, t3) in card.items():
         x, y = rank_xy(rank)
         box(ax, x, y, cw, ch, "", fc="#f7f9fc")
-        ax.text(x + cw / 2, y + ch - 0.035, t1, ha="center", va="center", fontsize=7.5, weight="bold")
-        ax.text(x + cw / 2, y + ch / 2 + 0.01, t2, ha="center", va="center", fontsize=7)
-        ax.text(x + cw / 2, y + 0.055, t3, ha="center", va="center", fontsize=6.5, color="#555555")
+        ax.text(x + cw / 2, y + ch - 0.040, t1, ha="center", va="center", fontsize=9.5, weight="bold")
+        ax.text(x + cw / 2, y + ch / 2 + 0.005, t2, ha="center", va="center", fontsize=8.5)
+        ax.text(x + cw / 2, y + 0.065, t3, ha="center", va="center", fontsize=8, color="#555555")
 
     # 分组标注：TP（同 stage 内相邻）、DP（同 stage 同 tp 位、左右跨副本）、PP（同列上下）
     def edge(r, side):
@@ -61,7 +61,7 @@ def f1():
     for a, b, lab in [(0, 1, "TP"), (4, 5, "TP"), (2, 3, "TP"), (6, 7, "TP")]:
         (x1, y1), (x2, y2) = edge(a, "r"), edge(b, "l")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
-        ax.text((x1 + x2) / 2, y1 + 0.028, lab, ha="center", fontsize=7.5, color=C["blue"])
+        ax.text((x1 + x2) / 2, y1 + 0.030, lab, ha="center", fontsize=8.5, color=C["blue"])
     # DP：同一 stage 同一 TP 位、跨左右两个副本——弧线走卡片外侧，不穿文字
     for a, b in [(0, 2), (1, 3)]:
         (x1, _), (_, yt) = edge(a, "t"), edge(b, "t")
@@ -69,23 +69,23 @@ def f1():
         ax.annotate("", xy=(x2, yt + 0.008), xytext=(x1, yt + 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=-0.25"))
-        ax.text((x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=7.5, color=C["orange"])
+        ax.text((x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=8.5, color=C["orange"])
     for a, b in [(4, 6), (5, 7)]:
         (x1, _), (_, yb) = edge(a, "b"), edge(b, "b")
         (x2, _) = edge(b, "b")
         ax.annotate("", xy=(x2, yb - 0.008), xytext=(x1, yb - 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=0.25"))
-        ax.text((x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=7.5, color=C["orange"])
+        ax.text((x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=8.5, color=C["orange"])
     for a, b in [(0, 4), (1, 5), (2, 6), (3, 7)]:
         (x1, y1), (x2, y2) = edge(a, "b"), edge(b, "t")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["green"], lw=1.4))
-        ax.text(x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=7.5, color=C["green"])
+        ax.text(x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=8.5, color=C["green"])
 
-    ax.text(0.5, -0.11, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡　PP = 同一 DP 副本同一 TP 位的两个 stage",
-            ha="center", fontsize=8, color="#444444")
-    ax.text(0.5, -0.19, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　DP 组 [0,2] [1,3] [4,6] [5,7]　·　PP 组 [0,4] [1,5] [2,6] [3,7]",
-            ha="center", fontsize=8, color="#444444")
+    ax.text(0.52, -0.11, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡　PP = 同一 DP 副本同一 TP 位的两个 stage",
+            ha="center", fontsize=8.5, color="#444444")
+    ax.text(0.52, -0.19, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　DP 组 [0,2] [1,3] [4,6] [5,7]　·　PP 组 [0,4] [1,5] [2,6] [3,7]",
+            ha="center", fontsize=8.5, color="#444444")
     ax.set_title("train-ledger 配置：8 卡 TP2 × PP2 × DP2（Llama-3.2-1B 形状，16 层）")
     save(fig, "megatron-f1-8-gpus")
 
@@ -135,16 +135,20 @@ def f3():
     cell(0.25, 9.2, 2.45, "8 个 micro-batch 的前向 + 反向\n（dW 直接累加进 main_grad，不通信）", C["blue"] + "22")
     cell(9.7, 2.6, 2.45, "finalize\nmodel_grads", "#eeeeee")
     cell(12.5, 3.2, 2.45, "optimizer.step\n（只动本 rank 1/2 段）", C["purple"] + "22")
-    # 通信流
-    cell(7.6, 3.6, 1.40, "reduce-scatter grad_data\n（与末尾反向重叠）", C["orange"] + "33")
+    # 通信流：reduce-scatter 的盒子和前向+反向盒子的末尾在时间轴上重叠
+    cell(8.1, 3.9, 1.40, "reduce-scatter grad_data\n（与末尾反向重叠）", C["orange"] + "33")
     cell(12.5, 3.2, 1.40, "all-gather param_data\n（发出，不等）", C["green"] + "33")
     cell(0.25, 3.4, 1.40, "all-gather（上一 step 发出）\n在前向 pre-hook 里等", C["green"] + "33")
     # 常驻
     cell(0.25, 15.4, 0.40, "bf16 参数（完整）· fp32 梯度 buffer（完整）· fp32 主参数 + m + v（1/2）——整个训练期不释放",
          "#ffffff")
-    ax.annotate("", xy=(3.65, 2.30), xytext=(3.65, 1.80), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
-    ax.annotate("", xy=(11.2, 2.30), xytext=(11.2, 1.80), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
-    ax.annotate("", xy=(14.1, 2.30), xytext=(14.1, 1.80), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
+    # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）
+    ax.annotate("", xy=(3.65, 2.38), xytext=(3.65, 2.06), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
+    ax.text(3.8, 2.22, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=7, color="#666666")
+    ax.annotate("", xy=(9.25, 2.06), xytext=(9.25, 2.38), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
+    ax.text(9.4, 2.22, "最后一个 micro-batch 反向触发", ha="left", va="center", fontsize=7, color="#666666")
+    ax.annotate("", xy=(14.1, 2.06), xytext=(14.1, 2.38), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
+    ax.text(13.95, 2.22, "step 发起", ha="right", va="center", fontsize=7, color="#666666")
     ax.set_title("一个 DP rank 的一个 step：两次 DP 通信都与计算重叠（ZeRO-1 的 2N）")
     save(fig, "megatron-f3-step-swimlane")
 

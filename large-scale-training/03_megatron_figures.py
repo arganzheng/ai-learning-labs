@@ -24,10 +24,10 @@ def f1():
     """8 卡 TP2×PP2×DP2。rank = tp + 2·dp + 4·pp。
     布局：行 = PP stage（上 stage1 layers8-15+输出层，下 stage0 layers0-7+embedding），
           列内每对相邻 rank = 一个 TP 组；左右两半 = 两个 DP 副本。"""
-    fig, ax = plt.subplots(figsize=(9.0, 5.2))
+    fig, ax = plt.subplots(figsize=(9.4, 5.6))
     ax.set_xlim(0, 1.04); ax.set_ylim(-0.26, 1.12); ax.axis("off")
 
-    cw, ch, gx, gy = 0.195, 0.35, 0.045, 0.09
+    cw, ch, gx, gy = 0.205, 0.37, 0.04, 0.09
     # DP 副本列：dp=0 → ranks 0,1(stage0) 4,5(stage1)；dp=1 → 2,3 / 6,7
     def rank_xy(rank):
         tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
@@ -48,9 +48,9 @@ def f1():
     for rank, (t1, t2, t3) in card.items():
         x, y = rank_xy(rank)
         box(ax, x, y, cw, ch, "", fc="#f7f9fc")
-        ax.text(x + cw / 2, y + ch - 0.040, t1, ha="center", va="center", fontsize=9.5, weight="bold")
-        ax.text(x + cw / 2, y + ch / 2 + 0.005, t2, ha="center", va="center", fontsize=8.5)
-        ax.text(x + cw / 2, y + 0.065, t3, ha="center", va="center", fontsize=8, color="#555555")
+        ax.text(x + cw / 2, y + ch - 0.045, t1, ha="center", va="center", fontsize=11, weight="bold")
+        ax.text(x + cw / 2, y + ch / 2 + 0.005, t2, ha="center", va="center", fontsize=10.5)
+        ax.text(x + cw / 2, y + 0.075, t3, ha="center", va="center", fontsize=9, color="#333333")
 
     # 分组标注：TP（同 stage 内相邻）、DP（同 stage 同 tp 位、左右跨副本）、PP（同列上下）
     def edge(r, side):
@@ -61,7 +61,7 @@ def f1():
     for a, b, lab in [(0, 1, "TP"), (4, 5, "TP"), (2, 3, "TP"), (6, 7, "TP")]:
         (x1, y1), (x2, y2) = edge(a, "r"), edge(b, "l")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
-        ax.text((x1 + x2) / 2, y1 + 0.030, lab, ha="center", fontsize=8.5, color=C["blue"])
+        ax.text((x1 + x2) / 2, y1 + 0.032, lab, ha="center", fontsize=10, color=C["blue"])
     # DP：同一 stage 同一 TP 位、跨左右两个副本——弧线走卡片外侧，不穿文字
     for a, b in [(0, 2), (1, 3)]:
         (x1, _), (_, yt) = edge(a, "t"), edge(b, "t")
@@ -69,23 +69,23 @@ def f1():
         ax.annotate("", xy=(x2, yt + 0.008), xytext=(x1, yt + 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=-0.25"))
-        ax.text((x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=8.5, color=C["orange"])
+        ax.text((x1 + x2) / 2, yt + 0.075, "DP", ha="center", fontsize=10, color=C["orange"])
     for a, b in [(4, 6), (5, 7)]:
         (x1, _), (_, yb) = edge(a, "b"), edge(b, "b")
         (x2, _) = edge(b, "b")
         ax.annotate("", xy=(x2, yb - 0.008), xytext=(x1, yb - 0.008),
                     arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
                                     connectionstyle="arc3,rad=0.25"))
-        ax.text((x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=8.5, color=C["orange"])
+        ax.text((x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=10, color=C["orange"])
     for a, b in [(0, 4), (1, 5), (2, 6), (3, 7)]:
         (x1, y1), (x2, y2) = edge(a, "b"), edge(b, "t")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["green"], lw=1.4))
-        ax.text(x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=8.5, color=C["green"])
+        ax.text(x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=10, color=C["green"])
 
     ax.text(0.52, -0.11, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡　PP = 同一 DP 副本同一 TP 位的两个 stage",
-            ha="center", fontsize=8.5, color="#444444")
+            ha="center", fontsize=10, color="#333333")
     ax.text(0.52, -0.19, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　DP 组 [0,2] [1,3] [4,6] [5,7]　·　PP 组 [0,4] [1,5] [2,6] [3,7]",
-            ha="center", fontsize=8.5, color="#444444")
+            ha="center", fontsize=10, color="#333333")
     ax.set_title("train-ledger 配置：8 卡 TP2 × PP2 × DP2（Llama-3.2-1B 形状，16 层）")
     save(fig, "megatron-f1-8-gpus")
 
@@ -97,7 +97,7 @@ def f2():
 
     # 五层堆叠（自下而上），每层：框 + 一句话
     layers = [
-        ("parallel_state（模块级全局变量 + RankGenerator）", "给下面每一层提供进程组：TP / DP / PP / …", C["gray"]),
+        ("parallel_state（模块级全局变量 + RankGenerator）", "给上面每一层提供进程组：TP / DP / PP / …", C["gray"]),
         ("tensor_parallel：ColumnParallel / RowParallel / mappings", "模型由切开的层搭成；通信是手写的 autograd.Function", C["blue"]),
         ("_ParamAndGradBuffer + Bucket(Group)", "两段连续内存；参数与 main_grad 是视图；通信单位是 bucket", C["orange"]),
         ("DistributedDataParallel", "包装模型，注册 hook：梯度就绪发 reduce-scatter、前向等 all-gather", C["green"]),
@@ -107,13 +107,13 @@ def f2():
     y = 0.02
     for name, desc, col in layers:
         box(ax, 0.05, y, 0.9, 0.125, "", fc="white", ec=col, lw=1.3)
-        ax.text(0.075, y + 0.086, name, ha="left", va="center", fontsize=9, weight="bold", color=col)
-        ax.text(0.075, y + 0.036, desc, ha="left", va="center", fontsize=8)
+        ax.text(0.075, y + 0.086, name, ha="left", va="center", fontsize=11, weight="bold", color=col)
+        ax.text(0.075, y + 0.036, desc, ha="left", va="center", fontsize=10, color="#333333")
         y += 0.165
     ax.annotate("", xy=(0.98, 0.92), xytext=(0.98, 0.08),
                 arrowprops=dict(arrowstyle="->", color="#888888", lw=1.2))
-    ax.text(0.995, 0.5, "上层依赖下层", rotation=90, va="center", fontsize=8, color="#888888")
-    ax.set_title("Megatron Core 的六个核心抽象：从下到上层层依赖")
+    ax.text(0.998, 0.5, "上层调用 / 依赖下层", rotation=90, va="center", fontsize=10, color="#555555")
+    ax.set_title("Megatron Core 的六个核心抽象：上面是训练调度，下面是进程组")
     save(fig, "megatron-f2-abstractions")
 
 
@@ -126,9 +126,9 @@ def f3():
     lanes = [(2.35, "计算流", "#f4f7fb"), (1.30, "通信流", "#fdf7ef"), (0.30, "常驻", "#f5f5f5")]
     for y0, name, fc in lanes:
         ax.add_patch(mpatches.Rectangle((0, y0), 16, 0.9, fc=fc, ec="#cccccc", lw=0.6))
-        ax.text(-0.15, y0 + 0.45, name, ha="right", va="center", fontsize=9, weight="bold")
+        ax.text(-0.15, y0 + 0.45, name, ha="right", va="center", fontsize=11, weight="bold")
 
-    def cell(x, w, y0, text, fc, fs=7.5):
+    def cell(x, w, y0, text, fc, fs=10):
         box(ax, x, y0, w, 0.62, text, fc=fc, fs=fs, r=0.03)
 
     # 计算流：m 个 micro-batch 前向/反向 → step
@@ -143,12 +143,12 @@ def f3():
     cell(0.25, 15.4, 0.40, "bf16 参数（完整）· fp32 梯度 buffer（完整）· fp32 主参数 + m + v（1/2）——整个训练期不释放",
          "#ffffff")
     # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）
-    ax.annotate("", xy=(3.65, 2.38), xytext=(3.65, 2.06), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
-    ax.text(3.8, 2.22, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=7, color="#666666")
-    ax.annotate("", xy=(9.25, 2.06), xytext=(9.25, 2.38), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
-    ax.text(9.4, 2.22, "最后一个 micro-batch 反向触发", ha="left", va="center", fontsize=7, color="#666666")
-    ax.annotate("", xy=(14.1, 2.06), xytext=(14.1, 2.38), arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
-    ax.text(13.95, 2.22, "step 发起", ha="right", va="center", fontsize=7, color="#666666")
+    ax.annotate("", xy=(3.65, 2.38), xytext=(3.65, 2.06), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    ax.text(3.8, 2.22, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=10, color="#333333")
+    ax.annotate("", xy=(9.25, 2.06), xytext=(9.25, 2.38), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    ax.text(9.4, 2.22, "最后一个 micro-batch\n反向触发", ha="left", va="center", fontsize=10, color="#333333")
+    ax.annotate("", xy=(14.1, 2.06), xytext=(14.1, 2.38), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    ax.text(14.25, 2.22, "step 发起", ha="left", va="center", fontsize=10, color="#333333")
     ax.set_title("一个 DP rank 的一个 step：两次 DP 通信都与计算重叠（ZeRO-1 的 2N）")
     save(fig, "megatron-f3-step-swimlane")
 
@@ -162,33 +162,57 @@ def f4():
     toys = importlib.import_module("03_megatron_toys")
     timeline = toys.schedule_timeline(2, 8)
 
-    fig, ax = plt.subplots(figsize=(7.6, 3.2))
     n = len(timeline[0])
-    ax.set_xlim(-0.6, n + 0.4); ax.set_ylim(-0.58, 2.7); ax.axis("off")
+    half = (n + 1) // 2                      # 时间轴折成两段，格子才放得下 F1/B8
+    fig, ax = plt.subplots(figsize=(7.8, 4.6))
+    ax.set_xlim(-0.6, half + 1.6); ax.set_ylim(-0.75, 4.55); ax.axis("off")
     labels = {0: "stage 0\n(layers 0–7)", 1: "stage 1\n(layers 8–15)"}
     phase_c = {"warmup": C["blue"] + "22", "steady": C["green"] + "22", "cooldown": C["orange"] + "33"}
-    for stage, row in enumerate(timeline):
-        y = 1 - stage
-        for t, item in enumerate(row):
-            if item is None:
-                box(ax, t + 0.05, y, 0.9, 0.62, "等待", fc="#f4f4f4", ec="#bbbbbb", fs=6.5)
-            else:
-                ph, event = item
-                box(ax, t + 0.05, y, 0.9, 0.62, event, fc=phase_c[ph], fs=8)
-        ax.text(-0.45, y + 0.31, labels[stage], ha="right", va="center", fontsize=8.5)
+    seg_names = ["ticks 1–9", "ticks 10–18"]
 
-    def bracket(x0, x1, name):
-        ax.annotate("", xy=(x0, 2.28), xytext=(x1, 2.28),
+    def bracket(x0, x1, y, name):
+        ax.annotate("", xy=(x0, y), xytext=(x1, y),
                     arrowprops=dict(arrowstyle="-", color="#555555", lw=1.0))
-        ax.plot([x0, x0], [2.22, 2.28], color="#555555", lw=1.0)
-        ax.plot([x1, x1], [2.22, 2.28], color="#555555", lw=1.0)
-        ax.text((x0 + x1) / 2, 2.38, name, ha="center", fontsize=8.5)
-    bracket(0.05, 0.95, "warmup")
-    bracket(1.05, 16.95, "steady（1F1B 交替）")
-    bracket(17.05, 17.95, "cooldown")
-    ax.text(n / 2, -0.42, "循环对应：warmup → for i in range(num_warmup_microbatches)　·　steady → for i in range(num_microbatches_remaining)　·　cooldown → for i in range(num_warmup_microbatches)",
-            ha="center", fontsize=7, color="#444444")
-    ax.set_title("1F1B 调度：PP=2、m=8（全局时钟；空格表示该 stage 等待）")
+        ax.plot([x0, x0], [y - 0.06, y], color="#555555", lw=1.0)
+        ax.plot([x1, x1], [y - 0.06, y], color="#555555", lw=1.0)
+        yoff = 0.30 if x1 - x0 < 2 else 0.10   # 短阶段的标签抬高一行，不和相邻长阶段标签碰
+        ax.text((x0 + x1) / 2, y + yoff, name, ha="center", fontsize=10, color="#333333")
+
+    for seg in range(2):
+        t0, t1 = seg * half, min((seg + 1) * half, n)
+        rows_y = [3.25 - 2 * seg, 2.45 - 2 * seg]     # 段内上面 stage0、下面 stage1
+        for stage, y in zip((0, 1), rows_y):
+            for t in range(t0, t1):
+                item = timeline[stage][t]
+                if item is None:
+                    box(ax, t - t0 + 0.05, y, 0.9, 0.62, "", fc="#f4f4f4", ec="#bbbbbb")
+                else:
+                    ph, event = item
+                    box(ax, t - t0 + 0.05, y, 0.9, 0.62, event, fc=phase_c[ph], fs=11)
+            ax.text(-0.35, y + 0.31, labels[stage], ha="right", va="center", fontsize=10.5)
+        # 段上方的阶段括号：每拍取该拍有事件的 stage 的 phase（两段都标）
+        phases = []
+        for t in range(t0, t1):
+            ph = None
+            for stage in (0, 1):
+                if timeline[stage][t] is not None:
+                    ph = timeline[stage][t][0]
+            phases.append(ph)
+        yb = 4.02 - 2 * seg
+        ax.text(t1 - t0 + 0.15, rows_y[1] + 0.31, seg_names[seg], ha="left", va="center", fontsize=9.5, color="#555555")
+        run_start, run_ph = 0, phases[0]
+        for i in range(1, len(phases) + 1):
+            ph = phases[i] if i < len(phases) else None
+            if ph != run_ph:
+                if run_ph is not None:
+                    bracket(run_start + 0.05, i - 0.05, yb,
+                            run_ph + ("（1F1B 交替）" if run_ph == "steady" else ""))
+                run_start, run_ph = i, ph
+
+    ax.text(half / 2, -0.38, "灰格 = 该 stage 此拍等待", ha="center", fontsize=10, color="#333333")
+    ax.text(half / 2, -0.62, "循环对应：warmup → for i in range(num_warmup_microbatches)　·　steady → for i in range(num_microbatches_remaining)　·　cooldown → for i in range(num_warmup_microbatches)",
+            ha="center", fontsize=9.5, color="#333333")
+    ax.set_title("1F1B 调度：PP=2、m=8（全局时钟，每段 9 拍）")
     save(fig, "megatron-f4-1f1b-schedule")
 
 

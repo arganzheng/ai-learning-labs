@@ -16,10 +16,14 @@ plt.rcParams.update({
     "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.labelsize": 9,
-    "legend.fontsize": 8,
+    "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
+    "axes.titlesize": 12,
+    "axes.labelsize": 11,
+    "legend.fontsize": 10,
+    "text.color": "#222222",
+    "axes.labelcolor": "#333333",
+    "xtick.color": "#333333",
+    "ytick.color": "#333333",
     "axes.spines.top": False,
     "axes.spines.right": False,
     "figure.dpi": 100,

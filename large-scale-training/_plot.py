@@ -69,6 +69,15 @@ def collide(fig, margin=6.0):
     fig.canvas.draw()
     ren = fig.canvas.get_renderer()
     items = [(t, p, row) for t, p, row in _TRACKED if t.get_figure() is fig and t.get_text().strip()]
+    # 坐标轴上的文字（标题、轴标签、刻度标签）也纳入重叠检查
+    for ax in fig.axes:
+        axis_texts = [ax.title, ax.xaxis.label, ax.yaxis.label,
+                      *ax.get_xticklabels(), *ax.get_yticklabels()]
+        if ax.get_legend() is not None:
+            axis_texts.extend(ax.get_legend().get_texts())
+        for t in axis_texts:
+            if t.get_text().strip():
+                items.append((t, None, None))
     ext = {t: t.get_window_extent(renderer=ren) for t, _, _ in items}
     errs = []
     for t, p, _ in items:

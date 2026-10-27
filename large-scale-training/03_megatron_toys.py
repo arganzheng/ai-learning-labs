@@ -154,7 +154,9 @@ def _buffer_worker(rank, port):
         off += n
     half = (numel + pad) // 2
     _p(rank, f"numel={numel} pad={pad} param_data/grad_data 各 {numel + pad} 个元素")
-    _p(rank, "buffer 内偏移（反向顺序，元素下标）:", {k: (globals()['_off_' + k], globals()['_off_' + k] + views[k].numel()) for k in order})
+    _p(rank, "buffer 内偏移（反向顺序，元素下标；视图共享 param_data）:",
+       {k: (globals()['_off_' + k], globals()['_off_' + k] + views[k].numel(),
+            views[k].untyped_storage().data_ptr() == param_data.untyped_storage().data_ptr()) for k in order})
     wl_n = views['WL'].numel()
     _p(rank, f"分片边界={half}：WL(0..{wl_n - 1}) 跨片——元素 0..{half - 1} 归 rank0、{half}..{wl_n - 1} 归 rank1"
              if half < wl_n else f"分片边界={half}：WL 完全在 rank0（0..{wl_n - 1}）")
@@ -162,7 +164,8 @@ def _buffer_worker(rank, port):
     # 两个 micro-batch 的前向+反向：梯度直接写进 main_grad 视图（梯度累积融合的等价物）
     for i, (b, t) in enumerate(zip(inputs, targets)):
         vp = {k: v.clone().float().requires_grad_(True) for k, v in views.items()}
-        loss = (fwd(b, vp) - t).pow(2).sum()
+        # 每个 DP rank 重放同一组样本；先除以 DP 度，reduce-scatter 求和后与单进程梯度一致。
+        loss = (fwd(b, vp) - t).pow(2).sum() / 2
         loss.backward()
         for k in order:
             views[k].main_grad += vp[k].grad
@@ -211,7 +214,7 @@ def schedule_1f1b(pp_size, num_microbatches):
         num_warmup = min(pp_size - stage - 1, num_microbatches)
         remaining = num_microbatches - num_warmup
         ev = []
-        fid, bid = 0, 0
+        fid, bid = 1, 1
         for _ in range(num_warmup):
             ev.append(("warmup", f"F{fid}")); fid += 1
         for _ in range(remaining):
@@ -223,6 +226,36 @@ def schedule_1f1b(pp_size, num_microbatches):
     return seqs
 
 
+def schedule_timeline(pp_size, num_microbatches):
+    """把各 stage 的 warmup/steady/cooldown 程序按前后向依赖排到全局时钟。"""
+    seqs = schedule_1f1b(pp_size, num_microbatches)
+    indices = [0] * pp_size
+    timelines = [[] for _ in range(pp_size)]
+    done = set()
+    while any(indices[s] < len(seqs[s]) for s in range(pp_size)):
+        ready_at_start = set(done)
+        selected = {}
+        for stage in reversed(range(pp_size)):
+            if indices[stage] >= len(seqs[stage]):
+                continue
+            phase, event = seqs[stage][indices[stage]]
+            direction, mb = event[0], int(event[1:])
+            if direction == "F":
+                ready = stage == 0 or (stage - 1, "F", mb) in ready_at_start
+            else:
+                ready = stage == pp_size - 1 or (stage + 1, "B", mb) in ready_at_start
+            if ready:
+                selected[stage] = (phase, event, (stage, direction, mb))
+        if not selected:
+            raise RuntimeError("1F1B dependency graph stalled")
+        for stage in range(pp_size):
+            timelines[stage].append(selected[stage][:2] if stage in selected else None)
+        for stage, (_, _, key) in selected.items():
+            done.add(key)
+            indices[stage] += 1
+    return timelines
+
+
 def f1b():
     seqs = schedule_1f1b(2, 8)
     for stage, ev in seqs.items():
@@ -231,6 +264,9 @@ def f1b():
         cool = [e for ph, e in ev if ph == "cooldown"]
         print(f"stage{stage}: warmup {warm} | steady {steady} | cooldown {cool}")
         print(f"          序列: {' '.join(e for _, e in ev)}")
+    print("全局时钟（- 表示该 stage 此拍等待）：")
+    for stage, row in enumerate(schedule_timeline(2, 8)):
+        print(f"  stage{stage}: {' '.join(item[1] if item else '—' for item in row)}")
     print("warmup 数 = pp_size - stage - 1：stage0 预热 1 个前向，stage1 不预热直接交替")
 
 

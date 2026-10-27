@@ -12,10 +12,10 @@ dp-cp 组（4 个，各 2 卡）: [[0, 2], [1, 3], [4, 6], [5, 7]]
 [ref] W2.grad sum = 143.7692  W2.data sum = -0.2789
 [ref] WL.grad sum = -39.3689  WL.data sum = -1.4853
 numel=22 pad=0 param_data/grad_data 各 22 个元素
-buffer 内偏移（反向顺序，元素下标）: {'WL': (0, 12), 'W2': (12, 16), 'W1': (16, 22)}
+buffer 内偏移（反向顺序，元素下标；视图共享 param_data）: {'WL': (0, 12, True), 'W2': (12, 16, True), 'W1': (16, 22, True)}
 分片边界=11：WL(0..11) 跨片——元素 0..10 归 rank0、11..11 归 rank1
-micro-batch 0: loss=62.5726，各参数 dW 已累加进 main_grad
-micro-batch 1: loss=47.3393，各参数 dW 已累加进 main_grad
+micro-batch 0: loss=31.2863，各参数 dW 已累加进 main_grad
+micro-batch 1: loss=23.6697，各参数 dW 已累加进 main_grad
 rank0 拿到 grad_data[0:11]（reduce-scatter）
 rank0 Adam 更新了 fp32 主参数分片（11 个元素）
 rank0 all-gather 后 param_data sum=-4.6088
@@ -25,9 +25,12 @@ rank0 all-gather 后 param_data sum=-4.6088
 两步 Adam + reduce-scatter/all-gather 与单进程一致: True
 
 ===== 1f1b =====
-stage0: warmup ['F0'] | steady ['F1', 'B0', 'F2', 'B1', 'F3', 'B2', 'F4', 'B3', 'F5', 'B4', 'F6', 'B5', 'F7', 'B6'] | cooldown ['B7']
-          序列: F0 F1 B0 F2 B1 F3 B2 F4 B3 F5 B4 F6 B5 F7 B6 B7
-stage1: warmup [] | steady ['F0', 'B0', 'F1', 'B1', 'F2', 'B2', 'F3', 'B3', 'F4', 'B4', 'F5', 'B5', 'F6', 'B6', 'F7', 'B7'] | cooldown []
-          序列: F0 B0 F1 B1 F2 B2 F3 B3 F4 B4 F5 B5 F6 B6 F7 B7
+stage0: warmup ['F1'] | steady ['F2', 'B1', 'F3', 'B2', 'F4', 'B3', 'F5', 'B4', 'F6', 'B5', 'F7', 'B6', 'F8', 'B7'] | cooldown ['B8']
+          序列: F1 F2 B1 F3 B2 F4 B3 F5 B4 F6 B5 F7 B6 F8 B7 B8
+stage1: warmup [] | steady ['F1', 'B1', 'F2', 'B2', 'F3', 'B3', 'F4', 'B4', 'F5', 'B5', 'F6', 'B6', 'F7', 'B7', 'F8', 'B8'] | cooldown []
+          序列: F1 B1 F2 B2 F3 B3 F4 B4 F5 B5 F6 B6 F7 B7 F8 B8
+全局时钟（- 表示该 stage 此拍等待）：
+  stage0: F1 F2 — B1 F3 B2 F4 B3 F5 B4 F6 B5 F7 B6 F8 B7 — B8
+  stage1: — F1 B1 F2 B2 F3 B3 F4 B4 F5 B5 F6 B6 F7 B7 F8 B8 —
 warmup 数 = pp_size - stage - 1：stage0 预热 1 个前向，stage1 不预热直接交替
 

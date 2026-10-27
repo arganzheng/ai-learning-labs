@@ -151,26 +151,28 @@ def f3():
 
 # ---------------------------------------------------------------- F4
 def f4():
-    from importlib import import_module
-    sched = import_module("03_megatron_toys") if False else None
-    import sys, os
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import importlib
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     toys = importlib.import_module("03_megatron_toys")
-    seqs = toys.schedule_1f1b(2, 8)
+    timeline = toys.schedule_timeline(2, 8)
 
-    fig, ax = plt.subplots(figsize=(7.6, 2.9))
-    # 时间轴 = 事件序号（stage0 与 stage1 各自按事件顺序排成同一长度 16 格）
-    n = max(len(v) for v in seqs.values())
-    ax.set_xlim(-0.6, n + 0.4); ax.set_ylim(-0.5, 2.6); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 3.2))
+    n = len(timeline[0])
+    ax.set_xlim(-0.6, n + 0.4); ax.set_ylim(-0.58, 2.7); ax.axis("off")
     labels = {0: "stage 0\n(layers 0–7)", 1: "stage 1\n(layers 8–15)"}
     phase_c = {"warmup": C["blue"] + "22", "steady": C["green"] + "22", "cooldown": C["orange"] + "33"}
-    for stage, ev in seqs.items():
-        for t, (ph, e) in enumerate(ev):
-            y = 1 - stage
-            box(ax, t + 0.05, y, 0.9, 0.62, e, fc=phase_c[ph], fs=8)
+    for stage, row in enumerate(timeline):
+        y = 1 - stage
+        for t, item in enumerate(row):
+            if item is None:
+                box(ax, t + 0.05, y, 0.9, 0.62, "等待", fc="#f4f4f4", ec="#bbbbbb", fs=6.5)
+            else:
+                ph, event = item
+                box(ax, t + 0.05, y, 0.9, 0.62, event, fc=phase_c[ph], fs=8)
         ax.text(-0.45, y + 0.31, labels[stage], ha="right", va="center", fontsize=8.5)
-    # 三段括号（按 stage1 的时间轴标；stage0 相位相同）
+
     def bracket(x0, x1, name):
         ax.annotate("", xy=(x0, 2.28), xytext=(x1, 2.28),
                     arrowprops=dict(arrowstyle="-", color="#555555", lw=1.0))
@@ -178,11 +180,11 @@ def f4():
         ax.plot([x1, x1], [2.22, 2.28], color="#555555", lw=1.0)
         ax.text((x0 + x1) / 2, 2.38, name, ha="center", fontsize=8.5)
     bracket(0.05, 0.95, "warmup")
-    bracket(0.95, 14.95, "steady（1F1B 交替）")
-    bracket(14.95, 15.95, "cooldown")
-    ax.text(n / 2, -0.42, "三段分别对应函数里的三个 for：range(num_warmup) · range(num_microbatches_remaining) · range(num_warmup)",
-            ha="center", fontsize=8, color="#444444")
-    ax.set_title("1F1B 调度：PP=2、m=8（事件序列由玩具的 schedule_1f1b 生成）")
+    bracket(1.05, 16.95, "steady（1F1B 交替）")
+    bracket(17.05, 17.95, "cooldown")
+    ax.text(n / 2, -0.42, "循环对应：warmup → for i in range(num_warmup_microbatches)　·　steady → for i in range(num_microbatches_remaining)　·　cooldown → for i in range(num_warmup_microbatches)",
+            ha="center", fontsize=7, color="#444444")
+    ax.set_title("1F1B 调度：PP=2、m=8（全局时钟；空格表示该 stage 等待）")
     save(fig, "megatron-f4-1f1b-schedule")
 
 

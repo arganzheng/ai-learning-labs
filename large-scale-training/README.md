@@ -7,6 +7,8 @@
 | `02_parallelism_toys.py` | [并行策略全景](https://arganzheng.life/parallelism-strategies-which-state-to-shard.html) | zero tp cp pp ep | 十秒 |
 | `03_megatron_toys.py` | [Megatron-LM](https://arganzheng.life/megatron-lm-architecture-and-source-guide.html) | groups buffer 1f1b | 十秒 |
 | `03_megatron_figures.py` | 同上配图（out/megatron-f*.svg → 博客 img/in-post/） | — | 秒级 |
+| `04_deepspeed_toys.py` | [DeepSpeed](https://arganzheng.life/deepspeed-architecture-and-source-guide.html) | shards lifecycle memory | 十秒 |
+| `04_deepspeed_figures.py` | 同上配图（out/deepspeed-f*.svg → 博客 img/in-post/） | — | 秒级 |
 
 **没有 GPU 也能跑。** `torch.distributed` 的 gloo 后端在 4 个 CPU 进程之间做 all-reduce / reduce-scatter / all-gather / all-to-all / send-recv，语义与 NCCL 在 GPU 之间完全相同，只是慢。每个子实验都把并行版的结果与「单进程算一遍」的参考值对数：
 

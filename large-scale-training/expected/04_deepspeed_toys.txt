@@ -1,0 +1,62 @@
+zero.Init 风格：每个参数保留本 rank 的一段，param.data 是空壳
+rank0: W1: param.data=(0,), ds_tensor=(3,)，参数原形状=(3, 4)，numel=12 | W2: param.data=(0,), ds_tensor=(2,)，参数原形状=(4, 2)，numel=8 | b: param.data=(0,), ds_tensor=(1,)，参数原形状=(2,)，numel=2
+rank1: W1: param.data=(0,), ds_tensor=(3,)，参数原形状=(3, 4)，numel=12 | W2: param.data=(0,), ds_tensor=(2,)，参数原形状=(4, 2)，numel=8 | b: param.data=(0,), ds_tensor=(1,)，参数原形状=(2,)，numel=2
+rank2: W1: param.data=(0,), ds_tensor=(3,)，参数原形状=(3, 4)，numel=12 | W2: param.data=(0,), ds_tensor=(2,)，参数原形状=(4, 2)，numel=8 | b: param.data=(0,), ds_tensor=(1,)，参数原形状=(2,)，numel=2
+rank3: W1: param.data=(0,), ds_tensor=(3,)，参数原形状=(3, 4)，numel=12 | W2: param.data=(0,), ds_tensor=(2,)，参数原形状=(4, 2)，numel=8 | b: param.data=(0,), ds_tensor=(1,)，参数原形状=(2,)，numel=2
+ZeRO-3 toy：两层 MLP，4 个 rank、每 rank 2 个 micro-batch
+hook 事件（rank0；其余 rank 同步执行同一组 collective）：
+  W1.data: 空壳 -> 完整 (3, 4)（all-gather）
+  W1.data: 完整 -> 空壳（前向后 release）
+  W2.data: 空壳 -> 完整 (4, 2)（all-gather）
+  W2.data: 完整 -> 空壳（前向后 release）
+  b.data: 空壳 -> 完整 (2,)（all-gather）
+  b.data: 完整 -> 空壳（前向后 release）
+  b.data: 空壳 -> 完整 (2,)（all-gather）
+  b.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+  W2.data: 空壳 -> 完整 (4, 2)（all-gather）
+  W2.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+  W1.data: 空壳 -> 完整 (3, 4)（all-gather）
+  W1.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+  W1.data: 空壳 -> 完整 (3, 4)（all-gather）
+  W1.data: 完整 -> 空壳（前向后 release）
+  W2.data: 空壳 -> 完整 (4, 2)（all-gather）
+  W2.data: 完整 -> 空壳（前向后 release）
+  b.data: 空壳 -> 完整 (2,)（all-gather）
+  b.data: 完整 -> 空壳（前向后 release）
+  b.data: 空壳 -> 完整 (2,)（all-gather）
+  b.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+  W2.data: 空壳 -> 完整 (4, 2)（all-gather）
+  W2.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+  W1.data: 空壳 -> 完整 (3, 4)（all-gather）
+  W1.data: 完整 -> 空壳（反向 reduce-scatter 后 release）
+step：Adam 更新各 rank 的 fp32 shard；新值仍留在 ds_tensor，不做全参数 all-gather
+末态参数与单进程参考的 max|diff| = 0.00000000
+每个参数按 float32 计字节；forward / backward 使用同一组 gather / release 规则
+prefetch_depth=0:
+  forward gather layer0            live_full_parameter_bytes=48
+  forward compute layer0           live_full_parameter_bytes=48
+  forward release layer0           live_full_parameter_bytes=0
+  forward gather layer1            live_full_parameter_bytes=40
+  forward compute layer1           live_full_parameter_bytes=40
+  forward release layer1           live_full_parameter_bytes=0
+  backward gather layer1           live_full_parameter_bytes=40
+  backward compute layer1          live_full_parameter_bytes=40
+  backward release layer1          live_full_parameter_bytes=0
+  backward gather layer0           live_full_parameter_bytes=48
+  backward compute layer0          live_full_parameter_bytes=48
+  backward release layer0          live_full_parameter_bytes=0
+  peak=48 bytes
+prefetch_depth=1:
+  forward gather layer0            live_full_parameter_bytes=48
+  forward prefetch layer1          live_full_parameter_bytes=88
+  forward compute layer0           live_full_parameter_bytes=88
+  forward release layer0           live_full_parameter_bytes=40
+  forward compute layer1           live_full_parameter_bytes=40
+  forward release layer1           live_full_parameter_bytes=0
+  backward gather layer1           live_full_parameter_bytes=40
+  backward prefetch layer0         live_full_parameter_bytes=88
+  backward compute layer1          live_full_parameter_bytes=88
+  backward release layer1          live_full_parameter_bytes=48
+  backward compute layer0          live_full_parameter_bytes=48
+  backward release layer0          live_full_parameter_bytes=0
+  peak=88 bytes

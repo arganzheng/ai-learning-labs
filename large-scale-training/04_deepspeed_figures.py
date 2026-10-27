@@ -3,46 +3,46 @@ from _plot import ARROW_LABEL_SIZE, C, box, plt, save, text
 
 
 def f1():
-    fig, ax = plt.subplots(figsize=(7.6, 4.5))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.5); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 6.2))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.2); ax.axis("off")
     ax.set_title("ZeRO-3：每个 rank 常驻 Wₖ 的 1/8，用时再拼完整")
     palette = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3",
                "#f7efc9", "#d8edef", "#f3dfe2", "#e5e5d7"]
-    card_x = [0.08 + rank * 0.94 for rank in range(8)]
-    top_y, top_h, card_w = 3.02, 1.26, 0.90
+    card_w, card_h = 1.72, 1.42
+    card_x = [0.25 + col * 1.87 for col in range(4)]
+    card_y = {0: 4.62, 1: 3.02}
 
-    for rank, x in enumerate(card_x):
-        p = box(ax, x, top_y, card_w, top_h, "", fc="#ffffff", ec="#444444", lw=0.9)
-        text(ax, x + card_w / 2, top_y + 1.08, f"rank {rank}", in_box=p,
-             ha="center", va="center", fontsize=9.5, weight="bold")
-        box(ax, x + 0.10, top_y + 0.87, card_w - 0.20, 0.12, "", fc=palette[rank], ec=palette[rank])
-        text(ax, x + card_w / 2, top_y + 0.66, "ds_tensor 1/8", in_box=p,
-             ha="center", va="center", fontsize=7.2)
-        text(ax, x + card_w / 2, top_y + 0.45, "梯度 bf16 1/8", in_box=p,
-             ha="center", va="center", fontsize=7.2)
-        text(ax, x + card_w / 2, top_y + 0.24, "主参+m+v 1/8", in_box=p,
-             ha="center", va="center", fontsize=7.2)
+    for rank in range(8):
+        x, y = card_x[rank % 4], card_y[rank // 4]
+        p = box(ax, x, y, card_w, card_h, "", fc="#ffffff", ec="#444444", lw=0.9)
+        text(ax, x + card_w / 2, y + 1.20, f"rank {rank}", in_box=p,
+             ha="center", va="center", fontsize=10, weight="bold")
+        box(ax, x + 0.16, y + 1.00, card_w - 0.32, 0.12, "", fc=palette[rank], ec=palette[rank])
+        text(ax, x + card_w / 2, y + 0.76, "bf16 ds_tensor 1/8", in_box=p,
+             ha="center", va="center", fontsize=10)
+        text(ax, x + card_w / 2, y + 0.51, "梯度分区 1/8 (bf16)", in_box=p,
+             ha="center", va="center", fontsize=10)
+        text(ax, x + card_w / 2, y + 0.26, "fp32 主参数+m+v 1/8", in_box=p,
+             ha="center", va="center", fontsize=10)
 
-    bottom_y, bottom_h = 1.08, 1.02
-    for x in card_x:
-        p = box(ax, x, bottom_y, card_w, bottom_h, "", fc="#ffffff", ec="#444444", lw=0.9)
-        inner_x, inner_w = x + 0.045, card_w - 0.09
-        seg_gap = 0.006
-        seg_w = (inner_w - 7 * seg_gap) / 8
-        for rank, color in enumerate(palette):
-            box(ax, inner_x + rank * (seg_w + seg_gap), bottom_y + 0.72, seg_w, 0.13,
-                "", fc=color, ec=color, lw=0.4, r=0)
-        text(ax, x + card_w / 2, bottom_y + 0.42, "完整 bf16", in_box=p,
-             ha="center", va="center", fontsize=7.5)
-        text(ax, x + card_w / 2, bottom_y + 0.20, "Wₖ（临时）", in_box=p,
-             ha="center", va="center", fontsize=7.5)
+    card_x2, card_y2, card_w2, card_h2 = 1.30, 0.72, 5.0, 1.62
+    p2 = box(ax, card_x2, card_y2, card_w2, card_h2, "", fc="#ffffff", ec="#444444", lw=1.0)
+    text(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 Wₖ（临时）",
+         in_box=p2, ha="center", va="center", fontsize=10, weight="bold")
+    bar_x, bar_w = card_x2 + 0.55, card_w2 - 1.10
+    seg_w = bar_w / 8
+    for rank, color in enumerate(palette):
+        box(ax, bar_x + rank * seg_w, card_y2 + 0.62, seg_w, 0.18, "",
+            fc=color, ec="#888888", lw=0.4, r=0)
+        text(ax, bar_x + rank * seg_w + seg_w / 2, card_y2 + 0.40, str(rank), in_box=p2,
+             ha="center", va="center", fontsize=9)
 
     arrow_x = 3.80
-    ax.annotate("", xy=(arrow_x, bottom_y + bottom_h), xytext=(arrow_x, top_y),
+    ax.annotate("", xy=(arrow_x, card_y2 + card_h2), xytext=(arrow_x, card_y[1]),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=1.2))
-    text(ax, arrow_x, 2.52, "前向 pre-hook：all-gather Wₖ", ha="center", va="center",
+    text(ax, arrow_x, 2.66, "前向 pre-hook：all-gather Wₖ", ha="center", va="center",
          fontsize=ARROW_LABEL_SIZE, color="#333333", bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
-    text(ax, 3.8, 0.48, "算完即 release，回到上排状态", ha="center", va="center",
+    text(ax, 3.8, 0.32, "算完即 release，回到上排状态", ha="center", va="center",
          fontsize=10, color="#333333")
     save(fig, "deepspeed-f1-8-gpus-zero3")
 
@@ -108,12 +108,12 @@ def f4():
     fig, ax = plt.subplots(figsize=(7.6, 4.55))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.55); ax.axis("off")
     ax.set_title("一个 Linear.weight：前向与反向按时间经过三个泳道")
-    start, step, cell_w = 1.22, 0.88, 0.78
-    compute_y, comm_y, state_y, box_h, compute_h = 3.25, 2.35, 1.16, 0.60, 0.70
+    start, step, cell_w = 0.90, 0.945, 1.00
+    compute_y, comm_y, state_y, box_h, compute_h = 3.15, 2.30, 1.16, 0.60, 0.80
     centers = [start + i * step + cell_w / 2 for i in range(7)]
-    text(ax, 1.02, compute_y + compute_h / 2, "计算", ha="right", va="center", fontsize=10.5, color="#333333")
-    text(ax, 1.02, comm_y + box_h / 2, "通信", ha="right", va="center", fontsize=10.5, color="#333333")
-    text(ax, 1.02, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.82, compute_y + compute_h / 2, "计算", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.82, comm_y + box_h / 2, "通信", ha="right", va="center", fontsize=10.5, color="#333333")
+    text(ax, 0.82, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=10.5, color="#333333")
 
     comm_events = {0: "前向\nall-gather", 3: "反向\nall-gather", 5: "reduce-\nscatter"}
     compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n→ ds_tensor"}
@@ -123,8 +123,7 @@ def f4():
             box(ax, x, comm_y, cell_w, box_h, comm_events[i], fc="#ffffff", ec="#555555", fs=9)
         if i in compute_events:
             label = compute_events[i]
-            box(ax, x, compute_y, cell_w, compute_h, label, fc="#ffffff", ec="#555555",
-                fs=7.5 if i == 6 else 9)
+            box(ax, x, compute_y, cell_w, compute_h, label, fc="#ffffff", ec="#555555", fs=9)
 
     states = [("完整 bf16", C["blue"] + "44"), ("完整 bf16", C["blue"] + "44"),
               ("空壳", "#eeeeee"), ("完整 bf16", C["blue"] + "44"),
@@ -134,8 +133,8 @@ def f4():
 
     release_x = (centers[1] + centers[2]) / 2
     release_bwd_x = (centers[4] + centers[5]) / 2
-    text(ax, release_x, 2.02, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
-    text(ax, release_bwd_x, 2.02, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
+    text(ax, release_x, 1.98, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
+    text(ax, release_bwd_x, 1.98, "post-hook release", ha="center", va="center", fontsize=8.5, color="#333333")
     ax.annotate("", xy=(centers[-1], 0.73), xytext=(centers[0], 0.73),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=0.9))
     text(ax, 3.80, 0.31, "ds_tensor 常驻 1/N_d；完整 param.data 用前取回、用完释放",

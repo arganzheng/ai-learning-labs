@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
+    "font.family": ["Hiragino Sans GB", "PingFang SC", "Heiti SC", "Arial Unicode MS", "DejaVu Sans"],  # Heiti SC 默认落在 Light，笔画太细；Hiragino Sans GB W3 是 Regular
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文

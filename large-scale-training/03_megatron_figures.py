@@ -24,10 +24,10 @@ def f1():
     """8 卡 TP2×PP2×DP2。rank = tp + 2·dp + 4·pp。
     布局：行 = PP stage（上 stage1 layers8-15+输出层，下 stage0 layers0-7+embedding），
           列内每对相邻 rank = 一个 TP 组；左右两半 = 两个 DP 副本。"""
-    fig, ax = plt.subplots(figsize=(9.4, 5.6))
-    ax.set_xlim(0, 1.04); ax.set_ylim(-0.26, 1.12); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(9.4, 5.9))
+    ax.set_xlim(0, 1.04); ax.set_ylim(-0.26, 1.28); ax.axis("off")
 
-    cw, ch, gx, gy = 0.205, 0.37, 0.04, 0.09
+    cw, ch, gx, gy = 0.21, 0.37, 0.04, 0.09
     # DP 副本列：dp=0 → ranks 0,1(stage0) 4,5(stage1)；dp=1 → 2,3 / 6,7
     def rank_xy(rank):
         tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
@@ -97,7 +97,7 @@ def f2():
 
     # 五层堆叠（自下而上），每层：框 + 一句话
     layers = [
-        ("parallel_state（模块级全局变量 + RankGenerator）", "给上面每一层提供进程组：TP / DP / PP / …", C["gray"]),
+        ("parallel_state（模块级全局变量 + RankGenerator）", "给上面每一层提供进程组：TP / DP / PP / …", "#444444"),
         ("tensor_parallel：ColumnParallel / RowParallel / mappings", "模型由切开的层搭成；通信是手写的 autograd.Function", C["blue"]),
         ("_ParamAndGradBuffer + Bucket(Group)", "两段连续内存；参数与 main_grad 是视图；通信单位是 bucket", C["orange"]),
         ("DistributedDataParallel", "包装模型，注册 hook：梯度就绪发 reduce-scatter、前向等 all-gather", C["green"]),
@@ -126,7 +126,7 @@ def f3():
     lanes = [(2.35, "计算流", "#f4f7fb"), (1.30, "通信流", "#fdf7ef"), (0.30, "常驻", "#f5f5f5")]
     for y0, name, fc in lanes:
         ax.add_patch(mpatches.Rectangle((0, y0), 16, 0.9, fc=fc, ec="#cccccc", lw=0.6))
-        ax.text(-0.15, y0 + 0.45, name, ha="right", va="center", fontsize=11, weight="bold")
+        ax.text(-0.35, y0 + 0.45, name, ha="right", va="center", fontsize=11, weight="bold")
 
     def cell(x, w, y0, text, fc, fs=10):
         box(ax, x, y0, w, 0.62, text, fc=fc, fs=fs, r=0.03)
@@ -136,15 +136,15 @@ def f3():
     cell(9.7, 2.6, 2.45, "finalize\nmodel_grads", "#eeeeee")
     cell(12.5, 3.2, 2.45, "optimizer.step\n（只动本 rank 1/2 段）", C["purple"] + "22")
     # 通信流：reduce-scatter 的盒子和前向+反向盒子的末尾在时间轴上重叠
-    cell(8.1, 3.9, 1.40, "reduce-scatter grad_data\n（与末尾反向重叠）", C["orange"] + "33")
-    cell(12.5, 3.2, 1.40, "all-gather param_data\n（发出，不等）", C["green"] + "33")
-    cell(0.25, 3.4, 1.40, "all-gather（上一 step 发出）\n在前向 pre-hook 里等", C["green"] + "33")
+    cell(8.0, 4.0, 1.40, "reduce-scatter grad_data\n（与末尾反向重叠）", C["orange"] + "33")
+    cell(12.3, 3.5, 1.40, "all-gather param_data\n（发出，不等）", C["green"] + "33")
+    cell(0.55, 3.9, 1.40, "all-gather（上一 step 发出）\n在前向 pre-hook 里等", C["green"] + "33")
     # 常驻
     cell(0.25, 15.4, 0.40, "bf16 参数（完整）· fp32 梯度 buffer（完整）· fp32 主参数 + m + v（1/2）——整个训练期不释放",
          "#ffffff")
     # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）
-    ax.annotate("", xy=(3.65, 2.38), xytext=(3.65, 2.06), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    ax.text(3.8, 2.22, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=10, color="#333333")
+    ax.annotate("", xy=(4.05, 2.38), xytext=(4.05, 2.06), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    ax.text(4.2, 2.22, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=10, color="#333333")
     ax.annotate("", xy=(9.25, 2.06), xytext=(9.25, 2.38), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
     ax.text(9.4, 2.22, "最后一个 micro-batch\n反向触发", ha="left", va="center", fontsize=10, color="#333333")
     ax.annotate("", xy=(14.1, 2.06), xytext=(14.1, 2.38), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
@@ -164,11 +164,11 @@ def f4():
 
     n = len(timeline[0])
     half = (n + 1) // 2                      # 时间轴折成两段，格子才放得下 F1/B8
-    fig, ax = plt.subplots(figsize=(7.8, 4.6))
-    ax.set_xlim(-0.6, half + 1.6); ax.set_ylim(-0.75, 4.55); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
+    ax.set_xlim(-2.0, half + 0.9); ax.set_ylim(-0.60, 4.55); ax.axis("off")
     labels = {0: "stage 0\n(layers 0–7)", 1: "stage 1\n(layers 8–15)"}
     phase_c = {"warmup": C["blue"] + "22", "steady": C["green"] + "22", "cooldown": C["orange"] + "33"}
-    seg_names = ["ticks 1–9", "ticks 10–18"]
+    seg_names = ["第 1–9 拍", "第 10–18 拍"]
 
     def bracket(x0, x1, y, name):
         ax.annotate("", xy=(x0, y), xytext=(x1, y),
@@ -185,10 +185,10 @@ def f4():
             for t in range(t0, t1):
                 item = timeline[stage][t]
                 if item is None:
-                    box(ax, t - t0 + 0.05, y, 0.9, 0.62, "", fc="#f4f4f4", ec="#bbbbbb")
+                    box(ax, t - t0 + 0.05, y, 0.92, 0.62, "", fc="#f4f4f4", ec="#bbbbbb")
                 else:
                     ph, event = item
-                    box(ax, t - t0 + 0.05, y, 0.9, 0.62, event, fc=phase_c[ph], fs=11)
+                    box(ax, t - t0 + 0.05, y, 0.92, 0.62, event, fc=phase_c[ph], fs=11)
             ax.text(-0.35, y + 0.31, labels[stage], ha="right", va="center", fontsize=10.5)
         # 段上方的阶段括号：每拍取该拍有事件的 stage 的 phase（两段都标）
         phases = []
@@ -199,7 +199,7 @@ def f4():
                     ph = timeline[stage][t][0]
             phases.append(ph)
         yb = 4.02 - 2 * seg
-        ax.text(t1 - t0 + 0.15, rows_y[1] + 0.31, seg_names[seg], ha="left", va="center", fontsize=9.5, color="#555555")
+        ax.text(t1 - t0 - 0.03, yb + 0.10, seg_names[seg], ha="right", va="bottom", fontsize=9.5, color="#555555")
         run_start, run_ph = 0, phases[0]
         for i in range(1, len(phases) + 1):
             ph = phases[i] if i < len(phases) else None
@@ -209,9 +209,7 @@ def f4():
                             run_ph + ("（1F1B 交替）" if run_ph == "steady" else ""))
                 run_start, run_ph = i, ph
 
-    ax.text(half / 2, -0.38, "灰格 = 该 stage 此拍等待", ha="center", fontsize=10, color="#333333")
-    ax.text(half / 2, -0.62, "循环对应：warmup → for i in range(num_warmup_microbatches)　·　steady → for i in range(num_microbatches_remaining)　·　cooldown → for i in range(num_warmup_microbatches)",
-            ha="center", fontsize=9.5, color="#333333")
+    ax.text(half / 2, -0.42, "灰格 = 该 stage 此拍等待", ha="center", fontsize=10, color="#333333")
     ax.set_title("1F1B 调度：PP=2、m=8（全局时钟，每段 9 拍）")
     save(fig, "megatron-f4-1f1b-schedule")
 

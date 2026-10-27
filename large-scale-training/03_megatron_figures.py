@@ -138,8 +138,8 @@ def f3():
     # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）。箭头居中对准下方通信盒
     ax.annotate("", xy=(2.5, 2.45), xytext=(2.5, 2.20), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
     text(ax, 2.65, 2.325, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
-    ax.annotate("", xy=(10.0, 2.20), xytext=(10.0, 2.45), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 9.85, 2.325, "末个 micro-batch 反向触发", ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
+    ax.annotate("", xy=(11.0, 2.20), xytext=(11.0, 2.45), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 10.85, 2.325, "末个 micro-batch 反向触发", ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
     ax.annotate("", xy=(14.05, 2.20), xytext=(14.05, 2.45), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
     text(ax, 14.2, 2.325, "step 发起", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#333333")
     ax.set_title("一个 DP rank 的一个 step：两次 DP 通信都与计算重叠（ZeRO-1 的 2N）")

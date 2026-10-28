@@ -1,4 +1,5 @@
 """torchtitan 05 配图：以 750px 正文列宽绘制，所有文字用 _plot.py 的碰撞检查。"""
+from matplotlib.patches import Rectangle
 from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 
 
@@ -80,74 +81,111 @@ def f2():
 
 
 def f3():
-    fig, ax = plt.subplots(figsize=(7.6, 4.4))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.2))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.2); ax.axis("off")
     ax.set_title("DTensor 的三种 placement：张量、局部值与通信")
 
-    w, h, y = 1.75, 2.10, 0.80
-    xs = [0.25, 2.75, 5.25]
-    rows = [
-        ("Partial", "r0 [[0,1,2,3],\n    [4,5,6,7], 0,0]\nr1 [0,0,\n    [8,9,10,11],\n    [12,13,14,15]]"),
-        ("Shard(0)", "r0 [[0,1,2,3],\n    [4,5,6,7]]\nr1 [[8,9,10,11],\n    [12,13,14,15]]"),
-        ("Replicate", "r0 / r1 都是完整 W\n[[0,1,2,3], …,\n[12,13,14,15]]"),
-    ]
-    for (name, det), x in zip(rows, xs):
-        p = box(ax, x, y, w, h, "", fc="#ffffff", ec="#444444")
-        box_title(ax, x + w / 2, y + h - 0.22, name, in_box=p)
-        text(ax, x + w / 2, y + 0.85, det, in_box=p, ha="center", va="center", fontsize=11)
+    CW, RH = 0.28, 0.30
+
+    def grid(x0, y0, vals, in_box):
+        rows, cols = len(vals), len(vals[0])
+        for i, row in enumerate(vals):
+            for j, v in enumerate(row):
+                gx, gy = x0 + j * CW, y0 + (rows - 1 - i) * RH
+                ax.add_patch(Rectangle((gx, gy), CW, RH,
+                                       fc="#ffffff" if v else "#eeeeee",
+                                       ec="#999999", lw=0.5))
+                text(ax, gx + CW / 2, gy + RH / 2, str(v), in_box=in_box,
+                     ha="center", va="center", fontsize=11)
+
+    y, h = 0.80, 2.10
+    W4 = 4 * CW  # 1.12
+
+    # Partial：每 rank 的 local 是 4×4，只填自己那两行的部分和，其余为 0。
+    xp, wp = 0.10, 2.55
+    p = box(ax, xp, y, wp, h, "", fc="#ffffff", ec="#444444")
+    box_title(ax, xp + wp / 2, y + h - 0.22, "Partial", in_box=p)
+    gx0 = xp + (wp - 2 * W4 - 0.15) / 2
+    grid(gx0, 1.00, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 0, 0, 0], [0, 0, 0, 0]], in_box=p)
+    grid(gx0 + W4 + 0.15, 1.00, [[0, 0, 0, 0], [0, 0, 0, 0], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    text(ax, gx0 + W4 / 2, 2.28, "r0", in_box=p, ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, gx0 + W4 + 0.15 + W4 / 2, 2.28, "r1", in_box=p, ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
+
+    # Shard(0)：每 rank 的 local 是自己那两行的 2×4 分片。
+    xs_, ws_ = 3.75, 1.30
+    p = box(ax, xs_, y, ws_, h, "", fc="#ffffff", ec="#444444")
+    box_title(ax, xs_ + ws_ / 2, y + h - 0.22, "Shard(0)", in_box=p)
+    gx = xs_ + (ws_ - W4) / 2
+    grid(gx, 1.60, [[0, 1, 2, 3], [4, 5, 6, 7]], in_box=p)
+    text(ax, gx + W4 / 2, 2.28, "r0", in_box=p, ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    grid(gx, 0.88, [[8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    text(ax, gx + W4 / 2, 1.52, "r1", in_box=p, ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
+
+    # Replicate：两 rank 的 local 都是完整 4×4。
+    xr, wr = 6.15, 1.30
+    p = box(ax, xr, y, wr, h, "", fc="#ffffff", ec="#444444")
+    box_title(ax, xr + wr / 2, y + h - 0.22, "Replicate", in_box=p)
+    gx = xr + (wr - W4) / 2
+    grid(gx, 1.00, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    text(ax, gx + W4 / 2, 2.28, "r0 / r1 相同", in_box=p, ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
 
     ymid = y + h / 2
-    ax.annotate("", xy=(xs[1], ymid), xytext=(xs[0] + w, ymid),
+    ax.annotate("", xy=(xs_, ymid), xytext=(xp + wp, ymid),
                 arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["green"], lw=1.1))
-    text(ax, (xs[0] + w + xs[1]) / 2, y + h + 0.16, "reduce-scatter",
+    text(ax, (xp + wp + xs_) / 2, ymid + 0.14, "reduce-\nscatter",
          ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    ax.annotate("", xy=(xs[2], ymid), xytext=(xs[1] + w, ymid),
+    ax.annotate("", xy=(xr, ymid), xytext=(xs_ + ws_, ymid),
                 arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["blue"], lw=1.1))
-    text(ax, (xs[1] + w + xs[2]) / 2, y + h + 0.16, "all-gather",
+    text(ax, (xs_ + ws_ + xr) / 2, ymid + 0.14, "all-gather",
          ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
 
     # Partial → Replicate 一步到位的 all-reduce，分解后就是上面两步。
-    bx0, bx1 = xs[0] + w / 2, xs[2] + w / 2
-    by = 3.82
-    ax.plot([bx0, bx0], [y + h, by - 0.10], color=C["orange"], lw=1.1)
-    ax.plot([bx1, bx1], [y + h, by - 0.10], color=C["orange"], lw=1.1)
+    bx0, bx1 = xp + wp / 2, xr + wr / 2
+    by = 3.42
+    ax.plot([bx0, bx0], [y + h, by - 0.06], color=C["orange"], lw=1.1)
+    ax.plot([bx1, bx1], [y + h, by - 0.06], color=C["orange"], lw=1.1)
     ax.annotate("", xy=(bx1, by), xytext=(bx0, by),
                 arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["orange"], lw=1.1))
-    text(ax, (bx0 + bx1) / 2, by + 0.12, "Partial → Replicate：all-reduce",
+    text(ax, (bx0 + bx1) / 2, by + 0.08, "all-reduce = reduce-scatter + all-gather",
          ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, (bx0 + bx1) / 2, by - 0.28, "= reduce-scatter + all-gather",
-         ha="center", va="top", fontsize=ARROW_LABEL_SIZE, color="#111111")
 
-    text(ax, 3.8, 0.32, "数字张量取自 2-rank toy；箭头表示 redistribute 触发的通信",
+    text(ax, 3.8, 0.38, "数字张量取自 2-rank toy；箭头表示 redistribute 触发的通信",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
     save(fig, "torchtitan-f3-placements")
 
 
 def f4():
-    fig, ax = plt.subplots(figsize=(7.6, 3.0))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 3.0); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 2.7))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 2.7); ax.axis("off")
     ax.set_title("meta 构造五步走：模型先在 meta 上「画」出来，再按分片分配")
 
     stages = [
-        ("meta 构造", "只有形状\n0 B"),
-        ("fully_shard", "仍是 meta\n0 B"),
-        ("to_empty", "参数分片\n14,336 B"),
-        ("init_weights", "写入真实值\n14,336 B"),
-        ("optimizer.step", "参数 + m/v\n71,680 B"),
+        ("meta 构造", "只有形状\n0 B", 1.15),
+        ("fully_shard", "仍是 meta\n0 B", 1.15),
+        ("to_empty", "参数分片\n14,336 B", 1.15),
+        ("init_weights", "写入真实值\n14,336 B", 1.30),
+        ("optimizer.step", "参数 + m/v\n71,680 B", 1.45),
     ]
-    w, h = 1.45, 1.16
-    xs = [0.14 + i * 1.49 for i in range(5)]
-    y = 1.30
-    for i, (title, det) in enumerate(stages):
-        p = box(ax, xs[i], y, w, h, "", fc="#ffffff", ec="#444444")
-        box_title(ax, xs[i] + w / 2, y + h - 0.20, title, in_box=p)
-        text(ax, xs[i] + w / 2, y + 0.40, det, in_box=p, ha="center", va="center", fontsize=11)
+    gap = 0.30
+    xs = [0.10]
+    for title, det, w in stages[:-1]:
+        xs.append(xs[-1] + w + gap)
+    y, h = 1.20, 1.16
+    for i, ((title, det, w), x) in enumerate(zip(stages, xs)):
+        p = box(ax, x, y, w, h, "", fc="#ffffff", ec="#444444")
+        box_title(ax, x + w / 2, y + h - 0.20, title, in_box=p)
+        text(ax, x + w / 2, y + 0.40, det, in_box=p, ha="center", va="center", fontsize=11)
         if i:
-            ax.annotate("", xy=(xs[i], y + h / 2), xytext=(xs[i - 1] + w, y + h / 2),
+            ax.annotate("", xy=(x, y + h / 2), xytext=(xs[i - 1] + stages[i - 1][2], y + h / 2),
                         arrowprops=dict(arrowstyle="-|>", mutation_scale=13,
                                         color="#555555", lw=1.1))
 
-    text(ax, 3.8, 0.62, "2-rank toy 每 rank 实测；meta → to_empty 后才申请存储",
+    text(ax, 3.8, 0.50, "2-rank toy 每 rank 实测；meta → to_empty 后才申请存储",
          ha="center", va="center", fontsize=11, color="#111111")
     save(fig, "torchtitan-f4-meta-stages")
 

@@ -5,53 +5,69 @@ from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 
 
 def f1():
-    fig, ax = plt.subplots(figsize=(7.6, 6.8))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.8); ax.axis("off")
+    """8 卡 FSDP4×TP2（03 F1 风格）：列 = dp_shard 位，行 = tp 位。
+    rank = tp + 2·dp：上排 tp0（rank 0/2/4/6），下排 tp1（rank 1/3/5/7）。"""
+    fig, ax = plt.subplots(figsize=(7.6, 6.6))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.6); ax.axis("off")
     ax.set_title("FSDP 4 × TP 2：8 张 rank 的 DeviceMesh（TP 在最内维）")
-    text(ax, 3.8, 6.42, "同行 = TP 组（SP：激活 all-gather / reduce-scatter）",
-         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, 3.8, 6.18, "同列 = dp_shard 组（FSDP：参数 all-gather、梯度 reduce-scatter）",
-         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
 
-    card_w, card_h = 2.75, 1.03
-    xs = [1.02, 4.03]
-    ys = [5.02 - i * 1.25 for i in range(4)]
-    for i, y in enumerate(ys):
-        for j, x in enumerate(xs):
-            rank = i * 2 + j
-            p = box(ax, x, y, card_w, card_h, "", fc="#ffffff", ec="#444444", lw=0.9)
-            box_title(ax, x + card_w / 2, y + 0.83, f"rank {rank}", in_box=p)
-            tp_half = "前半" if j == 0 else "后半"
-            text(ax, x + card_w / 2, y + 0.62, f"TP 切片{tp_half}；norm 复制",
+    cw, ch, gx = 1.62, 1.52, 0.24
+    xs = [0.20 + j * (cw + gx) for j in range(4)]
+    y0, y1 = 4.55, 2.55  # tp0 上排，tp1 下排
+    for j, x in enumerate(xs):
+        for tp, y in ((0, y0), (1, y1)):
+            rank = 2 * j + tp
+            p = box(ax, x, y, cw, ch, "", fc="#f7f9fc", ec="#444444", lw=0.9)
+            box_title(ax, x + cw / 2, y + ch - 0.24, f"rank {rank}  dp{j} tp{tp}", in_box=p)
+            text(ax, x + cw / 2, y + ch - 0.60,
+                 "矩阵前半（tp0）" if tp == 0 else "矩阵后半（tp1）",
                  in_box=p, ha="center", va="center", fontsize=11)
-            text(ax, x + card_w / 2, y + 0.40, "fp32 DTensor 参数 1/8",
-                 in_box=p, ha="center", va="center", fontsize=11)
-            text(ax, x + card_w / 2, y + 0.20, "梯度 1/8；Adam m/v 1/8",
-                 in_box=p, ha="center", va="center", fontsize=11)
+            text(ax, x + cw / 2, y + 0.44,
+                 "fp32 参数 1/8\nfp32 梯度 1/8\nAdam m、v 1/8",
+                 in_box=p, ha="center", va="center", fontsize=10)
 
-    for y in ys:
-        ax.annotate("", xy=(xs[1], y + card_h / 2), xytext=(xs[0] + card_w, y + card_h / 2),
-                    arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.1))
-    text(ax, (xs[0] + card_w + xs[1]) / 2, (ys[0] + ys[1] + card_h) / 2, "TP 组",
+    # TP：同一列上下两张卡，蓝色双向箭头，标签在箭头右侧、行隙中。
+    for x in xs:
+        xc = x + cw / 2
+        ax.annotate("", xy=(xc, y1 + ch), xytext=(xc, y0),
+                    arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
+        text(ax, xc + 0.16, (y1 + ch + y0) / 2, "TP", ha="left", va="center",
+             fontsize=ARROW_LABEL_SIZE, color=C["blue"])
+
+    # dp_shard：同一行相邻卡之间的橙色双向箭头，每行标一次。
+    for y in (y0, y1):
+        for j in range(3):
+            ax.annotate("", xy=(xs[j + 1], y + ch / 2), xytext=(xs[j] + cw, y + ch / 2),
+                        arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4))
+    text(ax, 3.8, y0 + ch + 0.15, "dp_shard", ha="center", va="bottom",
+         fontsize=ARROW_LABEL_SIZE, color=C["orange"])
+    text(ax, 1.2, y1 - 0.10, "dp_shard", ha="center", va="top",
+         fontsize=ARROW_LABEL_SIZE, color=C["orange"])
+
+    # 底部：04 F1 风格大卡，前向 pre-hook all-gather 后沿 dp_shard 拼完整。
+    palette = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3"]
+    p2 = box(ax, 1.30, 0.85, 5.0, 1.15, "", fc="#ffffff", ec="#444444", lw=1.0)
+    box_title(ax, 3.8, 1.80, "某层 unshard 后（临时，bf16）", in_box=p2)
+    bar_x, seg = 1.85, 3.90 / 4
+    for j, (c, name) in enumerate(zip(palette, ("dp0", "dp1", "dp2", "dp3"))):
+        box(ax, bar_x + j * seg, 1.36, seg, 0.18, "", fc=c, ec="#888888", lw=0.4, r=0)
+        text(ax, bar_x + j * seg + seg / 2, 1.22, name, in_box=p2,
+             ha="center", va="center", fontsize=10)
+    text(ax, 3.8, 1.02, "DTensor 沿 dp_shard 拼完整，TP 仍只有本卡一半", in_box=p2,
+         ha="center", va="center", fontsize=11)
+
+    ax.annotate("", xy=(3.8, 2.00), xytext=(3.8, 2.55),
+                arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color="#555555", lw=1.2))
+    text(ax, 3.8, 2.28, "前向 pre-hook：all-gather", ha="center", va="center",
+         fontsize=ARROW_LABEL_SIZE, color="#111111",
+         bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
+
+    text(ax, 3.8, 0.60, "TP = 同一列两张卡（SP：激活 all-gather / reduce-scatter）",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-
-    # 两侧竖括号标出 dp_shard 组：左列 rank {0,2,4,6}，右列 {1,3,5,7}。
-    top, bot = ys[0] + card_h, ys[-1]
-    for bx, tick_dir, label, lx in (
-            (0.80, 0.10, "dp_shard 组 {0,2,4,6}", 0.40),
-            (6.98, -0.10, "dp_shard 组 {1,3,5,7}", 7.36)):
-        ax.plot([bx, bx], [bot, top], color=C["orange"], lw=1.2)
-        ax.plot([bx, bx + tick_dir], [top, top], color=C["orange"], lw=1.2)
-        ax.plot([bx, bx + tick_dir], [bot, bot], color=C["orange"], lw=1.2)
-        text(ax, lx, (top + bot) / 2, label, ha="center", va="center",
-             fontsize=ARROW_LABEL_SIZE, color="#111111", rotation=90)
-
-    p2 = box(ax, 1.05, 0.24, 5.50, 0.78, "", fc="#f5f8fc", ec="#444444")
-    box_title(ax, 3.8, 0.76, "该层 unshard 后的 param.data", in_box=p2)
-    text(ax, 3.8, 0.46, "bf16 完整沿 dp_shard；TP rank 仍各持矩阵一半（临时）",
-         in_box=p2, ha="center", va="center", fontsize=11)
-    text(ax, 3.8, 0.05, "TP 复制的 norm：67,584 / N（约 0.0055%），不按 TP 再切",
-         ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, 3.8, 0.37, "dp_shard = 同一行四张卡（FSDP：参数 all-gather、梯度 reduce-scatter）",
+         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, 3.8, 0.14, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　dp_shard 组 [0,2,4,6] [1,3,5,7]",
+         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
     save(fig, "torchtitan-f1-device-mesh")
 
 

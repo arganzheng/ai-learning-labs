@@ -12,6 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager as _fm  # noqa: E402
+from matplotlib import patheffects as _pe  # noqa: E402
 from matplotlib.ft2font import FT2Font  # noqa: E402
 from matplotlib.patches import FancyBboxPatch  # noqa: E402
 
@@ -44,6 +45,7 @@ C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c
 
 
 BOX_TEXT_SIZE = 11
+BOX_TITLE_SIZE = BOX_TEXT_SIZE + 1   # 盒内主标题，比正文大一号
 ARROW_LABEL_SIZE = BOX_TEXT_SIZE - 1   # 箭头/分组标注说明文字，比方框文字小一号
 
 _TRACKED = []          # (Text, FancyBboxPatch|None, row|None)
@@ -54,6 +56,16 @@ def text(ax, x, y, s, in_box=None, row=None, **kw):
     """ax.text 的登记版：in_box=patch 时断言文字四边留 ≥6px；row=key 的文本断言同一基线。"""
     t = ax.text(x, y, s, **kw)
     _TRACKED.append((t, in_box, row))
+    return t
+
+
+def box_title(ax, x, y, s, in_box, color="#111111", **kw):
+    """盒内主标题：BOX_TITLE_SIZE + 同色描边加重（GB 只到 W6，描边是同一字体里唯一的加粗手段）。"""
+    kw.setdefault("ha", "center")
+    kw.setdefault("va", "center")
+    t = ax.text(x, y, s, fontsize=BOX_TITLE_SIZE, color=color, **kw)
+    t.set_path_effects([_pe.withStroke(linewidth=0.8, foreground=color), _pe.Normal()])
+    _TRACKED.append((t, in_box, None))
     return t
 
 

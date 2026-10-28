@@ -9,7 +9,7 @@
 """
 import matplotlib.patches as mpatches
 
-from _plot import ARROW_LABEL_SIZE, C, box, plt, save, text
+from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 
 
 # ---------------------------------------------------------------- F1
@@ -41,8 +41,8 @@ def f1():
     for rank, (t1, t2, t3) in card.items():
         x, y = rank_xy(rank)
         p = box(ax, x, y, cw, ch, "", fc="#f7f9fc")
-        text(ax, x + cw / 2, y + ch - 0.045, t1, in_box=p, ha="center", va="center", fontsize=11, weight="bold")
-        text(ax, x + cw / 2, y + 0.335, t2, in_box=p, ha="center", va="center", fontsize=11)
+        box_title(ax, x + cw / 2, y + ch - 0.05, t1, in_box=p)
+        text(ax, x + cw / 2, y + 0.315, t2, in_box=p, ha="center", va="center", fontsize=11)
         text(ax, x + cw / 2, y + 0.135, t3, in_box=p, ha="center", va="center", fontsize=11, color="#111111")
 
     # 分组标注：TP（同 stage 内相邻）、DP（同 stage 同 tp 位、左右跨副本）、PP（同列上下）
@@ -101,7 +101,7 @@ def f2():
     y = 0.02
     for name, desc, col in layers:
         p = box(ax, 0.05, y, 0.9, 0.125, "", fc="white", ec=col, lw=1.3)
-        text(ax, 0.075, y + 0.086, name, in_box=p, ha="left", va="center", fontsize=11, weight="bold", color=col)
+        box_title(ax, 0.075, y + 0.086, name, in_box=p, ha="left", color=col)
         text(ax, 0.075, y + 0.036, desc, in_box=p, ha="left", va="center", fontsize=11, color="#111111")
         y += 0.165
     for i in range(len(layers) - 1):

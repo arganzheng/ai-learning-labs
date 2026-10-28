@@ -1,5 +1,5 @@
 """DeepSpeed 04 配图：以 750px 正文列宽绘制，所有文字用 _plot.py 的碰撞检查。"""
-from _plot import ARROW_LABEL_SIZE, C, box, plt, save, text
+from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 
 
 def f1():
@@ -15,8 +15,7 @@ def f1():
     for rank in range(8):
         x, y = card_x[rank % 4], card_y[rank // 4]
         p = box(ax, x, y, card_w, card_h, "", fc="#ffffff", ec="#444444", lw=0.9)
-        text(ax, x + card_w / 2, y + 1.20, f"rank {rank}", in_box=p,
-             ha="center", va="center", fontsize=11, weight="bold")
+        box_title(ax, x + card_w / 2, y + 1.20, f"rank {rank}", in_box=p)
         box(ax, x + 0.16, y + 1.00, card_w - 0.32, 0.12, "", fc=palette[rank], ec=palette[rank])
         text(ax, x + card_w / 2, y + 0.76, "bf16 ds_tensor 1/8", in_box=p,
              ha="center", va="center", fontsize=11)
@@ -27,8 +26,8 @@ def f1():
 
     card_x2, card_y2, card_w2, card_h2 = 1.30, 0.72, 5.0, 1.62
     p2 = box(ax, card_x2, card_y2, card_w2, card_h2, "", fc="#ffffff", ec="#444444", lw=1.0)
-    text(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 W_k（临时）",
-         in_box=p2, ha="center", va="center", fontsize=11, weight="bold")
+    box_title(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 W_k（临时）",
+              in_box=p2)
     bar_x, bar_w = card_x2 + 0.55, card_w2 - 1.10
     seg_w = bar_w / 8
     for rank, color in enumerate(palette):
@@ -98,7 +97,9 @@ def f3():
              row="rank-labels", ha="center", va="center", fontsize=11, color="#111111")
         ax.annotate("", xy=(x + rank_w / 2, 1.75), xytext=(x + rank_w / 2, 2.13),
                     arrowprops=dict(arrowstyle="->", color="#555555", lw=1.0))
-        box(ax, x, 1.02, rank_w, 0.74, f"fp32 主参数副本\n3 个元素", fc="#f5f8fc", ec="#444444", fs=11)
+        p = box(ax, x, 1.02, rank_w, 0.74, "", fc="#f5f8fc", ec="#444444")
+        box_title(ax, x + rank_w / 2, 1.58, "fp32 主参数副本", in_box=p)
+        text(ax, x + rank_w / 2, 1.24, "3 个元素", in_box=p, ha="center", va="center", fontsize=11)
     text(ax, 3.8, 0.48, "每个 rank 更新自己的 fp32 段；更新后转回低精度参数分区",
          ha="center", va="center", fontsize=11, color="#111111")
     save(fig, "deepspeed-f3-flat-partition")
@@ -125,8 +126,12 @@ def f4():
             label = compute_events[i]
             event_w = 1.18 if i == 6 else cell_w
             event_h = 0.94 if i == 6 else compute_h
-            box(ax, centers[i] - event_w / 2, compute_y + (compute_h - event_h) / 2,
-                event_w, event_h, label, fc="#ffffff", ec="#555555", fs=11)
+            p = box(ax, centers[i] - event_w / 2, compute_y + (compute_h - event_h) / 2,
+                    event_w, event_h, label if i != 6 else "", fc="#ffffff", ec="#555555", fs=11)
+            if i == 6:
+                box_title(ax, centers[i], compute_y + 0.70, "step", in_box=p)
+                text(ax, centers[i], compute_y + 0.31, "Adam fp32\n→ ds_tensor",
+                     in_box=p, ha="center", va="center", fontsize=11)
 
     states = [("完整 bf16", C["blue"] + "44"), ("完整 bf16", C["blue"] + "44"),
               ("空壳", "#eeeeee"), ("完整 bf16", C["blue"] + "44"),

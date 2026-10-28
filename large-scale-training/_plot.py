@@ -14,17 +14,18 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import FancyBboxPatch  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Hiragino Sans GB", "PingFang SC", "Heiti SC", "Arial Unicode MS", "DejaVu Sans"],  # Heiti SC 默认落在 Light，笔画太细；Hiragino Sans GB W3 是 Regular
+    "font.family": ["Hiragino Sans", "PingFang SC", "Heiti SC", "Hiragino Sans GB", "Arial Unicode MS", "DejaVu Sans"],
+    "font.weight": 500,             # Hiragino Sans W5 = Medium；W3/Light 笔画太细
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
     "axes.titlesize": 12,
     "axes.labelsize": 11,
     "legend.fontsize": 10,
-    "text.color": "#222222",
-    "axes.labelcolor": "#333333",
-    "xtick.color": "#333333",
-    "ytick.color": "#333333",
+    "text.color": "#111111",
+    "axes.labelcolor": "#111111",
+    "xtick.color": "#111111",
+    "ytick.color": "#111111",
     "axes.spines.top": False,
     "axes.spines.right": False,
     "figure.dpi": 100,
@@ -38,7 +39,7 @@ C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c
      "gray": "#8a8a8a", "purple": "#7b5ea7", "light": "#dddddd"}
 
 
-BOX_TEXT_SIZE = 10
+BOX_TEXT_SIZE = 11
 ARROW_LABEL_SIZE = BOX_TEXT_SIZE - 1   # 箭头/分组标注说明文字，比方框文字小一号
 
 _TRACKED = []          # (Text, FancyBboxPatch|None, row|None)
@@ -52,7 +53,7 @@ def text(ax, x, y, s, in_box=None, row=None, **kw):
     return t
 
 
-def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=10, lw=0.9, r=0.012, **kw):
+def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=BOX_TEXT_SIZE, lw=0.9, r=0.012, **kw):
     """圆角盒；给 s 时把文字画在正中并登记为盒内文本。"""
     p = FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}",
                        fc=fc, ec=ec, lw=lw, **kw)
@@ -71,12 +72,14 @@ def collide(fig, margin=6.0):
     items = [(t, p, row) for t, p, row in _TRACKED if t.get_figure() is fig and t.get_text().strip()]
     # 坐标轴上的文字（标题、轴标签、刻度标签）也纳入重叠检查
     for ax in fig.axes:
-        axis_texts = [ax.title, ax.xaxis.label, ax.yaxis.label,
-                      *ax.get_xticklabels(), *ax.get_yticklabels()]
-        if ax.get_legend() is not None:
-            axis_texts.extend(ax.get_legend().get_texts())
+        axis_texts = [ax.title]
+        if ax.axison:                    # axis("off") 的隐藏刻度文字不参与检查
+            axis_texts += [ax.xaxis.label, ax.yaxis.label,
+                           *ax.get_xticklabels(), *ax.get_yticklabels()]
+            if ax.get_legend() is not None:
+                axis_texts.extend(ax.get_legend().get_texts())
         for t in axis_texts:
-            if t.get_text().strip():
+            if t.get_text().strip() and t.get_visible():
                 items.append((t, None, None))
     ext = {t: t.get_window_extent(renderer=ren) for t, _, _ in items}
     errs = []
@@ -109,6 +112,11 @@ def collide(fig, margin=6.0):
             ih = min(e.y1, b.y1) - max(e.y0, b.y0)
             if iw > 1 and ih > 1:
                 errs.append(f"标注压盒：{t.get_text()!r}")
+            elif ih > 1:
+                # 同一行里不在盒内的标注（泳道名等）离盒边至少 16px
+                gap = max(b.x0 - e.x1, e.x0 - b.x1)
+                if gap < 16:
+                    errs.append(f"行内标注距盒 {gap:.0f}px<16px：{t.get_text()!r}")
     # 同一 row 组的标签必须在同一基线上
     groups = {}
     for t, _, row in items:

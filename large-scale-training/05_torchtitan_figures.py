@@ -6,12 +6,14 @@ def f1():
     fig, ax = plt.subplots(figsize=(7.6, 6.8))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.8); ax.axis("off")
     ax.set_title("FSDP 4 × TP 2：8 张 rank 的 DeviceMesh（TP 在最内维）")
-    text(ax, 3.8, 6.16, "行内 TP all-reduce（双向）；列内 dp_shard all-gather（向下）",
+    text(ax, 3.8, 6.42, "同行 = TP 组（SP：激活 all-gather / reduce-scatter）",
+         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, 3.8, 6.18, "同列 = dp_shard 组（FSDP：参数 all-gather、梯度 reduce-scatter）",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
 
     card_w, card_h = 2.75, 1.03
     xs = [1.02, 4.03]
-    ys = [4.95 - i * 1.13 for i in range(4)]
+    ys = [5.02 - i * 1.25 for i in range(4)]
     for i, y in enumerate(ys):
         for j, x in enumerate(xs):
             rank = i * 2 + j
@@ -28,11 +30,19 @@ def f1():
     for y in ys:
         ax.annotate("", xy=(xs[1], y + card_h / 2), xytext=(xs[0] + card_w, y + card_h / 2),
                     arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.1))
-    for x in xs:
-        for row in range(3):
-            ax.annotate("", xy=(x + card_w / 2, ys[row + 1] + card_h),
-                        xytext=(x + card_w / 2, ys[row] + 0.01),
-                        arrowprops=dict(arrowstyle="->", color=C["orange"], lw=1.0))
+    text(ax, (xs[0] + card_w + xs[1]) / 2, (ys[0] + ys[1] + card_h) / 2, "TP 组",
+         ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
+
+    # 两侧竖括号标出 dp_shard 组：左列 rank {0,2,4,6}，右列 {1,3,5,7}。
+    top, bot = ys[0] + card_h, ys[-1]
+    for bx, tick_dir, label, lx in (
+            (0.80, 0.10, "dp_shard 组 {0,2,4,6}", 0.40),
+            (6.98, -0.10, "dp_shard 组 {1,3,5,7}", 7.36)):
+        ax.plot([bx, bx], [bot, top], color=C["orange"], lw=1.2)
+        ax.plot([bx, bx + tick_dir], [top, top], color=C["orange"], lw=1.2)
+        ax.plot([bx, bx + tick_dir], [bot, bot], color=C["orange"], lw=1.2)
+        text(ax, lx, (top + bot) / 2, label, ha="center", va="center",
+             fontsize=ARROW_LABEL_SIZE, color="#111111", rotation=90)
 
     p2 = box(ax, 1.05, 0.24, 5.50, 0.78, "", fc="#f5f8fc", ec="#444444")
     box_title(ax, 3.8, 0.76, "该层 unshard 后的 param.data", in_box=p2)
@@ -70,42 +80,52 @@ def f2():
 
 
 def f3():
-    fig, ax = plt.subplots(figsize=(7.6, 5.2))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 5.2); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.4))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
     ax.set_title("DTensor 的三种 placement：张量、局部值与通信")
 
-    x, w, h = 1.10, 3.75, 1.10
+    w, h, y = 1.75, 2.10, 0.80
+    xs = [0.25, 2.75, 5.25]
     rows = [
-        ("Shard(0)", "rank0 [[0,1,2,3],[4,5,6,7]]\nrank1 [[8,9,10,11],[12,13,14,15]]", 3.78),
-        ("Replicate", "rank0 / rank1 都是完整 W\n[[0,1,2,3], …, [12,13,14,15]]", 2.12),
-        ("Partial", "rank0 前两行非零；rank1 后两行非零\n逐元素求和恢复完整 W", 0.46),
+        ("Partial", "r0 [[0,1,2,3],\n    [4,5,6,7], 0,0]\nr1 [0,0,\n    [8,9,10,11],\n    [12,13,14,15]]"),
+        ("Shard(0)", "r0 [[0,1,2,3],\n    [4,5,6,7]]\nr1 [[8,9,10,11],\n    [12,13,14,15]]"),
+        ("Replicate", "r0 / r1 都是完整 W\n[[0,1,2,3], …,\n[12,13,14,15]]"),
     ]
-    for name, det, y in rows:
+    for (name, det), x in zip(rows, xs):
         p = box(ax, x, y, w, h, "", fc="#ffffff", ec="#444444")
-        box_title(ax, x + w / 2, y + h - 0.21, name, in_box=p)
-        text(ax, x + w / 2, y + 0.38, det, in_box=p, ha="center", va="center", fontsize=11)
+        box_title(ax, x + w / 2, y + h - 0.22, name, in_box=p)
+        text(ax, x + w / 2, y + 0.85, det, in_box=p, ha="center", va="center", fontsize=11)
 
-    # 每条箭头只表示 placement 转换触发的集合通信。
-    ax.annotate("", xy=(5.30, 3.30), xytext=(5.30, 3.78),
-                arrowprops=dict(arrowstyle="->", color=C["blue"], lw=1.1))
-    text(ax, 5.62, 3.54, "Shard(0) → Replicate\nall-gather", ha="left", va="center",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
-    ax.annotate("", xy=(5.30, 2.12), xytext=(5.30, 1.56),
-                arrowprops=dict(arrowstyle="->", color=C["orange"], lw=1.1))
-    text(ax, 5.62, 2.12, "Partial → Replicate\nall-reduce", ha="left", va="center",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
-    ax.annotate("", xy=(0.90, 3.78), xytext=(0.90, 1.56),
-                arrowprops=dict(arrowstyle="->", color=C["green"], lw=1.1))
-    text(ax, 0.78, 2.55, "Partial → Shard(0)\nreduce-scatter", ha="right", va="center",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, 3.8, 0.20, "数字张量取自 2-rank toy；箭头表示 redistribute 触发的通信",
+    ymid = y + h / 2
+    ax.annotate("", xy=(xs[1], ymid), xytext=(xs[0] + w, ymid),
+                arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["green"], lw=1.1))
+    text(ax, (xs[0] + w + xs[1]) / 2, y + h + 0.16, "reduce-scatter",
+         ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    ax.annotate("", xy=(xs[2], ymid), xytext=(xs[1] + w, ymid),
+                arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["blue"], lw=1.1))
+    text(ax, (xs[1] + w + xs[2]) / 2, y + h + 0.16, "all-gather",
+         ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
+
+    # Partial → Replicate 一步到位的 all-reduce，分解后就是上面两步。
+    bx0, bx1 = xs[0] + w / 2, xs[2] + w / 2
+    by = 3.82
+    ax.plot([bx0, bx0], [y + h, by - 0.10], color=C["orange"], lw=1.1)
+    ax.plot([bx1, bx1], [y + h, by - 0.10], color=C["orange"], lw=1.1)
+    ax.annotate("", xy=(bx1, by), xytext=(bx0, by),
+                arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["orange"], lw=1.1))
+    text(ax, (bx0 + bx1) / 2, by + 0.12, "Partial → Replicate：all-reduce",
+         ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, (bx0 + bx1) / 2, by - 0.28, "= reduce-scatter + all-gather",
+         ha="center", va="top", fontsize=ARROW_LABEL_SIZE, color="#111111")
+
+    text(ax, 3.8, 0.32, "数字张量取自 2-rank toy；箭头表示 redistribute 触发的通信",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
     save(fig, "torchtitan-f3-placements")
 
 
 def f4():
-    fig, ax = plt.subplots(figsize=(7.6, 3.5))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 3.5); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 3.0))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 3.0); ax.axis("off")
     ax.set_title("meta 构造五步走：模型先在 meta 上「画」出来，再按分片分配")
 
     stages = [
@@ -113,22 +133,21 @@ def f4():
         ("fully_shard", "仍是 meta\n0 B"),
         ("to_empty", "参数分片\n14,336 B"),
         ("init_weights", "写入真实值\n14,336 B"),
-        ("opt.step", "参数 + m/v\n71,680 B"),
+        ("optimizer.step", "参数 + m/v\n71,680 B"),
     ]
-    w, h = 1.38, 1.16
-    xs = [0.30 + i * 1.44 for i in range(5)]
-    y = 1.55
+    w, h = 1.45, 1.16
+    xs = [0.14 + i * 1.49 for i in range(5)]
+    y = 1.30
     for i, (title, det) in enumerate(stages):
         p = box(ax, xs[i], y, w, h, "", fc="#ffffff", ec="#444444")
         box_title(ax, xs[i] + w / 2, y + h - 0.20, title, in_box=p)
         text(ax, xs[i] + w / 2, y + 0.40, det, in_box=p, ha="center", va="center", fontsize=11)
         if i:
             ax.annotate("", xy=(xs[i], y + h / 2), xytext=(xs[i - 1] + w, y + h / 2),
-                        arrowprops=dict(arrowstyle="->", color="#555555", lw=1.0))
+                        arrowprops=dict(arrowstyle="-|>", mutation_scale=13,
+                                        color="#555555", lw=1.1))
 
-    text(ax, 3.8, 0.86, "2-rank toy 每 rank 实测；meta → to_empty 后才申请存储",
-         ha="center", va="center", fontsize=11, color="#111111")
-    text(ax, 3.8, 0.44, "真实 Llama 3.2 1B 字节账见总览；meta 设备可先构造 405B 结构",
+    text(ax, 3.8, 0.62, "2-rank toy 每 rank 实测；meta → to_empty 后才申请存储",
          ha="center", va="center", fontsize=11, color="#111111")
     save(fig, "torchtitan-f4-meta-stages")
 

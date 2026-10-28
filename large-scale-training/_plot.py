@@ -11,11 +11,15 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib import font_manager as _fm  # noqa: E402
+from matplotlib.ft2font import FT2Font  # noqa: E402
 from matplotlib.patches import FancyBboxPatch  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Hiragino Sans", "PingFang SC", "Heiti SC", "Hiragino Sans GB", "Arial Unicode MS", "DejaVu Sans"],
-    "font.weight": 500,             # Hiragino Sans W5 = Medium；W3/Light 笔画太细
+    # Hiragino Sans GB 是简体中文字体，W3/W6 两档都在 Hiragino Sans GB.ttc 里；
+    # 日文 Hiragino Sans 缺不少简体字形，会逐字回退造成同一行字重不一
+    "font.family": ["Hiragino Sans GB", "Heiti SC", "Hiragino Sans", "Arial Unicode MS", "DejaVu Sans"],
+    "font.weight": 600,             # Hiragino Sans GB W6；W3/Light 笔画太细
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
@@ -127,6 +131,28 @@ def collide(fig, margin=6.0):
         for t in ts[1:]:
             if abs(ext[t].y0 - y0) > 1.5:
                 errs.append(f"同排标签基线不齐（row={row}）：{t.get_text()!r}")
+    # 每个非 ASCII 字符都必须落在实际解析出的字体 cmap 里——逐字回退会让同一行字重不一
+    cmaps = {}
+    for t, _, _ in items:
+        s = t.get_text()
+        fp = t.get_fontproperties()
+        try:
+            path = _fm.findfont(fp, fallback_to_default=False)
+        except Exception:
+            path = _fm.findfont(fp)
+        if path not in cmaps:
+            cmaps[path] = FT2Font(path).get_charmap()
+        missing = [c for c in s if ord(c) > 127 and ord(c) not in cmaps[path]]
+        if missing:
+            errs.append(f"字形缺失（{os.path.basename(path)}）：{s!r} 缺 {''.join(sorted(set(missing)))!r}")
+    # 每个登记的盒子（含描边）都必须完整落在画布内，四周 ≥4px
+    for p in _PATCHES:
+        if p.get_figure() is not fig:
+            continue
+        b = p.get_window_extent(renderer=ren).expanded(1 + p.get_linewidth() / 200, 1 + p.get_linewidth() / 200)
+        fb = fig.bbox
+        if b.x0 < 4 or b.y0 < 4 or b.x1 > fb.x1 - 4 or b.y1 > fb.y1 - 4:
+            errs.append(f"盒子出画布边（{b.x0:.0f},{b.y0:.0f}–{b.x1:.0f},{b.y1:.0f}，画布 {fb.x1:.0f}×{fb.y1:.0f}）")
     if errs:
         raise AssertionError(f"{len(errs)} 处文字碰撞：\n" + "\n".join(errs))
 

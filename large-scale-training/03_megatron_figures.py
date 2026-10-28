@@ -18,13 +18,13 @@ def f1():
     布局：行 = PP stage（上 stage1 layers8-15+输出层，下 stage0 layers0-7+embedding），
           列内每对相邻 rank = 一个 TP 组；左右两半 = 两个 DP 副本。"""
     fig, ax = plt.subplots(figsize=(10.5, 6.6))
-    ax.set_xlim(0, 1.26); ax.set_ylim(-0.30, 1.56); ax.axis("off")
+    ax.set_xlim(0, 1.31); ax.set_ylim(-0.30, 1.56); ax.axis("off")
 
-    cw, ch, gx, gy = 0.26, 0.55, 0.05, 0.11
+    cw, ch, gx, gy = 0.28, 0.55, 0.04, 0.11
     # DP 副本列：dp=0 → ranks 0,1(stage0) 4,5(stage1)；dp=1 → 2,3 / 6,7
     def rank_xy(rank):
         tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
-        x = 0.02 + dp * (2 * cw + 2 * gx + 0.05) + tp * (cw + gx)
+        x = 0.02 + dp * (2 * cw + 2 * gx + 0.04) + tp * (cw + gx)
         y = 0.16 + (1 - pp) * (ch + gy)   # stage0 在下
         return x, y
 
@@ -54,7 +54,7 @@ def f1():
     for a, b, lab in [(0, 1, "TP"), (4, 5, "TP"), (2, 3, "TP"), (6, 7, "TP")]:
         (x1, y1), (x2, y2) = edge(a, "r"), edge(b, "l")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
-        chip = box(ax, (x1 + x2) / 2 - 0.020, y1 - 0.05, 0.040, 0.10, "", fc="white", ec=C["blue"], lw=0.8)
+        chip = box(ax, (x1 + x2) / 2 - 0.023, y1 - 0.05, 0.046, 0.10, "", fc="white", ec=C["blue"], lw=0.8)
         text(ax, (x1 + x2) / 2, y1, lab, in_box=chip, ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color=C["blue"])
     # DP：同一 stage 同一 TP 位、跨左右两个副本——弧线走卡片外侧，不穿文字
     for a, b in [(0, 2), (1, 3)]:

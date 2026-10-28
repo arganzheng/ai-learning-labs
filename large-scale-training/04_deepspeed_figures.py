@@ -5,11 +5,11 @@ from _plot import ARROW_LABEL_SIZE, C, box, plt, save, text
 def f1():
     fig, ax = plt.subplots(figsize=(7.6, 6.2))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.2); ax.axis("off")
-    ax.set_title("ZeRO-3：每个 rank 常驻 Wₖ 的 1/8，用时再拼完整")
+    ax.set_title("ZeRO-3：每个 rank 常驻 W_k 的 1/8，用时再拼完整")
     palette = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3",
                "#f7efc9", "#d8edef", "#f3dfe2", "#e5e5d7"]
     card_w, card_h = 1.80, 1.50
-    card_x = [0.16 + col * 1.88 for col in range(4)]
+    card_x = [0.10 + col * 1.85 for col in range(4)]
     card_y = {0: 4.62, 1: 3.02}
 
     for rank in range(8):
@@ -27,7 +27,7 @@ def f1():
 
     card_x2, card_y2, card_w2, card_h2 = 1.30, 0.72, 5.0, 1.62
     p2 = box(ax, card_x2, card_y2, card_w2, card_h2, "", fc="#ffffff", ec="#444444", lw=1.0)
-    text(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 Wₖ（临时）",
+    text(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 W_k（临时）",
          in_box=p2, ha="center", va="center", fontsize=11, weight="bold")
     bar_x, bar_w = card_x2 + 0.55, card_w2 - 1.10
     seg_w = bar_w / 8
@@ -40,7 +40,7 @@ def f1():
     arrow_x = 3.80
     ax.annotate("", xy=(arrow_x, card_y2 + card_h2), xytext=(arrow_x, card_y[1]),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=1.2))
-    text(ax, arrow_x, 2.66, "前向 pre-hook：all-gather Wₖ", ha="center", va="center",
+    text(ax, arrow_x, 2.66, "前向 pre-hook：all-gather W_k", ha="center", va="center",
          fontsize=ARROW_LABEL_SIZE, color="#111111", bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
     text(ax, 3.8, 0.32, "算完即 release，回到上排状态", ha="center", va="center",
          fontsize=11, color="#111111")
@@ -108,7 +108,7 @@ def f4():
     fig, ax = plt.subplots(figsize=(7.95, 4.55))
     ax.set_xlim(-0.02, 7.95); ax.set_ylim(0, 4.55); ax.axis("off")
     ax.set_title("一个 Linear.weight：前向与反向按时间经过三个泳道")
-    start, step, cell_w = 1.06, 0.97, 0.97
+    start, step, cell_w = 1.06, 0.95, 0.95
     compute_y, comm_y, state_y, box_h, compute_h = 3.10, 2.30, 1.16, 0.68, 0.90
     centers = [start + i * step + cell_w / 2 for i in range(7)]
     text(ax, 0.88, compute_y + compute_h / 2, "计算", ha="right", va="center", fontsize=11, color="#111111")
@@ -123,7 +123,7 @@ def f4():
             box(ax, x, comm_y, cell_w, box_h, comm_events[i], fc="#ffffff", ec="#555555", fs=11)
         if i in compute_events:
             label = compute_events[i]
-            event_w = 1.20 if i == 6 else cell_w
+            event_w = 1.18 if i == 6 else cell_w
             event_h = 0.94 if i == 6 else compute_h
             box(ax, centers[i] - event_w / 2, compute_y + (compute_h - event_h) / 2,
                 event_w, event_h, label, fc="#ffffff", ec="#555555", fs=11)

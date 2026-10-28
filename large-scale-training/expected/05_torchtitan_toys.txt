@@ -1,0 +1,50 @@
+== mesh ==
+  rank 0: mesh 坐标 dp_shard=0 tp=0
+  rank 1: mesh 坐标 dp_shard=0 tp=1
+  rank 2: mesh 坐标 dp_shard=1 tp=0
+  rank 3: mesh 坐标 dp_shard=1 tp=1
+  rank 4: mesh 坐标 dp_shard=2 tp=0
+  rank 5: mesh 坐标 dp_shard=2 tp=1
+  rank 6: mesh 坐标 dp_shard=3 tp=0
+  rank 7: mesh 坐标 dp_shard=3 tp=1
+  rank 0 所在组: tp [0, 1]，dp_shard [0, 2, 4, 6]
+  全部组（mesh[i][j] = rank，行是 dp_shard、列是 tp，TP 在最内维）:
+    dp_shard=0: tp 组 [0, 1]
+    dp_shard=1: tp 组 [2, 3]
+    dp_shard=2: tp 组 [4, 5]
+    dp_shard=3: tp 组 [6, 7]
+    → dp_shard 组: [0,2,4,6] / [1,3,5,7]（跨 tp 列取同列）
+== dtensor ==
+  W.shape=(4, 4)，元素 0–15 按行编号
+  rank0 Shard(0) local = [[0.0, 1.0, 2.0, 3.0], [4.0, 5.0, 6.0, 7.0]]
+  rank1 Shard(0) local = [[8.0, 9.0, 10.0, 11.0], [12.0, 13.0, 14.0, 15.0]]
+  Replicate local shape = (4, 4)（每 rank 完整一份）
+  Partial local：rank0 前两行是自己的分片、其余为 0；rank1 则相反
+  Shard(0)→Replicate = all-gather，full == W：OK
+  Partial→Replicate = all-reduce，两份部分和拼回 W：OK
+  Partial→Shard(0) = reduce-scatter，与 Shard 分片一致：OK
+  Shard(0).full_tensor() == 原 W：OK
+== meta ==
+/Users/devin/repos/ai-learning-labs/.venv/lib/python3.12/site-packages/torch/distributed/tensor/_dispatch.py:376: UserWarning: DTensor random operators may not have complete support on cpu device mesh
+  if not random._rng_tracker and is_rng_supported_mesh(mesh):
+/Users/devin/repos/ai-learning-labs/.venv/lib/python3.12/site-packages/torch/distributed/tensor/_dispatch.py:376: UserWarning: DTensor random operators may not have complete support on cpu device mesh
+  if not random._rng_tracker and is_rng_supported_mesh(mesh):
+  meta 构造后: 7168 个逻辑参数元素，实存 0 B（只有形状）
+  fully_shard 后（仍是 meta）: 每 rank 实存参数 [0, 0] B
+  to_empty 后（分片形状的空壳）: 每 rank 实存参数 [14336, 14336] B
+  init 后（分片有真实值）: 每 rank 实存参数 [14336, 14336] B
+  optimizer.step 后: 每 rank m+v [57344, 57344] B（fp32 分片上的 AdamW）
+== fsdp ==
+  hook / 时点记录：
+    前向前常驻: DTensor 全局(16, 16) 本地(4, 16) dtype=torch.float32
+    层0.attn 前向中: Parameter 全局(16, 16) 本地(16, 16) dtype=torch.bfloat16
+    层0.ffn_out 前向中: Parameter 全局(16, 64) 本地(16, 64) dtype=torch.bfloat16
+    层1.attn 前向中: Parameter 全局(16, 16) 本地(16, 16) dtype=torch.bfloat16
+    层1.ffn_out 前向中: Parameter 全局(16, 64) 本地(16, 64) dtype=torch.bfloat16
+    层2.attn 前向中: Parameter 全局(16, 16) 本地(16, 16) dtype=torch.bfloat16
+    层2.ffn_out 前向中: Parameter 全局(16, 64) 本地(16, 64) dtype=torch.bfloat16
+    前向后常驻: DTensor 全局(16, 16) 本地(4, 16) dtype=torch.float32
+    反向后梯度: DTensor 全局(16, 16) 本地(4, 16) dtype=torch.float32
+    step 后参数: DTensor 全局(16, 16) 本地(4, 16) dtype=torch.float32
+  loss vs 单进程 fp32 参考: max|diff| = 3.16e-05（bf16 计算允许舍入差）
+  step 后参数 vs 单进程 fp32 参考: max|diff| = 2.00e-03

@@ -64,7 +64,7 @@ def box_title(ax, x, y, s, in_box, color="#111111", **kw):
     kw.setdefault("ha", "center")
     kw.setdefault("va", "center")
     t = ax.text(x, y, s, fontsize=BOX_TITLE_SIZE, color=color, **kw)
-    t.set_path_effects([_pe.withStroke(linewidth=0.8, foreground=color), _pe.Normal()])
+    t.set_path_effects([_pe.withStroke(linewidth=0.4, foreground=color), _pe.Normal()])
     _TRACKED.append((t, in_box, None))
     return t
 

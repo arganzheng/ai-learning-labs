@@ -11,14 +11,14 @@ def f1():
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.6); ax.axis("off")
     ax.set_title("FSDP 4 × TP 2：8 张 rank 的 DeviceMesh（TP 在最内维）")
 
-    cw, ch, gx = 1.62, 1.52, 0.24
+    cw, ch, gx = 1.57, 1.52, 0.33
     xs = [0.20 + j * (cw + gx) for j in range(4)]
     y0, y1 = 4.55, 2.55  # tp0 上排，tp1 下排
     for j, x in enumerate(xs):
         for tp, y in ((0, y0), (1, y1)):
             rank = 2 * j + tp
             p = box(ax, x, y, cw, ch, "", fc="#f7f9fc", ec="#444444", lw=0.9)
-            box_title(ax, x + cw / 2, y + ch - 0.24, f"rank {rank}  dp{j} tp{tp}", in_box=p)
+            box_title(ax, x + cw / 2, y + ch - 0.24, f"rank {rank} dp{j} tp{tp}", in_box=p)
             text(ax, x + cw / 2, y + ch - 0.60,
                  "矩阵前半（tp0）" if tp == 0 else "矩阵后半（tp1）",
                  in_box=p, ha="center", va="center", fontsize=11)
@@ -41,7 +41,7 @@ def f1():
                         arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4))
     text(ax, 3.8, y0 + ch + 0.15, "dp_shard", ha="center", va="bottom",
          fontsize=ARROW_LABEL_SIZE, color=C["orange"])
-    text(ax, 1.2, y1 - 0.10, "dp_shard", ha="center", va="top",
+    text(ax, (xs[0] + cw + xs[1]) / 2, y1 - 0.10, "dp_shard", ha="center", va="top",
          fontsize=ARROW_LABEL_SIZE, color=C["orange"])
 
     # 底部：04 F1 风格大卡，前向 pre-hook all-gather 后沿 dp_shard 拼完整。

@@ -1,5 +1,6 @@
 """torchtitan 05 配图：以 750px 正文列宽绘制，所有文字用 _plot.py 的碰撞检查。"""
 from matplotlib.patches import Rectangle
+from matplotlib.transforms import Bbox
 from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 
 
@@ -86,53 +87,67 @@ def f3():
     ax.set_title("DTensor 的三种 placement：张量、局部值与通信")
 
     CW, RH = 0.28, 0.30
+    _grids, _labels = [], []
 
-    def grid(x0, y0, vals, in_box):
+    def grid(x0, y0, vals, in_box, shade_zero=False):
         rows, cols = len(vals), len(vals[0])
+        _grids.append((x0, y0, cols * CW, rows * RH))
         for i, row in enumerate(vals):
             for j, v in enumerate(row):
                 gx, gy = x0 + j * CW, y0 + (rows - 1 - i) * RH
                 ax.add_patch(Rectangle((gx, gy), CW, RH,
-                                       fc="#ffffff" if v else "#eeeeee",
+                                       fc="#eeeeee" if (shade_zero and v == 0) else "#ffffff",
                                        ec="#999999", lw=0.5))
                 text(ax, gx + CW / 2, gy + RH / 2, str(v), in_box=in_box,
                      ha="center", va="center", fontsize=11)
 
-    y, h = 0.80, 2.10
+    def label(x, y_, s, in_box):
+        t = text(ax, x, y_, s, in_box=in_box, ha="center", va="bottom",
+                 fontsize=ARROW_LABEL_SIZE, color="#111111")
+        _labels.append(t)
+        return t
+
+    # 所有 grid 的 bbox 与所有 rank 标签不得重叠（grid 是未登记的 Rectangle，collide 看不到）。
+    def check_grid_labels():
+        renderer = fig.canvas.get_renderer()
+        for t in _labels:
+            tb = t.get_window_extent(renderer)
+            for gx, gy, gw, gh in _grids:
+                gb = ax.transData.transform_bbox(Bbox([[gx, gy], [gx + gw, gy + gh]]))
+                assert not tb.overlaps(gb), f"grid 与标签重叠: '{t.get_text()}'"
+
+    y, h = 0.70, 2.40
     W4 = 4 * CW  # 1.12
 
-    # Partial：每 rank 的 local 是 4×4，只填自己那两行的部分和，其余为 0。
+    # Partial：每 rank 的 local 是 4×4，只填自己那两行的部分和，其余为 0（阴影只标这些补 0 格）。
     xp, wp = 0.10, 2.55
     p = box(ax, xp, y, wp, h, "", fc="#ffffff", ec="#444444")
     box_title(ax, xp + wp / 2, y + h - 0.22, "Partial", in_box=p)
     gx0 = xp + (wp - 2 * W4 - 0.15) / 2
-    grid(gx0, 1.00, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 0, 0, 0], [0, 0, 0, 0]], in_box=p)
-    grid(gx0 + W4 + 0.15, 1.00, [[0, 0, 0, 0], [0, 0, 0, 0], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
-    text(ax, gx0 + W4 / 2, 2.28, "r0", in_box=p, ha="center", va="bottom",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, gx0 + W4 + 0.15 + W4 / 2, 2.28, "r1", in_box=p, ha="center", va="bottom",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    grid(gx0, 1.15, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 0, 0, 0], [0, 0, 0, 0]], in_box=p, shade_zero=True)
+    grid(gx0 + W4 + 0.15, 1.15, [[0, 0, 0, 0], [0, 0, 0, 0], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p, shade_zero=True)
+    label(gx0 + W4 / 2, 2.43, "r0", in_box=p)
+    label(gx0 + W4 + 0.15 + W4 / 2, 2.43, "r1", in_box=p)
 
     # Shard(0)：每 rank 的 local 是自己那两行的 2×4 分片。
     xs_, ws_ = 3.75, 1.30
     p = box(ax, xs_, y, ws_, h, "", fc="#ffffff", ec="#444444")
     box_title(ax, xs_ + ws_ / 2, y + h - 0.22, "Shard(0)", in_box=p)
     gx = xs_ + (ws_ - W4) / 2
-    grid(gx, 1.60, [[0, 1, 2, 3], [4, 5, 6, 7]], in_box=p)
-    text(ax, gx + W4 / 2, 2.28, "r0", in_box=p, ha="center", va="bottom",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
-    grid(gx, 0.88, [[8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
-    text(ax, gx + W4 / 2, 1.52, "r1", in_box=p, ha="center", va="bottom",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    grid(gx, 1.82, [[0, 1, 2, 3], [4, 5, 6, 7]], in_box=p)
+    label(gx + W4 / 2, 2.43, "r0", in_box=p)
+    grid(gx, 0.84, [[8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    label(gx + W4 / 2, 1.46, "r1", in_box=p)
 
     # Replicate：两 rank 的 local 都是完整 4×4。
     xr, wr = 6.15, 1.30
     p = box(ax, xr, y, wr, h, "", fc="#ffffff", ec="#444444")
     box_title(ax, xr + wr / 2, y + h - 0.22, "Replicate", in_box=p)
     gx = xr + (wr - W4) / 2
-    grid(gx, 1.00, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
-    text(ax, gx + W4 / 2, 2.28, "r0 / r1 相同", in_box=p, ha="center", va="bottom",
-         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    grid(gx, 1.15, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    label(gx + W4 / 2, 2.43, "r0 / r1 相同", in_box=p)
+
+    check_grid_labels()
 
     ymid = y + h / 2
     ax.annotate("", xy=(xs_, ymid), xytext=(xp + wp, ymid),

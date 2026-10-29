@@ -7,14 +7,14 @@ from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 def f1():
     """8 卡 FSDP4×TP2（03 F1 风格）：列 = dp_shard 位，行 = tp 位。
     rank = tp + 2·dp：上排 tp0（rank 0/2/4/6），下排 tp1（rank 1/3/5/7）。"""
-    fig, ax = plt.subplots(figsize=(7.6, 6.6))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.6); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 7.2))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 7.2); ax.axis("off")
     ax.set_title("FSDP 4 × TP 2：8 张 rank 的 DeviceMesh（TP 在最内维）")
 
     palette = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3"]  # dp0 蓝 / dp1 绿 / dp2 橙 / dp3 紫
     cw, ch, gx = 1.57, 1.52, 0.33
     xs = [0.20 + j * (cw + gx) for j in range(4)]
-    y0, y1 = 4.55, 2.55  # tp0 上排，tp1 下排
+    y0, y1 = 5.05, 3.05  # tp0 上排，tp1 下排
     for j, x in enumerate(xs):
         for tp, y in ((0, y0), (1, y1)):
             rank = 2 * j + tp
@@ -47,33 +47,32 @@ def f1():
                         arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4))
     text(ax, 3.8, y0 + ch + 0.15, "dp_shard", ha="center", va="bottom",
          fontsize=ARROW_LABEL_SIZE, color=C["orange"])
-    text(ax, (xs[0] + cw + xs[1]) / 2, y1 - 0.10, "dp_shard", ha="center", va="top",
+    text(ax, (xs[0] + cw + xs[1]) / 2, y1 - 0.17, "dp_shard", ha="center", va="top",
          fontsize=ARROW_LABEL_SIZE, color=C["orange"])
 
     # 底部：04 F1 风格大卡，前向 pre-hook all-gather 后沿 dp_shard 拼完整。
-    p2 = box(ax, 1.30, 1.10, 5.0, 1.15, "", fc="#ffffff", ec="#444444", lw=1.0)
-    box_title(ax, 3.8, 2.05, "每张 rank 拼出本 TP 半片的完整 bf16 参数（临时）", in_box=p2)
+    p2 = box(ax, 1.30, 1.40, 5.0, 1.30, "", fc="#ffffff", ec="#444444", lw=1.0)
+    box_title(ax, 3.8, 2.48, "每张 rank 拼出本 TP 半片的完整 bf16 参数（临时）", in_box=p2)
     bar_x, seg = 1.85, 3.90 / 4
     for j, (c, name) in enumerate(zip(palette, ("dp0", "dp1", "dp2", "dp3"))):
-        box(ax, bar_x + j * seg, 1.61, seg, 0.18, "", fc=c, ec="#888888", lw=0.4, r=0)
-        text(ax, bar_x + j * seg + seg / 2, 1.47, name, in_box=p2,
+        box(ax, bar_x + j * seg, 2.08, seg, 0.18, "", fc=c, ec="#888888", lw=0.4, r=0)
+        text(ax, bar_x + j * seg + seg / 2, 1.90, name, in_box=p2,
              ha="center", va="center", fontsize=10)
-    text(ax, 3.8, 1.27, "DTensor 沿 dp_shard 拼完整，TP 仍只有本卡一半", in_box=p2,
+    text(ax, 3.8, 1.62, "DTensor 沿 dp_shard 拼完整，TP 仍只有本卡一半", in_box=p2,
          ha="center", va="center", fontsize=11)
 
-    ax.annotate("", xy=(3.8, 2.25), xytext=(3.8, 2.55),
+    ax.annotate("", xy=(3.8, 2.70), xytext=(3.8, 3.05),
                 arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color="#555555", lw=1.2))
-    text(ax, 3.8, 2.40, "前向 pre-hook：all-gather", ha="center", va="center",
-         fontsize=ARROW_LABEL_SIZE, color="#111111",
-         bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
-    text(ax, 3.8, 0.86, "算完即 reshard，回到上排状态", ha="center", va="center",
+    text(ax, 4.02, 2.875, "前向 pre-hook：all-gather", ha="left", va="center",
+         fontsize=ARROW_LABEL_SIZE, color="#111111")
+    text(ax, 3.8, 1.14, "算完即 reshard，回到上排状态", ha="center", va="center",
          fontsize=11, color="#111111")
 
-    text(ax, 3.8, 0.58, "TP = 同一列两张卡（SP：激活 all-gather / reduce-scatter）",
+    text(ax, 3.8, 0.84, "TP = 同一列两张卡（SP：激活 all-gather / reduce-scatter）",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, 3.8, 0.36, "dp_shard = 同一行四张卡（FSDP：参数 all-gather、梯度 reduce-scatter）",
+    text(ax, 3.8, 0.60, "dp_shard = 同一行四张卡（FSDP：参数 all-gather、梯度 reduce-scatter）",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    text(ax, 3.8, 0.14, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　dp_shard 组 [0,2,4,6] [1,3,5,7]",
+    text(ax, 3.8, 0.36, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　dp_shard 组 [0,2,4,6] [1,3,5,7]",
          ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
     save(fig, "torchtitan-f1-device-mesh")
 

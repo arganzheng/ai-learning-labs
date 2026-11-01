@@ -147,7 +147,7 @@ def f4_lifecycle():
         forward_start = layer
         backward_end = 7 - layer
         for i, x in enumerate(xs):
-            if forward_start <= i <= backward_end:
+            if forward_start <= i < backward_end:
                 ax.add_patch(Rectangle((x - 0.20, y), 0.40, 0.25,
                                        facecolor=C["blue"] + "66", edgecolor="#ffffff", linewidth=0.5))
             if i == backward_end:
@@ -165,11 +165,11 @@ def f4_lifecycle():
     ]
     for i, (color, label) in enumerate(legend):
         lx = 0.85 + i * 2.45
-        ax.add_patch(Rectangle((lx, 0.80), 0.16, 0.16, facecolor=color, edgecolor="#888888", linewidth=0.4))
-        text(ax, lx + 0.24, 0.88, label, ha="left", va="center", fontsize=9)
-    text(ax, 3.8, 0.50, "前向末：4 层激活都在，梯度为 0。反向末：激活已释放完，梯度全部到齐。",
+        ax.add_patch(Rectangle((lx, 0.62), 0.16, 0.16, facecolor=color, edgecolor="#888888", linewidth=0.4))
+        text(ax, lx + 0.24, 0.70, label, ha="left", va="center", fontsize=9)
+    text(ax, 3.8, 0.34, "前向末：4 层激活都在，梯度为 0。反向末：激活已释放完，梯度全部到齐。",
          ha="center", va="center", fontsize=9.5)
-    text(ax, 3.8, 0.20, "激活：第 i 层在 Fi 产生，Bi 用完释放；先产生的后释放，第 1 层留得最久。",
+    text(ax, 3.8, 0.10, "激活：第 i 层在 Fi 产生，Bi 用完释放；先产生的后释放，第 1 层留得最久。",
          ha="center", va="center", fontsize=9.5)
     save(fig, "training-state-activation-grad-lifecycle")
 
@@ -358,7 +358,7 @@ def f10_mfu_hfu():
         ("选择性重计算", 41.3, 42.3 - 41.3, "HFU 42.3%"),
         ("全量重计算", 41.3, 55.1 - 41.3, "HFU 55.1%"),
     ]
-    x0, scale = 0.55, 0.105
+    x0, scale = 0.55, 0.075
     for i, (name, base_u, re_u, pct) in enumerate(rows):
         y = 3.05 - i * 0.78
         text(ax, x0, y + 0.18, name, ha="left", va="center", fontsize=10)
@@ -369,13 +369,13 @@ def f10_mfu_hfu():
             ax.add_patch(Rectangle((2.42 + bw, y), rw, 0.36, facecolor=C["red"] + "55", edgecolor=C["red"], linewidth=0.7))
         text(ax, 2.55 + bw + rw, y + 0.18, pct, ha="left", va="center", fontsize=10)
     lx = 2.42
-    ax.add_patch(Rectangle((lx, 0.92), 0.16, 0.16, facecolor=C["blue"] + "55", edgecolor=C["blue"], linewidth=0.7))
-    text(ax, lx + 0.24, 1.00, "模型需要的计算", ha="left", va="center", fontsize=9)
-    ax.add_patch(Rectangle((lx + 1.85, 0.92), 0.16, 0.16, facecolor=C["red"] + "55", edgecolor=C["red"], linewidth=0.7))
-    text(ax, lx + 2.09, 1.00, "重计算", ha="left", va="center", fontsize=9)
-    text(ax, 3.8, 0.73, "70B · 1024 H100 · 4M token/step · 实测 4.5 s", ha="center", va="center", fontsize=10)
-    text(ax, 3.8, 0.42, "MFU 41.3%  ·  HFU（选择性）42.3%  ·  HFU（全量）55.1%", ha="center", va="center", fontsize=11)
-    text(ax, 3.8, 0.13, "重算让 GPU 更忙，不代表每秒处理的 token 更多。", ha="center", va="center", fontsize=9.5)
+    ax.add_patch(Rectangle((lx, 1.06), 0.16, 0.16, facecolor=C["blue"] + "55", edgecolor=C["blue"], linewidth=0.7))
+    text(ax, lx + 0.24, 1.14, "模型需要的计算", ha="left", va="center", fontsize=9)
+    ax.add_patch(Rectangle((lx + 1.85, 1.06), 0.16, 0.16, facecolor=C["red"] + "55", edgecolor=C["red"], linewidth=0.7))
+    text(ax, lx + 2.09, 1.14, "重计算", ha="left", va="center", fontsize=9)
+    text(ax, 3.8, 0.62, "70B · 1024 H100 · 4M token/step · 实测 4.5 s", ha="center", va="center", fontsize=10)
+    text(ax, 3.8, 0.34, "MFU 41.3%  ·  HFU（选择性）42.3%  ·  HFU（全量）55.1%", ha="center", va="center", fontsize=11)
+    text(ax, 3.8, 0.08, "重算让 GPU 更忙，不代表每秒处理的 token 更多。", ha="center", va="center", fontsize=9.5)
     save(fig, "training-state-mfu-vs-hfu")
 
 

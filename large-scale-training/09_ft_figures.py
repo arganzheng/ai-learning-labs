@@ -83,12 +83,10 @@ def five_terms():
             else:
                 narrow.append((x + w / 2, f"{sname} {v}%"))
             x += w
-        # 窄段：上方引线，交错两层 + 同层水平推开
-        if narrow:
-            lv_h = {0: 0.98, 1: (1.75 if r == 0 else 1.55)}
-            groups = [[], []]
-            for i, it in enumerate(narrow):
-                groups[i % 2 if len(narrow) > 3 else 0].append(it)
+        # 窄段：B 行上方引线；C 行全窄，改为条下一行
+        if narrow and r == 0:
+            lv_h = {0: 0.98}
+            groups = [narrow]
             for lv, grp in enumerate(groups):
                 pos = [c for c, _ in grp]
                 for _ in range(20):
@@ -104,10 +102,13 @@ def five_terms():
                             color="#999999", lw=0.7)
                     _label(ax, px, y + lv_h[lv], lab, 9)
         _label(ax, x + 0.3, y + 0.28, tot, 9.5, ha="left", weight="bold")
-    # 两行间 callout：T_d 缩最多（指向 C 行的 T_d 段）
-    _label(ax, 8.0, 3.55, "T_d 600 s → 60 s：5.5% → 0.5%", 9.5, ha="center",
-           color="#222222")
-    _arrow(ax, (6.6, 3.45), (2.1, 2.95), color=C["blue"], lw=1.1)
+        if r == 1:
+            _label(ax, mx(0) + 0.05, y - 0.42,
+                   "T_d 0.5% · T_r 0.3% · T_l 0.5% · τ/2 2.1% · δ/τ 2.0%",
+                   9, ha="left", color="#444444")
+            _label(ax, mx(0) + 0.05, y - 0.78,
+                   "T_d 600 s → 60 s：5.5% → 0.5%（§三.3 心跳检测）",
+                   9, ha="left", color="#444444")
     for gx in range(0, 15, 2):
         ax.plot([mx(gx), mx(gx)], [1.35, 4.75], color="#eeeeee", lw=0.6, zorder=0)
         _label(ax, mx(gx), 1.2, f"{gx}", 9, color="#666666")
@@ -125,7 +126,7 @@ def restart_lanes():
     def mx(v):
         return 2.4 + v / 18 * 8.4
     # 阶段类型颜色：检测 / 重建进程与通信 / 加载 / 回退重算 / 其他
-    C_DET, C_REB, C_LOAD, C_REW, C_OTH = RED, BLUE, GRAY, "#f0f0f0", ORANGE
+    C_DET, C_REB, C_LOAD, C_REW, C_OTH = RED, BLUE, GRAY, PURPLE, ORANGE
     legend = [("检测", C_DET), ("重建进程与通信", C_REB), ("加载", C_LOAD),
               ("回退重算", C_REW), ("其他", C_OTH)]
     lx = 2.4

@@ -110,10 +110,10 @@ def five_terms():
                    "T_d 600 s → 60 s：5.5% → 0.5%（§三.3 心跳检测）",
                    9, ha="left", color="#444444")
     for gx in range(0, 15, 2):
-        ax.plot([mx(gx), mx(gx)], [1.35, 4.75], color="#eeeeee", lw=0.6, zorder=0)
-        _label(ax, mx(gx), 1.2, f"{gx}", 9, color="#666666")
-    _label(ax, 6, 0.82, "横轴：损失时间占墙钟时间 %（与 G 互补）；过窄的段 % 注在上方引线处。", 9.5)
-    _label(ax, 6, 0.45, "85→95 的顺序：先 δ（A→B 拿走 16 个点），再压 hang 检测 T_d（B→C 的最大项）。", 9.5)
+        ax.plot([mx(gx), mx(gx)], [0.95, 4.75], color="#eeeeee", lw=0.6, zorder=0)
+        _label(ax, mx(gx), 0.8, f"{gx}", 9, color="#666666")
+    _label(ax, 6, 0.42, "横轴：损失时间占墙钟时间 %（与 G 互补）；过窄的段 % 注在上方引线处。", 9.5)
+    _label(ax, 6, 0.12, "85→95 的顺序：先 δ（A→B 拿走 16 个点），再压 hang 检测 T_d（B→C 的最大项）。", 9.5)
     save(fig, "fault-tolerance-five-terms")
 
 

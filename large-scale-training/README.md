@@ -16,6 +16,8 @@
 | `05_torchtitan_figures.py` | 同上配图（out/torchtitan-f*.svg → 博客 img/in-post/） | — | 秒级 |
 | `06_compare_toys.py` | [三框架对比](https://arganzheng.life/megatron-deepspeed-torchtitan-architecture-and-source-guide.html) | shard pp saw | 十秒 |
 | `06_compare_figures.py` | 同上配图（out/compare-f*.svg → 博客 img/in-post/） | — | 秒级 |
+| `07_config_toys.py` | [千卡配置与 MFU 调优](https://arganzheng.life/thousand-gpu-configuration-and-mfu-tuning.html) | config accum recompute | 十秒 |
+| `07_config_figures.py` | 同上配图（out/config-*.svg → 博客 img/in-post/） | — | 秒级 |
 
 **没有 GPU 也能跑。** `torch.distributed` 的 gloo 后端在 4 个 CPU 进程之间做 all-reduce / reduce-scatter / all-gather / all-to-all / send-recv，语义与 NCCL 在 GPU 之间完全相同，只是慢。每个子实验都把并行版的结果与「单进程算一遍」的参考值对数：
 

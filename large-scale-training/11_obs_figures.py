@@ -130,11 +130,12 @@ def step_time_phases():
                 arrowprops=dict(arrowstyle="->", color=C["red"], lw=0.9,
                                 shrinkB=0))
     ax.annotate("data 从 step 60 起每步 +2ms：\n慢化的嫌疑直接落在数据上",
-                xy=(70, 78), xytext=(18, 175), fontsize=9.5,
+                xy=(73, 30), xytext=(18, 172), fontsize=9.5,
                 color="#8a5a00", va="top", ha="left",
-                arrowprops=dict(arrowstyle="->", color="#8a5a00", lw=0.9))
-    ax.legend(fontsize=9, frameon=False, loc="upper left", ncols=2,
-              bbox_to_anchor=(0.28, 1.0))
+                arrowprops=dict(arrowstyle="->", color="#8a5a00", lw=0.9,
+                                connectionstyle="arc3,rad=0.12"))
+    ax.legend(fontsize=9, frameon=False, loc="center left", ncols=1,
+              bbox_to_anchor=(1.02, 0.5))
     ax.set_title("分阶段计时的堆叠面积：渐变慢一眼定位（toy 实测）", fontsize=11.5,
                  fontweight=600)
     save(fig, "long-running-training-step-time-phases")
@@ -173,21 +174,23 @@ def alert_timeline():
     d = _load("11_obs_alert.json")
     T = [t / 60 for t in d["T"]]  # 分钟
     thr = d["throughput"]
-    fig = plt.figure(figsize=(7.6, 4.6))
-    gs = fig.add_gridspec(3, 1, height_ratios=[0.32, 2.0, 1.35],
-                          hspace=0.12)
+    fig = plt.figure(figsize=(7.6, 5.0))
+    gs = fig.add_gridspec(4, 1, height_ratios=[0.3, 2.0, 0.28, 1.5],
+                          hspace=0.1)
     a0 = fig.add_subplot(gs[0])          # 事件标注行
     a1 = fig.add_subplot(gs[1])          # 指标
-    a2 = fig.add_subplot(gs[2])          # 告警泳道
-    a0.axis("off")
-    a0.set_xlim(0, 32)
-    a0.set_ylim(0, 1)
+    al = fig.add_subplot(gs[2])          # 图例行
+    a2 = fig.add_subplot(gs[3])          # 告警泳道
+    for a in (a0, al):
+        a.axis("off")
+        a.set_xlim(0, 32)
+        a.set_ylim(0, 1)
     # 三个事件：dip、心跳停、重启窗口，各居其事件中心
-    a0.text(12.5, 0.55, "10:00–15:00 掉 20%（5 分钟）", fontsize=9.5,
+    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=9.5,
             ha="center", color="#8a5a00")
-    a0.text(23.5, 0.55, "23:30 心跳停", fontsize=9.5, ha="center",
+    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=9.5, ha="center",
             color=C["red"])
-    a0.text(28.2, 0.55, "25:00–28:00\n自动重启", fontsize=9.5, ha="center",
+    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=9.5, ha="center",
             color="#1d4ed8")
 
     a1.plot(T, thr, color=C["blue"], lw=1.6)
@@ -204,17 +207,28 @@ def alert_timeline():
     a1.axvline(23.5, color=C["red"], lw=1.1, ls="--")
     a1.axvspan(25, 28, color="#dbeafe", alpha=0.8)
 
-    # 泳道：pending 浅橙 / firing 红 / 抑制灰斜线；无条内文字
-    lanes = [("TrainingMfuDegraded\n(page · for 30m)", 3,
-              [(10, 15, "pending")], "未到 for:30m 即消失"),
-             ("ThroughputDip\n(record · for 2m)", 2,
-              [(10, 12, "pending"), (12, 15, "firing")],
-              "pending 2 分钟后 firing"),
-             ("TrainingStepStalled\n(page · for 0m)", 1,
-              [(23.5, 25.25, "pending"), (25.25, 30, "suppressed")],
-              "firing 落在重启窗口\n→ 被抑制")]
+    # 图例行（独立一行，不进泳道）：pending 浅橙 / firing 红 / 抑制灰斜线
     FCS = {"pending": "#f0c8a0", "firing": "#e06666",
            "suppressed": "#cccccc"}
+    hx = 1.0
+    for lab, st in (("pending", "pending"), ("firing", "firing"),
+                    ("firing（被抑制）", "suppressed")):
+        al.add_patch(__import__("matplotlib.patches", fromlist=["Rectangle"])
+                     .Rectangle((hx, 0.3), 1.6, 0.4, fc=FCS[st],
+                                ec="#888888", lw=0.6,
+                                hatch="///" if st == "suppressed" else None))
+        al.text(hx + 1.9, 0.5, lab, fontsize=9, va="center", ha="left")
+        hx += 1.9 + len(lab) * 0.62 + 1.2
+
+    # 泳道：一行一个规则名；细则放右侧备注列
+    lanes = [("TrainingMfuDegraded", 3,
+              [(10, 15, "pending")], "page · for 30m；未到即消失"),
+             ("ThroughputDip", 2,
+              [(10, 12, "pending"), (12, 15, "firing")],
+              "record · for 2m；firing 白天看"),
+             ("TrainingStepStalled", 1,
+              [(23.5, 25.25, "pending"), (25.25, 30, "suppressed")],
+              "page · for 0m；落在重启窗口→被抑制")]
     for name, row, segs, note in lanes:
         for x0, x1, st in segs:
             a2.barh(row, x1 - x0, left=x0, height=0.55, color=FCS[st],
@@ -226,18 +240,9 @@ def alert_timeline():
     a2.axvspan(10, 15, color="#fdecea", alpha=0.5)
     a2.axvline(23.5, color=C["red"], lw=1.1, ls="--")
     a2.axvspan(25, 28, color="#dbeafe", alpha=0.8)
-    # 图例：色块含义
-    hx = 0.5
-    for lab, st in (("pending", "pending"), ("firing", "firing"),
-                    ("firing（被抑制）", "suppressed")):
-        a2.barh(3.62, 1.6, left=hx, height=0.3, color=FCS[st],
-                edgecolor="#888888", lw=0.6,
-                hatch="///" if st == "suppressed" else None, clip_on=False)
-        a2.text(hx + 1.85, 3.62, lab, fontsize=9, va="center", ha="left")
-        hx += 1.85 + len(lab) * 0.62 + 0.7
     a2.set_yticks([])
-    a2.set_xlim(-9.5, 41)
-    a2.set_ylim(0.4, 3.95)
+    a2.set_xlim(-10.5, 43)
+    a2.set_ylim(0.4, 3.7)
     a2.set_xticks(range(0, 31, 5))
     a2.set_xticklabels([f"{t:02d}:00" for t in range(0, 31, 5)],
                        fontsize=9.5)

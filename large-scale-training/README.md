@@ -4,6 +4,8 @@
 
 | 脚本 | 文章 | 子实验 | 运行时间 |
 |---|---|---|---|
+| `01_state_toys.py` | [训练任务的状态解剖](https://arganzheng.life/training-state-anatomy-memory-and-mfu.html) | bytes activations flops timeline | 秒级 |
+| `01_state_figures.py` | 同上配图（out/training-state-*.svg → 博客 img/in-post/） | — | 秒级 |
 | `02_parallelism_toys.py` | [并行策略全景](https://arganzheng.life/parallelism-strategies-which-state-to-shard.html) | zero tp cp pp ep | 十秒 |
 | `03_megatron_toys.py` | [Megatron-LM](https://arganzheng.life/megatron-lm-architecture-and-source-guide.html) | groups buffer 1f1b | 十秒 |
 | `03_megatron_figures.py` | 同上配图（out/megatron-f*.svg → 博客 img/in-post/） | — | 秒级 |
@@ -11,6 +13,8 @@
 | `04_deepspeed_figures.py` | 同上配图（out/deepspeed-f*.svg → 博客 img/in-post/） | — | 秒级 |
 | `05_torchtitan_toys.py` | [torchtitan](https://arganzheng.life/torchtitan-architecture-and-source-guide.html) | mesh dtensor meta fsdp | 半分钟 |
 | `05_torchtitan_figures.py` | 同上配图（out/torchtitan-f*.svg → 博客 img/in-post/） | — | 秒级 |
+| `06_compare_toys.py` | [三框架对比](https://arganzheng.life/megatron-deepspeed-torchtitan-architecture-and-source-guide.html) | shard pp saw | 十秒 |
+| `06_compare_figures.py` | 同上配图（out/compare-f*.svg → 博客 img/in-post/） | — | 秒级 |
 
 **没有 GPU 也能跑。** `torch.distributed` 的 gloo 后端在 4 个 CPU 进程之间做 all-reduce / reduce-scatter / all-gather / all-to-all / send-recv，语义与 NCCL 在 GPU 之间完全相同，只是慢。每个子实验都把并行版的结果与「单进程算一遍」的参考值对数：
 
@@ -28,6 +32,4 @@ python 02_parallelism_toys.py               # 全部
 python 02_parallelism_toys.py tp ep         # 只跑几个
 ```
 
-`expected/02_parallelism_toys.txt` 是作者机器上的完整输出；随机种子固定，不同 torch 版本下小数末位可能有出入。
-| `06_compare_toys.py` | [三框架对比](https://arganzheng.life/megatron-deepspeed-torchtitan-architecture-and-source-guide.html) | shard pp saw | 十秒 |
-| `06_compare_figures.py` | 同上配图（out/compare-f*.svg → 博客 img/in-post/） | — | 秒级 |
+`expected/` 下是作者机器上的完整输出；随机种子固定，不同 torch 版本下小数末位可能有出入。

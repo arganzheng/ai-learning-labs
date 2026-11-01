@@ -516,11 +516,10 @@ def mesh(rank, port):
         world = 8
         sizes = [2, 1, 1, 2, 2]  # tp, cp, ep, dp, pp
         print(f"world={world}（2 节点 × 4 卡），parallel_size(tp,cp,ep,dp,pp)={sizes}，order='tp-cp-ep-dp-pp'")
-        print("rank = tp_r + 2·dp_r + 4·pp_r；TP 最内、TP rank 相邻。物理节点按 dp XOR pp 映射，使 DP 与 PP 都跨节点。")
+        print("rank = tp_r + 2·dp_r + 4·pp_r；TP 最内、TP rank 相邻。物理节点按 rank // 4 映射（连续 rank 在同一节点）。")
         names = {0: "TP", 3: "DP", 4: "PP"}
         groups = _rank_groups(world, sizes)
-        coords = {rank: (rank % 2, (rank // 2) % 2, rank // 4) for rank in range(world)}
-        node_of = {rank: coords[rank][1] ^ coords[rank][2] for rank in range(world)}
+        node_of = {r: r // 4 for r in range(world)}
         for i, gname in names.items():
             for g in groups.get(i, []):
                 node = "同节点" if len({node_of[r] for r in g}) == 1 else "跨节点"

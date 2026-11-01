@@ -86,18 +86,18 @@ Step 8: 0REDUCE_GRAD 1REDUCE_GRAD 2REDUCE_GRAD 3REDUCE_GRAD
 
 ===== mesh =====
 world=8（2 节点 × 4 卡），parallel_size(tp,cp,ep,dp,pp)=[2, 1, 1, 2, 2]，order='tp-cp-ep-dp-pp'
-rank = tp_r + 2·dp_r + 4·pp_r；TP 最内、TP rank 相邻。物理节点按 dp XOR pp 映射，使 DP 与 PP 都跨节点。
+rank = tp_r + 2·dp_r + 4·pp_r；TP 最内、TP rank 相邻。物理节点按 rank // 4 映射（连续 rank 在同一节点）。
   TP 组 [0, 1]  同节点
   TP 组 [2, 3]  同节点
   TP 组 [4, 5]  同节点
   TP 组 [6, 7]  同节点
-  DP 组 [0, 2]  跨节点
-  DP 组 [1, 3]  跨节点
-  DP 组 [4, 6]  跨节点
-  DP 组 [5, 7]  跨节点
+  DP 组 [0, 2]  同节点
+  DP 组 [1, 3]  同节点
+  DP 组 [4, 6]  同节点
+  DP 组 [5, 7]  同节点
   PP 组 [0, 4]  跨节点
   PP 组 [1, 5]  跨节点
   PP 组 [2, 6]  跨节点
   PP 组 [3, 7]  跨节点
-节点 0 ranks: [0, 1, 6, 7]
-节点 1 ranks: [2, 3, 4, 5]
+节点 0 ranks: [0, 1, 2, 3]
+节点 1 ranks: [4, 5, 6, 7]

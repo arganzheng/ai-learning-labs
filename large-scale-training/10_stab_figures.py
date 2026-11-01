@@ -80,11 +80,12 @@ def spike_rollback():
         ax.set_yticks(ticks)
         ax.set_yticklabels([f"{t:g}" for t in ticks])
     fig.subplots_adjust(hspace=0.45)
-    ax1.legend(fontsize=9.5, loc="upper left", frameon=False)
-    ax1.text(ckpt - 2, ax1.get_ylim()[1] * 0.9, "step-140\nckpt", fontsize=9.5,
-             ha="right", va="top", color="#555555")
-    ax2.text((bad0 + bad1) / 2 - 0.5, ax2.get_ylim()[1] * 0.9, "坏窗口\n150–155",
-             fontsize=9.5, ha="right", va="top", color="#8a3c3c")
+    ax1.legend(fontsize=9.5, loc="lower right", frameon=False)
+    ax1.text(ckpt - 1, ax1.get_ylim()[0] * 1.35, "step-140 ckpt", fontsize=9,
+             ha="right", va="bottom", color="#555555")
+    ax2.text((bad0 + bad1) / 2, ax2.get_ylim()[1] * 0.55, "坏窗口 150–155",
+             fontsize=9.5, ha="center", va="top", color="#8a3c3c",
+             bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.5))
     ax2.set_xlabel("step", fontsize=10)
     fig.suptitle("坏 batch 注入 → 回退 + 跳过的恢复轨迹（toy 实测，2 层 d=64）",
                  fontsize=12, fontweight=600)
@@ -120,23 +121,31 @@ def clip_2d():
 
 
 def logit_qkln():
-    """F3：带/不带 QK-LayerNorm 的 max|logit|。"""
+    """F3：induction 任务下的 logit 增长；左 max|logit|，右 ‖Wq‖·‖Wk‖。"""
     d = _load("10_stab_logit_curve.json")
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
-    steps = range(len(d["false"]))
-    ax.plot(steps, d["false"], color=C["red"], lw=1.6,
-            label="不带 QK-LayerNorm")
-    ax.plot(steps, d["true"], color=C["blue"], lw=1.6,
-            label="带 QK-LayerNorm")
-    ax.set_xlabel("step", fontsize=10)
-    ax.set_ylabel("max |q·k/√d|", fontsize=10)
-    ax.tick_params(labelsize=9.5)
-    ax.legend(fontsize=9.5, frameon=False, loc="center left")
-    ax.set_ylim(0, 5.5)
-    ax.text(58, 5.2, "（bf16 危险线 ~100 远在图上沿之上，未画出）", fontsize=9,
-            ha="right", color="#777777")
-    ax.set_title("注意力 logit 最大值：QK-LayerNorm 把它钉住（toy 实测，单层注意力，SGD lr=0.5）",
-                 fontsize=11.5, fontweight=600)
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(7.6, 3.2))
+    for key, ax, ttl in (("logit", a1, "max |q·k/√d|"),
+                         ("wnorm", a2, "‖Wq‖ · ‖Wk‖")):
+        xa = [p[0] for p in d["false"][key]]
+        ax.plot(xa, [p[1] for p in d["false"][key]], color=C["red"], lw=1.5,
+                label="不带 QK-LN")
+        ax.plot(xa, [p[1] for p in d["true"][key]], color=C["blue"], lw=1.5,
+                label="带 QK-LN")
+        ax.set_ylabel(ttl, fontsize=10)
+        ax.set_xlabel("step", fontsize=10)
+        ax.tick_params(labelsize=9.5)
+        ax.set_xlim(0, 800)
+        ax.set_xticks(range(0, 801, 200))
+    a1.axhline(100, color="#8a8a8a", lw=0.9, ls=":")
+    a1.text(20, 115, "~100 经验危险线（§二.4）", fontsize=9, color="#555555")
+    a1.legend(fontsize=9.5, frameon=False, loc="upper left")
+    a1.set_ylim(0, 780)
+    a1.set_yticks([0, 100, 200, 300, 400, 500, 600, 700])
+    a2.legend(fontsize=9.5, frameon=False, loc="upper left")
+    a2.set_ylim(0, 800)
+    a2.set_yticks([0, 200, 400, 600, 800])
+    fig.suptitle("induction 任务：‖Wq‖·‖Wk‖ 随训练一路增大；不带 QK-LN 时 logit 跟着涨过危险线，带上后被钉住（toy 实测）",
+                 fontsize=10.5, fontweight=600)
     save(fig, "training-stability-logit-qkln")
 
 
@@ -160,50 +169,71 @@ def packing_vs_padding():
         y = 6.35 - i * 0.62
         p = _card(ax, sx(0), y, l / cap * w, 0.5, "", fc=BLUE, ec=C["blue"],
                   lw=0.6)
-        if l / cap * w > 1.4:
+        if l / cap * w > 0.8:
             _label(ax, sx(l / 2), y + 0.25, str(l), 9.5, in_box=p)
+        else:
+            _label(ax, sx(0) - 0.25, y + 0.25, str(l), 9, ha="right",
+                   color="#333333")
         pw = (max(lens) - l) / cap * w
-        pp = _card(ax, sx(l), y, pw, 0.5, "", fc="white", ec="#bbbbbb", lw=0.6)
+        _card(ax, sx(l), y, pw, 0.5, "", fc="white", ec="#bbbbbb", lw=0.6)
         ax.add_patch(Rectangle((sx(l), y), pw, 0.5, fc="none", ec="none",
                                hatch="///", lw=0))
-        if pw > 1.0:
-            _label(ax, sx(l) + pw / 2, y + 0.25, "pad", 9, color="#888888",
-                   in_box=pp)
-    _label(ax, x0, 3.72, f"斜线 = pad；…共 12 行，每行都 pad 到 {max(lens)}；"
-           f"利用率 {tot}/{pad_used} = {tot/pad_used*100:.1f}%",
+    _label(ax, x0, 3.72, f"斜线 = pad；…共 12 行，每行都 pad 到 {max(lens)}",
+           9.5, ha="left", color="#333333")
+    _label(ax, x0, 3.38, f"利用率 {tot}/{pad_used} = {tot/pad_used*100:.1f}%",
            10, ha="left", weight="bold", color=C["red"])
     # --- 下：贪心打包 ---
     _label(ax, 1.38, 2.7, "贪心打包", 10, ha="right", weight="bold")
     colors = [BLUE, GREEN, ORANGE, PURPLE, "#d5e8d4", "#f9e2ec"]
     for ri, b in enumerate(bins):
-        y = 2.55 - ri * 1.15
+        y = 2.55 - ri * 1.05
         x = sx(0)
+        narrow = []
         for si, l in enumerate(b):
             wseg = l / cap * w
             p = _card(ax, x, y, wseg, 0.56, "", fc=colors[si % len(colors)],
                       ec="#777777", lw=0.6)
             if wseg > 1.05:
                 _label(ax, x + wseg / 2, y + 0.28, str(l), 9, in_box=p)
+            else:
+                narrow.append((x + wseg / 2, str(l)))
             x += wseg
         rest = cap - sum(b)
         if rest > 0:
-            pp = _card(ax, x, y, rest / cap * w, 0.56, "", fc="white",
-                       ec="#bbbbbb", lw=0.6)
+            _card(ax, x, y, rest / cap * w, 0.56, "", fc="white",
+                  ec="#bbbbbb", lw=0.6)
             ax.add_patch(Rectangle((x, y), rest / cap * w, 0.56, fc="none",
                                    ec="none", hatch="///", lw=0))
-            if rest / cap * w > 1.6:
-                _label(ax, x + rest / cap * w / 2, y + 0.28, f"pad {rest}",
-                       9, color="#888888", in_box=pp)
-        _label(ax, x0, y - 0.32,
-               f"行 {ri}：{'+'.join(str(l) for l in b)} = {sum(b)}"
-               f"（pad {cap - sum(b)}）", 9, ha="left", color="#444444")
-    _label(ax, x0, 0.62, f"利用率 {tot}/{pack_used} = {tot/pack_used*100:.1f}%",
+            narrow.append((x + rest / cap * w / 2, f"pad {rest}"))
+        # 窄段：上方引线，水平推开
+        if narrow:
+            pos = [c for c, _ in narrow]
+            for _ in range(20):
+                ok = True
+                for i in range(1, len(pos)):
+                    if pos[i] < pos[i - 1] + 0.75:
+                        pos[i] = pos[i - 1] + 0.75
+                        ok = False
+                if ok:
+                    break
+            for (cx, lab), px in zip(narrow, pos):
+                ax.plot([cx, px], [y + 0.56, y + 0.8], color="#999999", lw=0.7)
+                _label(ax, px, y + 0.92, lab, 9)
+        _label(ax, sx(cap) + 0.35, y + 0.28, f"行 {ri}", 9.5, ha="left",
+               color="#333333")
+    _label(ax, x0, 1.18, f"利用率 {tot}/{pack_used} = {tot/pack_used*100:.1f}%",
            10, ha="left", weight="bold", color=C["green"])
+    _label(ax, x0, 0.82, f"行 0：{'+'.join(str(l) for l in bins[0])} = "
+           f"{sum(bins[0])}（pad {cap - sum(bins[0])}）", 9, ha="left",
+           color="#444444")
+    _label(ax, x0, 0.5, f"行 1：{'+'.join(str(l) for l in bins[1])} = "
+           f"{sum(bins[1])}（pad {cap - sum(bins[1])}）", 9, ha="left",
+           color="#444444")
     row0_cu = [0]
     for l in bins[0]:
         row0_cu.append(row0_cu[-1] + l)
-    _label(ax, x0, 0.3, f"行 0 的 cu_seqlens = {row0_cu}（每段 position_ids 0..len-1）",
-           9.5, ha="left", color="#333333")
+    _label(ax, x0, 0.18, f"行 0 的 cu_seqlens = {row0_cu}（每段 position_ids 0..len-1）",
+           9, ha="left", color="#333333")
     save(fig, "training-stability-packing-vs-padding")
 
 

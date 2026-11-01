@@ -165,46 +165,68 @@ class Attn(nn.Module):
         super().__init__()
         self.wq, self.wk, self.wv = (nn.Linear(D, D, bias=False) for _ in range(3))
         self.wo = nn.Linear(D, D, bias=False)
+        self.emb = nn.Embedding(64, D)
+        self.head = nn.Linear(D, 64)
         self.lnq = nn.LayerNorm(D) if qk_ln else None
         self.lnk = nn.LayerNorm(D) if qk_ln else None
 
-    def forward(self, x):
-        q, k, v = self.wq(x), self.wk(x), self.wv(x)
+    def qk(self, x):
+        q, k = self.wq(x), self.wk(x)
         if self.lnq is not None:
             q, k = self.lnq(q), self.lnk(k)
+        return q, k
+
+    def forward(self, x):
+        x = self.emb(x)
+        q, k = self.qk(x)
+        v = self.wv(x)
         scores = q @ k.transpose(-1, -2) / math.sqrt(D)
-        return self.wo(scores.softmax(-1) @ v)
+        out = self.wo(scores.softmax(-1) @ v)
+        return self.head(out), scores
 
 
 def cmd_logit():
-    torch.manual_seed(2)
-    steps = 60
+    """induction 任务：序列末尾重复一个早先的 token，目标是它当时后面的那个
+    token。要解对，最后一个位置的注意力必须尖到命中位置——奖励 peaky
+    attention，logit 增长的机制（‖Wq‖·‖Wk‖ 随训练增大）才可能显出来。"""
+    V2, S2, STEPS, LR = 64, 16, 800, 0.02
     out = {}
     for qk_ln in (False, True):
         torch.manual_seed(2)
         attn = Attn(qk_ln=qk_ln)
-        opt = torch.optim.SGD(attn.parameters(), lr=0.5)  # 故意高 LR
-        maxes = []
-        for step in range(steps):
-            x = torch.randn(4, 16, D)
-            y = torch.randn(4, 16, D)
-            pred = attn(x)
-            loss = ((pred - y) ** 2).mean()
+        opt = torch.optim.Adam(attn.parameters(), lr=LR, weight_decay=0)
+        maxes, wnorms = [], []
+        for step in range(STEPS):
+            g = torch.Generator().manual_seed(step)
+            x = torch.randint(0, V2, (8, S2), generator=g)
+            j = int(torch.randint(2, S2 - 2, (1,), generator=g))
+            x[:, -1] = x[:, j]                      # 末位重复第 j 个 token
+            y = x[:, j + 1]                         # 目标 = 它当时的下一个
+            logits, _ = attn(x)
+            loss = nn.functional.cross_entropy(logits[:, -1], y)
             opt.zero_grad()
             loss.backward()
             opt.step()
-            with torch.no_grad():
-                q, k = attn.wq(x), attn.wk(x)
-                if attn.lnq is not None:
-                    q, k = attn.lnq(q), attn.lnk(k)
-                mx = (q @ k.transpose(-1, -2) / math.sqrt(D)).abs().max().item()
-            maxes.append(mx)
-        out[qk_ln] = maxes
-    print("单层注意力，SGD lr=0.5（故意偏高），60 步，每步 max|q·k/sqrt(d)|：")
-    print("step   不带 QK-LN    带 QK-LN")
-    for s in range(0, steps, 5):
-        print(f" {s:3d}   {out[False][s]:10.2f}   {out[True][s]:10.2f}")
-    print(f"末步    {out[False][-1]:10.2f}   {out[True][-1]:10.2f}")
+            if step % 10 == 0 or step == STEPS - 1:
+                with torch.no_grad():
+                    q, k = attn.qk(attn.emb(x))
+                    mx = (q @ k.transpose(-1, -2) / math.sqrt(D))                         .abs().max().item()
+                    wn = (attn.wq.weight.norm() * attn.wk.weight.norm()).item()
+                maxes.append((step, mx))
+                wnorms.append((step, wn))
+        out[qk_ln] = {"logit": maxes, "wnorm": wnorms}
+        fin_loss = loss.item()
+    print("单层注意力 + head，induction 任务（末位重复早先 token，预测其后 token）")
+    print(f"Adam lr={LR} 无 weight decay，{STEPS} 步，最终 loss "
+          f"{'带 QK-LN' if qk_ln else '不带'}: {fin_loss:.3f}")
+    print("step    不带: logit  ‖Wq‖‖Wk‖      带: logit  ‖Wq‖‖Wk‖")
+    sel = [0, 5, 10, 20, 40, 79, 80]
+    for i in sel:
+        s0 = out[False]["logit"][i]
+        s1 = out[True]["logit"][i]
+        w0 = out[False]["wnorm"][i]
+        w1 = out[True]["wnorm"][i]
+        print(f" {s0[0]:4d}   {s0[1]:8.2f}  {w0[1]:8.2f}      {s1[1]:8.2f}  {w1[1]:8.2f}")
     with open(os.path.join(OUT_DIR, "10_stab_logit_curve.json"), "w") as f:
         json.dump(out, f)
 

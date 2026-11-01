@@ -6,6 +6,7 @@ F2 state-grid：四种状态 × 各篇的关系网格（§三.1）
 """
 import os
 import sys
+import matplotlib.patches as mpatches
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _plot import C, box, plt, save, text
@@ -40,10 +41,10 @@ def _card(ax, x, y, w, h, s="", fc="white", ec="#777777", size=10, lw=0.9):
     return p
 
 
-def _arrow(ax, a, b, color="#555555", lw=1.2, ms=10):
-    ax.annotate("", xy=b, xytext=a,
-                arrowprops=dict(arrowstyle="->", color=color, lw=lw,
-                                mutation_scale=ms))
+def _arrow(ax, a, b, color="#555555", lw=1.2, ms=13):
+    ax.add_patch(mpatches.FancyArrowPatch(a, b, arrowstyle="-|>",
+                                          color=color, lw=lw,
+                                          mutation_scale=ms))
 
 
 def ledger_chain():
@@ -52,28 +53,26 @@ def ledger_chain():
     _label(ax, 6, 5.9, "一个 70B / 1024 卡任务的一张账单（算账线，toy 重算）",
            12.5, weight="bold")
     items = [
-        ("常驻状态", "16N = 1.13 TB", "", "第一篇", BLUE),
+        ("常驻状态", "16N=1.13TB", "", "第一篇", BLUE),
         ("每卡显存", "≈ 49 GB（A）", "", "第七篇", GREEN),
         ("理论 step 下限", "≈ 1.9 s", "", "第一篇·七", BLUE),
         ("MFU 目标", "42% ≈ 4.75 s", "", "第七篇", GREEN),
-        ("落盘与间隔", "δ = 2 s", "τ_opt≈3.5min", "第八篇", ORANGE),
+        ("落盘与间隔", "δ = 2 s", "τ_opt ≈ 3.5 min", "第八篇", ORANGE),
         ("有效训练时间", "G 71% → 94%", "（16K 卡场景）", "第九篇", ORANGE),
         ("成本单位", "1 MFU 点", "≈ 4.4 万美元", "第十一篇", RED),
     ]
-    # 两排：4（左→右）+ 3（右→左折返，竖直下落箭头）
-    w, h, gap = 2.55, 1.7, 0.28
-    total4 = 4 * w + 3 * gap
-    x0r1 = (12 - total4) / 2
-    mfu_cx = x0r1 + 3 * (w + gap) + w / 2
-    x0r2 = mfu_cx - (2 * (w + gap) + w / 2)
-    layout = [(4, 5.1, x0r1, +1), (3, 2.6, x0r2, -1)]
+    # 两排都左→右；MFU 肘形箭头下折到第二排第一格
+    w, h, gap = 2.72, 1.7, 0.3
+    layout = [(4, 5.1), (3, 2.6)]
     i = 0
-    for cnt, yt, x0, d in layout:
+    mfu_cx = mfu_y = x_end2 = y_row2_top = None
+    for cnt, yt in layout:
+        total = cnt * w + (cnt - 1) * gap
+        x0 = (12 - total) / 2
         y = yt - h
         for j in range(cnt):
-            idx = i + j if d > 0 else i + (cnt - 1 - j)
+            title, val, sub, src, fc = items[i]
             x = x0 + j * (w + gap)
-            title, val, sub, src, fc = items[idx]
             p = _card(ax, x, y, w, h, "", fc=fc, ec="#777777", lw=0.9)
             _label(ax, x + w / 2, y + h - 0.3, title, 10.5, weight="bold",
                    in_box=p)
@@ -85,19 +84,20 @@ def ledger_chain():
             _label(ax, x + w / 2, y + 0.26, src, 9, color="#555555",
                    in_box=p)
             if j < cnt - 1:
-                if d > 0:
-                    _arrow(ax, (x + w + 0.04, y + h / 2),
-                           (x + w + gap - 0.04, y + h / 2))
-                else:
-                    _arrow(ax, (x - 0.04, y + h / 2),
-                           (x - gap + 0.04, y + h / 2))
-        i += cnt
-    # 第一排末尾 MFU → 第二排右端"落盘与间隔"（竖直下落）
-    _arrow(ax, (mfu_cx, 5.1 - h - 0.04), (mfu_cx, 2.6 + 0.04))
+                _arrow(ax, (x + w + 0.05, y + h / 2),
+                       (x + w + gap - 0.05, y + h / 2), ms=13)
+            if i == 3:
+                mfu_cx, mfu_y = x + w / 2, y
+            if i == 4:
+                x_end2, y_row2_top = x + w / 2, yt
+            i += 1
+    ymid = (mfu_y + y_row2_top) / 2
+    ax.plot([mfu_cx, mfu_cx, x_end2 + 0.05],
+            [mfu_y - 0.05, ymid, ymid], color="#555555", lw=1.2)
+    _arrow(ax, (x_end2 + 0.05, ymid), (x_end2 + 0.05, y_row2_top + 0.05))
     _label(ax, 6, 0.55,
            "每格都从上一格推出：字节 → 配置 → 理论时间 → MFU 目标 → "
-           "保存间隔 → 有效时间 → GPU 小时与美元（第二排从右往左读）",
-           9.5, color="#555555")
+           "保存间隔 → 有效时间 → GPU 小时与美元", 9.5, color="#555555")
     save(fig, "large-scale-training-recap-ledger-chain")
 
 

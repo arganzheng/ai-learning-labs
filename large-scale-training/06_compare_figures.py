@@ -10,54 +10,61 @@ PALETTE = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3", "#e7e7e7"]
 
 
 def f1():
-    fig, ax = plt.subplots(figsize=(7.6, 4.4))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.8))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.8); ax.axis("off")
     rows = [
-        ("Megatron\nTP2×PP2×DP2 ZeRO-1", [0.75, 1.50, 0.75, 0.75, 0.75], ["0.75", "1.50", "0.75", "0.75", "0.75"], "4.50 GB", C["blue"]),
-        ("DeepSpeed\nZeRO-3 DP8", [0.375, 0.375, 0.749, 0.749, 0.749], ["0.375", "0.375", "0.749", "0.749", "0.749"], "3.00 GB", C["orange"]),
-        ("torchtitan\nFSDP4×TP2 tied", [0.618, 0.618, 0.618, 0.618], ["0.618", "0.618", "0.618", "0.618"], "2.47 GB\n不绑定 3.00", C["green"]),
+        ("Megatron\nTP2×PP2×DP2 ZeRO-1", [0.75, 1.50, 0.75, 0.75, 0.75],
+         ["bf16\n参数", "fp32\n梯度", "fp32\n主参数", "Adam\nm", "Adam\nv"], "4.50 GB", C["blue"]),
+        ("DeepSpeed\nZeRO-3 DP8", [0.375, 0.375, 0.749, 0.749, 0.749],
+         ["bf16\n参数", "bf16\n梯度", "fp32\n主参数", "Adam\nm", "Adam\nv"], "3.00 GB", C["orange"]),
+        ("torchtitan\nFSDP4×TP2 tied", [0.618, 0.618, 0.618, 0.618],
+         ["fp32\n参数＝主参数", "fp32\n梯度", "Adam\nm", "Adam\nv"], "2.47 GB\n不绑定 3.00", C["green"]),
     ]
-    y_positions = [3.35, 2.30, 1.25]
+    y_positions = [3.35, 2.20, 1.05]
     x0, total_w, h = 2.20, 4.20, 0.54
-    for (name, vals, labels, total, accent), y in zip(rows, y_positions):
+    for (name, vals, segnames, total, accent), y in zip(rows, y_positions):
         text(ax, 2.05, y + h / 2, name, ha="right", va="center", fontsize=10, color=accent)
         width_sum = sum(vals)
         x = x0
-        for idx, (val, label) in enumerate(zip(vals, labels)):
+        n = len(vals)
+        for idx, (val, segname) in enumerate(zip(vals, segnames)):
             w = total_w * val / width_sum
             # Same palette meanings across bars: parameter, gradient, master, m, v.
-            color_idx = (0, 1, 2, 3, 4)[idx] if len(labels) == 5 else (0, 1, 3, 4)[idx]
+            color_idx = (0, 1, 2, 3, 4)[idx] if n == 5 else (0, 1, 3, 4)[idx]
             color = PALETTE[color_idx]
             ax.add_patch(patches.Rectangle((x, y), w, h, fc=color, ec="white", lw=1.2))
-            text(ax, x + w / 2, y + h / 2, label, ha="center", va="center", fontsize=10)
+            text(ax, x + w / 2, y + h + 0.06, segname, ha="center", va="bottom", fontsize=9)
+            text(ax, x + w / 2, y + h / 2, f"{val:g}", ha="center", va="center", fontsize=10)
             x += w
         text(ax, 6.55, y + h / 2, total, ha="left", va="center", fontsize=10, color=accent)
-    legend = [("参数", PALETTE[0]), ("梯度", PALETTE[1]), ("主参数", PALETTE[2]), ("m", PALETTE[3]), ("v", PALETTE[4])]
-    for i, (label, color) in enumerate(legend):
-        x = 0.42 + i * 1.45
-        ax.add_patch(patches.Rectangle((x, 0.45), 0.15, 0.15, fc=color, ec="#999999", lw=0.5))
-        text(ax, x + 0.22, 0.525, label, ha="left", va="center", fontsize=10)
-    text(ax, 3.8, 0.20, "不含激活与临时 all-gather；torchtitan fp32 分片就是主参数。", ha="center", va="center", fontsize=10)
+    text(ax, 3.8, 0.18, "不含激活与临时 all-gather；torchtitan fp32 分片就是主参数。", ha="center", va="center", fontsize=10)
     ax.set_title("同一个模型，三种参数相关显存的常驻方式")
     save(fig, "compare-f1-resident-memory")
 
 
 def f2():
-    fig, ax = plt.subplots(figsize=(7.6, 4.1))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.1); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.4))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
+    x0, xstep = 1.30, 0.80
+    def yr(y):
+        return x0 + (y - 2019) * xstep
+    # (year, label, high) — labels on two heights so adjacent years never collide.
     lanes = [
-        ("Megatron", C["blue"], [(0.8, "2019\nTP"), (1.75, "2021\n1F1B"), (2.7, "2022\nSP"), (3.65, "2023\nCore"), (4.6, "2024\nEP / DO"), (5.65, "2026\nFSDP")]),
-        ("DeepSpeed", C["orange"], [(0.8, "2019\nZeRO"), (1.75, "2020\nStage 1–3"), (2.7, "2021\nOffload"), (3.65, "2022\nMoE"), (4.6, "2023\nZeRO++"), (5.65, "2025\nAutoTP")]),
-        ("PyTorch +\ntorchtitan", C["green"], [(1.75, "2022\nDTensor RFC"), (2.7, "2023\nDTensor"), (3.65, "2024\nMesh + FSDP2"), (4.6, "2024\nTitan 论文"), (5.65, "2026\nv0.3 Sharding")]),
+        ("Megatron", C["blue"], [(2019, "TP", 0), (2021, "1F1B", 0), (2022, "SP", 0), (2023, "Megatron\nCore", 0), (2024, "EP / 分布式\n优化器", 0), (2026, "Megatron-\nFSDP", 0)]),
+        ("DeepSpeed", C["orange"], [(2019, "ZeRO", 0), (2020, "Stage 1–3", 1), (2021, "Offload", 0), (2022, "MoE", 1), (2023, "ZeRO++", 0), (2025, "AutoTP", 0)]),
+        ("PyTorch +\ntorchtitan", C["green"], [(2022, "DTensor\nRFC", 0), (2023, "DTensor", 1), (2024, "DeviceMesh / FSDP2\ntorchtitan 论文", 0), (2026, "v0.3\nShardingConfig", 1)]),
     ]
     ys = [3.15, 2.05, 0.95]
+    for y in range(2019, 2027):
+        ax.plot([yr(y), yr(y)], [0.72, 3.62], color="#e4e4e4", lw=0.6, zorder=0)
+        text(ax, yr(y), 3.95, str(y), ha="center", va="center", fontsize=9, color="#888888")
     for (name, color, events), y in zip(lanes, ys):
-        text(ax, 0.65, y, name, ha="right", va="center", fontsize=10, color=color)
-        ax.plot([0.85, 6.1], [y, y], color=color, lw=1.2)
-        for x, label in events:
-            ax.plot([x, x], [y - 0.08, y + 0.08], color=color, lw=1.4)
-            text(ax, x, y + 0.16, label, ha="center", va="bottom", fontsize=10, color=color)
-    text(ax, 3.8, 0.28, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)
+        text(ax, 0.72, y, name, ha="right", va="center", fontsize=10, color=color)
+        ax.plot([x0 - 0.10, yr(2026) + 0.28], [y, y], color=color, lw=1.2)
+        for year, label, high in events:
+            ax.plot([yr(year), yr(year)], [y - 0.08, y + 0.08], color=color, lw=1.4)
+            text(ax, yr(year), y + (0.62 if high else 0.16), label, ha="center", va="bottom", fontsize=9, color=color)
+    text(ax, 3.8, 0.24, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)
     ax.set_title("三条线怎么走到今天：每次演进都在解决新的规模瓶颈")
     save(fig, "compare-f2-timeline")
 
@@ -69,48 +76,52 @@ def f3():
     events = toy.saw_events(16, prefetch=1)
     live_layers = [event[3] for event in events]
     steps = list(range(len(live_layers)))
-    fig, axes = plt.subplots(3, 1, figsize=(7.6, 4.8), sharex=True)
-    panels = [("Megatron ZeRO-1", 750.0, C["blue"], None),
-              ("DeepSpeed ZeRO-3", 121.6, C["orange"], live_layers),
-              ("torchtitan FSDP2", 60.8, C["green"], live_layers)]
-    for ax, (name, layer_mb, color, layers) in zip(axes, panels):
+    fig, axes = plt.subplots(3, 1, figsize=(7.6, 5.0), sharex=True)
+    bwd_start = next(i for i, e in enumerate(events) if e[0] == "backward")
+    panels = [("Megatron ZeRO-1", 750.0, C["blue"], None, [0, 750]),
+              ("DeepSpeed ZeRO-3", 121.6, C["orange"], live_layers, [0, 121.6, 243.2]),
+              ("torchtitan FSDP2", 60.8, C["green"], live_layers, [0, 121.6])]
+    for ax, (name, layer_mb, color, layers, ticks) in zip(axes, panels):
         ax.set_xlim(0, len(steps) - 1)
+        ax.set_ylim(0, 800)
         ax.set_title(name, fontsize=11, loc="left", color=color)
-        ax.set_yticks([0, layer_mb] if layers is None else [0, layer_mb, layer_mb * 2])
-        ax.set_yticklabels(["0", f"{layer_mb:g}"] if layers is None else ["0", f"{layer_mb:g}", f"{layer_mb * 2:g}"])
+        ax.set_yticks(ticks)
+        ax.set_yticklabels([f"{t:g}" for t in ticks])
         ax.grid(axis="y", color="#dddddd", linewidth=0.6)
+        ax.axvline(bwd_start - 0.5, color="#999999", lw=0.9, ls="--")
         if layers is None:
             ax.plot([0, len(steps) - 1], [layer_mb, layer_mb], color=color, lw=2.2)
         else:
             ax.step(steps, [count * layer_mb for count in layers], where="post", color=color, lw=1.8)
+    axes[0].text(bwd_start + 0.6, 770, "前向结束 / 反向开始", fontsize=9, color="#777777", va="top")
     axes[-1].set_xticks([])
     fig.suptitle("完整 bf16 参数在一个 step 内的占用：平线与两条锯齿", fontsize=12)
-    fig.subplots_adjust(bottom=0.15)
-    fig.text(0.5, 0.045, "横轴 = toy hook 事件顺序（16 层前向 + 反向）", ha="center", fontsize=10)
-    fig.text(0.5, 0.002, "只画 16 个 Transformer 层，不含 embedding / 输出层；单位 MB（十进制）", ha="center", fontsize=10)
     save(fig, "compare-f3-live-parameters")
 
 
 def f4():
-    fig, ax = plt.subplots(figsize=(7.6, 4.2))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.2); ax.axis("off")
-    row_y = [3.2, 2.05, 0.9]
+    fig, ax = plt.subplots(figsize=(7.6, 4.4))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
+    row_y = [3.55, 2.30, 1.05]
     labels = ["Megatron", "DeepSpeed", "torchtitan"]
     colors = [C["blue"], C["orange"], C["green"]]
+    bar_x0, bar_x1, bar_mid = 1.15, 6.35, 3.75
     for y, name, color in zip(row_y, labels, colors):
-        text(ax, 0.9, y + 0.28, name, ha="right", va="center", fontsize=10, color=color)
-        ax.add_patch(patches.Rectangle((1.05, y + 0.12), 6.1, 0.32, fc="#f4f6f8", ec="#cccccc", lw=0.5))
-        text(ax, 2.0, y + 0.28, "前向 + 反向计算（时间向右）", ha="left", va="center", fontsize=10, color="#555555")
-    # Megatron uses two large collectives across the step boundary.
-    box(ax, 4.15, 2.55, 1.12, 0.62, "反向末尾\nRS 梯度", fc=C["orange"] + "22", ec=C["orange"], fs=10)
-    box(ax, 5.62, 2.55, 1.12, 0.62, "下一步前\nAG 参数", fc=C["green"] + "22", ec=C["green"], fs=10)
-    text(ax, 2.45, 2.86, "RS + AG = 2N", ha="center", va="center", fontsize=10, color=C["blue"])
+        text(ax, 1.0, y + 0.29, name, ha="right", va="center", fontsize=10, color=color)
+        ax.add_patch(patches.Rectangle((bar_x0, y + 0.12), bar_mid - bar_x0, 0.34, fc="#f4f6f8", ec="#cccccc", lw=0.5))
+        ax.add_patch(patches.Rectangle((bar_mid, y + 0.12), bar_x1 - bar_mid, 0.34, fc="#eceff2", ec="#cccccc", lw=0.5))
+        text(ax, (bar_x0 + bar_mid) / 2, y + 0.29, "前向", ha="center", va="center", fontsize=10, color="#555555")
+        text(ax, (bar_mid + bar_x1) / 2, y + 0.29, "反向", ha="center", va="center", fontsize=10, color="#555555")
+    # Megatron: one reduce-scatter at the end of backward, one all-gather before next forward.
+    box(ax, 4.85, row_y[0] - 0.66, 1.25, 0.62, "反向末尾\nRS 梯度", fc=C["orange"] + "22", ec=C["orange"], fs=9.5)
+    box(ax, 6.42, row_y[0] - 0.66, 1.05, 0.62, "下一步前\nAG 参数", fc=C["green"] + "22", ec=C["green"], fs=9.5)
+    text(ax, 6.55, row_y[0] + 0.29, "RS + AG = 2N\n1.1 GB/卡", ha="left", va="center", fontsize=9.5, color=C["blue"])
     # ZeRO-3 and FSDP2 repeat three collectives for each Transformer layer.
     for y, gb, color in [(row_y[1], "7.9 GB/卡", C["orange"]), (row_y[2], "3.51 GB/卡", C["green"])]:
-        for i, label in enumerate(("前向 AG", "反向 AG", "反向 RS")):
-            box(ax, 1.35 + i * 1.38, y - 0.45, 1.08, 0.40, label, fc=color + "22", ec=color, fs=10)
-        text(ax, 5.65, y - 0.25, f"每层 ×16\n{gb}", ha="left", va="center", fontsize=10, color=color)
-    text(ax, 3.8, 0.22, "DeepSpeed / torchtitan：AG + AG + RS = 3N；若前向后不 reshard，则为 2N", ha="center", fontsize=10)
+        for x, label in [(2.00, "前向 AG"), (4.05, "反向 AG"), (5.30, "反向 RS")]:
+            box(ax, x, y - 0.62, 1.10, 0.42, label, fc=color + "22", ec=color, fs=9.5)
+        text(ax, 6.55, y + 0.29, f"每层 ×16\n{gb}", ha="left", va="center", fontsize=9.5, color=color)
+    text(ax, 3.8, 0.18, "DeepSpeed / torchtitan：AG + AG + RS = 3N；若前向后不 reshard，则为 2N", ha="center", fontsize=10)
     ax.set_title("每步的 DP 通信：Megatron 两大块，ZeRO-3 / FSDP2 每层三小块")
     save(fig, "compare-f4-communication")
 
@@ -155,61 +166,53 @@ def f5():
 
 
 def f6():
-    fig, ax = plt.subplots(figsize=(7.6, 4.15))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.15); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 3.9))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 3.9); ax.axis("off")
     rows = [
-        ("Megatron\nTP2×PP2×DP2", "megatron", "TP [0,1] [2,3] [4,5] [6,7]\nDP [0,2] [1,3] [4,6] [5,7] · PP [0,4] [1,5] [2,6] [3,7]", C["blue"]),
-        ("DeepSpeed\nZeRO-3 DP8", "deepspeed", "DP [0,1,2,3,4,5,6,7]", C["orange"]),
-        ("torchtitan\ndp_shard4×TP2", "torchtitan", "TP [0,1] [2,3] [4,5] [6,7]\ndp_shard [0,2,4,6] [1,3,5,7]", C["green"]),
+        ("Megatron\nTP2×PP2×DP2", "megatron", "色条＝TP 组\nTP [0,1] [2,3] [4,5] [6,7]\nDP [0,2] [1,3] [4,6] [5,7]\nPP [0,4] [1,5] [2,6] [3,7]", C["blue"]),
+        ("DeepSpeed\nZeRO-3 DP8", "deepspeed", "色条＝同一 DP 组\nDP [0,1,2,3,4,5,6,7]", C["orange"]),
+        ("torchtitan\ndp_shard4×TP2", "torchtitan", "色条＝dp_shard 组\nTP [0,1] [2,3] [4,5] [6,7]\ndp_shard [0,2,4,6] [1,3,5,7]", C["green"]),
     ]
-    ys = [3.10, 2.00, 0.90]
+    ys = [2.95, 1.85, 0.75]
     for (name, grouping, desc, color), y in zip(rows, ys):
-        text(ax, 0.82, y + 0.24, name, ha="right", va="center", fontsize=10, color=color)
+        text(ax, 0.94, y + 0.27, name, ha="right", va="center", fontsize=10, color=color)
         for r in range(8):
-            x = 1.22 + r * 0.48
-            p = box(ax, x, y, 0.40, 0.48, "", fc="white", ec="#444444", lw=0.8, r=0)
+            x = 1.16 + r * 0.56
+            p = box(ax, x, y, 0.50, 0.55, "", fc="white", ec="#444444", lw=0.8, r=0)
             if grouping == "megatron":
                 segment_color = PALETTE[(r // 2) % 4]
             elif grouping == "deepspeed":
                 segment_color = PALETTE[2]
             else:
                 segment_color = PALETTE[0] if r % 2 == 0 else PALETTE[1]
-            box(ax, x + 0.04, y + 0.33, 0.32, 0.08, "", fc=segment_color, ec=segment_color, r=0)
-            text(ax, x + 0.20, y + 0.17, f"{r}", in_box=p, ha="center", va="center", fontsize=10)
-        text(ax, 5.40, y + 0.24, desc, ha="left", va="center", fontsize=10, color=color)
+            box(ax, x + 0.05, y + 0.38, 0.40, 0.09, "", fc=segment_color, ec=segment_color, r=0)
+            text(ax, x + 0.25, y + 0.19, f"{r}", in_box=p, ha="center", va="center", fontsize=10)
+        text(ax, 5.78, y + 0.27, desc, ha="left", va="center", fontsize=9.5, color=color)
     ax.set_title("8 张卡，三种分组：组名告诉你哪些 rank 一起通信")
     save(fig, "compare-f6-process-groups")
 
 
 def f7():
-    fig, ax = plt.subplots(figsize=(7.6, 4.5))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.5); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.0))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.0); ax.axis("off")
     def node(x, y, w, h, label, fc="#ffffff", ec="#555555", fs=10):
         p = box(ax, x, y, w, h, "", fc=fc, ec=ec, lw=0.9, r=0)
         text(ax, x + w / 2, y + h / 2, label, in_box=p, ha="center", va="center", fontsize=fs)
         return p
-    n0 = node(2.55, 3.65, 2.5, 0.48, "模型能否改写成框架的层？")
-    n1 = node(0.25, 2.58, 2.35, 0.72, "能：显存是否够放\n完整 bf16 参数？", "#f7f9fc", C["blue"])
-    n2 = node(4.95, 2.58, 2.35, 0.72, "不能：已有任意 nn.Module，\n先要降低显存？", "#fffaf3", C["orange"])
-    n3 = node(0.25, 1.55, 2.35, 0.55, "够：追求极限 MFU？")
-    n4 = node(2.95, 1.55, 2.35, 0.55, "不够 / 想要声明式组合？")
-    n5 = node(5.0, 1.55, 2.35, 0.55, "小集群 / 脚本零侵入？")
-    node(0.35, 0.35, 2.1, 0.62, "Megatron\n手写重叠、性能深", "#eef4fb", C["blue"])
-    node(2.95, 0.35, 2.1, 0.62, "torchtitan\nDTensor 可组合", "#eff8f0", C["green"])
-    node(5.2, 0.35, 2.1, 0.62, "DeepSpeed\nZeRO-3 + offload", "#fff3e8", C["orange"])
+    q1 = node(2.55, 3.05, 2.5, 0.55, "模型能否改写成框架自己的层？")
+    q2 = node(0.60, 1.95, 2.40, 0.50, "更看重什么？", "#f7f9fc", C["blue"])
+    ds = node(4.72, 1.88, 2.82, 0.68, "DeepSpeed：包裹任意 nn.Module\nZeRO-3 / offload 省显存", "#fff3e8", C["orange"])
+    m = node(0.20, 0.36, 2.30, 0.68, "Megatron\n手写通信重叠、TP/PP 最成熟", "#eef4fb", C["blue"])
+    t = node(2.75, 0.36, 2.55, 0.68, "torchtitan\nDTensor + FSDP2，策略写成声明", "#eff8f0", C["green"])
     def arrow(a, b, label=None, tx=None, ty=None):
         ax.annotate("", xy=b, xytext=a, arrowprops=dict(arrowstyle="->", lw=1.2, color="#666666"))
         if label:
-            text(ax, tx, ty, label, ha="center", va="center", fontsize=10)
-    arrow((3.15, 3.65), (1.45, 3.3), "能", 2.15, 3.48)
-    arrow((4.45, 3.65), (6.1, 3.3), "不能", 5.55, 3.48)
-    arrow((1.45, 2.58), (1.45, 2.1), "够", 1.65, 2.38)
-    arrow((2.25, 2.58), (4.0, 2.1), "不够 / 研究", 3.25, 2.48)
-    arrow((6.1, 2.58), (6.1, 2.1), "是", 6.35, 2.38)
-    arrow((1.45, 1.55), (1.4, 0.97), "是", 1.7, 1.28)
-    arrow((3.95, 1.55), (4.0, 0.97), "是", 4.25, 1.28)
-    arrow((6.1, 1.55), (6.25, 0.97), "是", 6.4, 1.28)
-    ax.set_title("选型不是排行榜：先问模型、显存和改策略的需求")
+            text(ax, tx, ty, label, ha="center", va="center", fontsize=9.5)
+    arrow((3.20, 3.05), (1.80, 2.45), "能", 2.40, 2.78)
+    arrow((4.60, 3.05), (6.15, 2.50), "不能", 5.50, 2.78)
+    arrow((1.30, 1.95), (1.35, 1.00), "千卡级极限 MFU", 0.55, 1.50)
+    arrow((2.30, 1.95), (3.95, 1.00), "并行策略常改\nPyTorch 原生", 3.60, 1.52)
+    ax.set_title("选型不是排行榜：先问模型约束，再问需求")
     save(fig, "compare-f7-decision")
 
 

@@ -85,7 +85,7 @@ def young_curve():
     fig, ax = _canvas(7.6, 4.6, (0, 12), (0, 7.0))
     M = 3.09 * 3600
     delta = 60.0  # 同步分片写一行（正文表里 τ_opt=19 min）
-    taus = np.linspace(30, 4000, 200) / 60.0  # min
+    taus = np.linspace(3.0, 40, 200)  # min；δ/τ 在 τ<3 时冲出 35% 上界
     f_save = (delta / 60) / taus * 100
     f_lose = taus * 60 / (2 * M) * 100
     f_sum = f_save + f_lose
@@ -104,26 +104,29 @@ def young_curve():
             color=C["orange"], lw=1.4)
     ax.plot([mx(t) for t in taus], [my(v) for v in f_sum],
             color=C["red"], lw=1.8)
-    _label(ax, mx(37), my((delta / 60) / 37 * 100) - 0.25, "δ/τ（保存开销）", 9.5,
-           color=C["blue"])
-    _label(ax, mx(37.5), my(37.5 * 60 / (2 * M) * 100) + 0.35, "τ/(2M)（回退损失）",
-           9.5, color=C["orange"])
-    _label(ax, mx(33), my(33 * 60 / (2 * M) * 100 + (delta / 60) / 33 * 100) + 0.35,
-           "合计", 10, color=C["red"], weight="bold")
-    ax.plot([mx(t_opt), mx(t_opt)], [1.1, my(f_sum.min() / 100 * 100)], "--",
+    _label(ax, 1.75, 4.95, "δ/τ（保存开销）", 9.5, color=C["blue"], ha="left")
+    _label(ax, 10.55, 1.95, "τ/(2M)（回退损失）", 9.5, color=C["orange"],
+           ha="right")
+    _label(ax, mx(29), my(f_sum[np.argmin(np.abs(taus - 29))]) + 0.42, "合计",
+           10, color=C["red"], weight="bold")
+    ax.plot([mx(t_opt), mx(t_opt)], [1.1, my(f_sum.min())], "--",
             color="#888888", lw=0.9)
-    _label(ax, mx(t_opt) + 0.15, 1.55, f"τ_opt ≈ {t_opt:.0f} min", 9.5, ha="left")
-    _label(ax, mx(t_opt) + 0.15, my(f_sum.min()) + 0.35, "浪费 ≈ 10%", 9.5,
-           color=C["red"], ha="left")
+    p = _card(ax, 7.15, 4.35, 3.6, 0.85, "", fc="#fff8ee", ec=C["orange"],
+              lw=0.8)
+    _label(ax, 8.95, 4.92, f"τ_opt = √(2δM) ≈ {t_opt:.0f} min", 9.5, in_box=p,
+           weight="bold")
+    _label(ax, 8.95, 4.58, "浪费 ≈ 10%", 9.5, in_box=p, color=C["red"])
+    _arrow(ax, (7.15, 4.6), (mx(t_opt) + 0.1, my(f_sum.min()) + 0.08),
+           color="#888888", lw=0.9, ms=9)
     for gx in range(0, 45, 5):
         ax.plot([mx(gx), mx(gx)], [1.1, 5.5], color="#eeeeee", lw=0.5, zorder=0)
         _label(ax, mx(gx), 0.85, f"{gx}", 9, color="#666666")
     for gy in range(0, 40, 5):
         ax.plot([1.2, 10.8], [my(gy), my(gy)], color="#eeeeee", lw=0.5, zorder=0)
         _label(ax, 1.0, my(gy), f"{gy}", 9, color="#666666", ha="right")
-    _label(ax, 6, 0.35, "横轴：checkpoint 间隔 τ（min）；纵轴：期望浪费比例（%）· δ=60 s 同步分片写",
-           9.5)
-    _label(ax, 6, 0.05, "δ=600 s 时 τ_opt=61 min、浪费 32.8%；δ=10 s 异步时 8 min、4.2%",
+    _label(ax, 6, 0.45, "间隔 τ（min）", 9.5, color="#444444")
+    _label(ax, 0.45, 3.3, "期望浪费比例（%）", 9.5, color="#444444", rotation=90)
+    _label(ax, 6, 0.08, "δ=60 s 同步分片写；δ=600 s → τ_opt 61 min / 32.8%，δ=10 s → 8 min / 4.2%",
            9.5)
     save(fig, "distributed-checkpoint-young-formula")
 
@@ -131,7 +134,7 @@ def young_curve():
 def reshard_blocks():
     """F3：4→3 rank 的重分片（玩具实测的块表）。"""
     fig, ax = _canvas(7.6, 4.2, (0, 12), (0, 6.4))
-    _label(ax, 6, 6.1, "重分片示意：4 rank 存的 24 元素 → 3 rank 加载（toy 缩小例）",
+    _label(ax, 6, 6.15, "重分片示意：4 rank 存的 24 元素 → 3 rank 加载（toy 缩小例）",
            12, weight="bold")
     NEL, sw = 24, 0.36
     x0 = 1.6
@@ -149,7 +152,9 @@ def reshard_blocks():
                   fc="#f8fafc", ec="#888888", lw=0.8)
         _label(ax, x0 + (lo + hi) / 2 * sw, 2.5, f"rank{i}  w[{lo}:{hi}]",
                9.5, in_box=p)
+    _label(ax, 1.28, 3.4, "交集", 9.5, ha="right")
     # 交集标注：rank0 [0:8) 跨旧 rank0 全段 + rank1 前 2 个
+    narrow = []
     for i, (lo, hi) in enumerate(bounds):
         for j in range(4):
             o_lo, o_hi = j * 6, j * 6 + 6
@@ -158,12 +163,19 @@ def reshard_blocks():
                 p = _card(ax, x0 + a * sw, 3.15, (b - a) * sw, 0.5, "",
                           fc=["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3"][j],
                           ec="#bbbbbb", lw=0.5)
-                if b - a >= 3:
-                    _label(ax, x0 + (a + b) / 2 * sw, 3.4, f"{a}:{b}", 9, in_box=p)
-    _label(ax, 6, 1.35, "rank0 读旧块 0–6 全部 + 6–8 两个元素；rank1 读 8–14（旧块 2 段）+ 14–16；",
-           9.5)
-    _label(ax, 6, 0.92, "rank2 读 16–24（旧块 3 全段）——交集由 planner 的 ReadItems 算出；", 9.5)
-    _label(ax, 6, 0.5, "toy 实测：3 rank 各拿 8 元素、2 rank 各拿 12 元素，参数误差 0。", 9.5)
+                if b - a >= 4:
+                    _label(ax, x0 + (a + b) / 2 * sw, 3.4, f"{a}:{b}", 9,
+                           in_box=p)
+                else:
+                    narrow.append((a, b))
+    for k, (a, b) in enumerate(narrow):
+        cx = x0 + (a + b) / 2 * sw
+        lx = cx + (0.55 if k == 0 else -0.55)
+        _label(ax, lx, 3.98, f"{a}:{b}", 9, color="#333333")
+        ax.plot([cx, lx], [3.65, 3.9], color="#999999", lw=0.7)
+    _label(ax, 6, 1.35, "rank0 = 0:6 + 6:8；rank1 = 8:12 + 12:16；", 9.5)
+    _label(ax, 6, 0.92, "rank2 = 16:18 + 18:24——交集由 planner 的 ReadItems 算出；", 9.5)
+    _label(ax, 6, 0.5, "toy 实测：3 rank 各 8 元素、2 rank 各 12 元素，误差 0。", 9.5)
     save(fig, "distributed-checkpoint-reshard-4to3")
 
 

@@ -205,12 +205,12 @@ def toy_activations():
     }
     note = {
         "qkv": "三个投影各自保存相同输入；论文按共享输入计一次",
-        "attn_dropout": "公式按 bool mask 1 B/元素；实测保存 bf16 mask（2 B/元素）",
+        "attn_dropout": "公式按 bool mask 1 B/元素；CPU 的 _dropout_impl 按输入 dtype 存 bf16（2 B）",
         "pv": "V + dropout 后的注意力矩阵（公式分别计 2h + 2as）",
         "out_proj": "线性层为 wgrad 保存输入",
         "ln1": "除输入 2h 外还保存 mean/rstd（实测 bf16，各 1 个/位置）",
         "ln2": "同上",
-        "out_dropout": "公式按 bool mask 1 B/元素；实测保存 bf16 mask（2 B/元素）",
+        "out_dropout": "同上（CUDA 的 fused native_dropout 才存 bool 1 B）",
         "mlp_dropout": "同上",
     }
     tot, tot_p, tot_f = 0, 0, 0

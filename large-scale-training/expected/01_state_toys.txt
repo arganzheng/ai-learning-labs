@@ -16,13 +16,13 @@
     张量：(8, 64, 64):torch.bfloat16, (8, 64, 64):torch.bfloat16
   softmax　　　　　　　 保存 1 个  激活      65.5 KB   公式项   512 B/tok →     65.5 KB   
     张量：(2, 4, 64, 64):torch.bfloat16
-  attn_dropout　　 保存 1 个  激活      65.5 KB   公式项   256 B/tok →     32.8 KB   公式按 bool mask 1 B/元素；实测保存 bf16 mask（2 B/元素）
+  attn_dropout　　 保存 1 个  激活      65.5 KB   公式项   256 B/tok →     32.8 KB   公式按 bool mask 1 B/元素；CPU 的 _dropout_impl 按输入 dtype 存 bf16（2 B）
     张量：(2, 4, 64, 64):torch.bfloat16
   pv　　　　　　　　　　　　 保存 2 个  激活     131.1 KB   公式项  1024 B/tok →    131.1 KB   V + dropout 后的注意力矩阵（公式分别计 2h + 2as）
     张量：(8, 64, 64):torch.bfloat16, (8, 64, 64):torch.bfloat16
   out_proj　　　　　　 保存 2 个  激活      65.5 KB   公式项   512 B/tok →     65.5 KB   线性层为 wgrad 保存输入
     张量：(128, 256):torch.bfloat16
-  out_dropout　　　 保存 1 个  激活      65.5 KB   公式项   256 B/tok →     32.8 KB   公式按 bool mask 1 B/元素；实测保存 bf16 mask（2 B/元素）
+  out_dropout　　　 保存 1 个  激活      65.5 KB   公式项   256 B/tok →     32.8 KB   同上（CUDA 的 fused native_dropout 才存 bool 1 B）
     张量：(2, 64, 256):torch.bfloat16
   ln2　　　　　　　　　　　 保存 5 个  激活      66.0 KB   公式项   512 B/tok →     65.5 KB   同上
     张量：(2, 64, 256):torch.bfloat16, (2, 64, 1):torch.bfloat16, (2, 64, 1):torch.bfloat16

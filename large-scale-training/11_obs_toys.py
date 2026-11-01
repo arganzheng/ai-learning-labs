@@ -83,7 +83,8 @@ def cmd_fr():
                 for e in entries]
         last[r] = seqs
         print(f"  rank {r}: {len(entries)} 条，"
-              f"seq {[s for s, _, _ in seqs]}；"
+              f"seq {[s for s, _, _ in seqs]}，"
+              f"state {[st for _, _, st in seqs]}；"
               f"pg_status {d['pg_status']}")
 
     # gloo 的 dump 把 pg_config 写在 '' 名下，而 entries 的 process_group[0] 是 '0'
@@ -102,7 +103,8 @@ def cmd_fr():
 
     # 供画图用的 JSON：每 rank 最后几个 seq
     import json
-    rings = {f"rank {r}": [s for s, _, _ in seqs] for r, seqs in last.items()}
+    rings = {f"rank {r}": [[s, st] for s, _, st in seqs]
+             for r, seqs in last.items()}
     with open("expected/11_obs_fr.json", "w") as f:
         json.dump(rings, f)
 

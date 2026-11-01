@@ -57,47 +57,47 @@ def _load(name):
 def fr_rings():
     """F1：每 rank 最后几条 FR 记录按 seq 对齐；rank 3 在 seq 6 缺席。"""
     d = _load("11_obs_fr.json")
-    fig, ax = _canvas(h=4.6, xlim=(0, 12), ylim=(0, 6.4))
-    _label(ax, 6, 6.15, "Flight Recorder：4 个 rank 的环形缓冲按 collective_seq_id 对齐",
+    fig, ax = _canvas(h=4.6, xlim=(0, 12), ylim=(0, 7.0))
+    _label(ax, 6, 6.75, "Flight Recorder：4 个 rank 的环形缓冲按 collective_seq_id 对齐",
            12.5, weight="bold")
+    _label(ax, 6, 6.38, "绿 = 各 rank 一致 · 橙 = rank 3 的最后一条（开始错位）"
+           " · 红 = 第一个不一致；红虚框 = 缺席",
+           9.5, color="#555555")
     seqs = [1, 2, 3, 4, 5, 6]
-    x0, cw, ch = 2.1, 1.55, 0.62
+    x0, cw, ch = 2.1, 1.55, 0.72
     for i, sq in enumerate(seqs):
-        _label(ax, x0 + i * cw + cw / 2, 5.5, f"seq {sq}", 9.5, color="#555555")
+        _label(ax, x0 + i * cw + cw / 2, 6.06, f"seq {sq}", 9.5, color="#555555")
     rank_rows = [d[f"rank {r}"] for r in range(4)]
     for r in range(4):
-        y = 4.72 - r * 0.78
+        y = 4.95 - r * 0.98
         _label(ax, 1.15, y + ch / 2, f"rank {r}", 10, ha="right")
         for i, sq in enumerate(seqs):
-            have = sq in rank_rows[r]
-            if have:
+            hit = [st for s_, st in rank_rows[r] if s_ == sq]
+            if hit:
                 fc = GREEN if sq <= 4 else (ORANGE if sq < 6 else RED)
                 p = _card(ax, x0 + i * cw, y, cw - 0.14, ch, "", fc=fc,
                           ec="#888888", lw=0.8)
-                if i == 0:
-                    _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch / 2,
-                           "all_reduce", 9.5, in_box=p)
+                _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch * 0.66,
+                       "all_reduce", 9.5, in_box=p)
+                _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch * 0.28,
+                       hit[0], 9, color="#555555", in_box=p)
             else:
-                p = _card(ax, x0 + i * cw, y, cw - 0.14, ch, "", fc="white",
-                          ec=C["red"], lw=1.0)
-                ax.plot([x0 + i * cw + 0.18, x0 + (i + 1) * cw - 0.32],
-                        [y + 0.08, y + ch - 0.08], color=C["red"], lw=0.9)
+                p = box(ax, x0 + i * cw, y, cw - 0.14, ch, fc="white",
+                        ec=C["red"], lw=1.2, linestyle="--")
                 _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch / 2,
                        "缺席", 9.5, color=C["red"], in_box=p)
-    # 缺席原因标注：rank 3 的记录里少了一条 —— 它的 seq 5 其实是别人的 6
-    _label(ax, x0 + 5 * cw + cw / 2, 1.62, "", 1)  # spacer 占位防越界
-    _arrow(ax, (x0 + 5 * cw + cw / 2 - 0.07, 4.72 - 3 * 0.78 - 0.05),
-           (x0 + 5 * cw + cw / 2 - 0.07, 4.72 - 3 * 0.78 - 0.55),
+    _arrow(ax, (x0 + 5 * cw + cw / 2 - 0.07, 4.95 - 3 * 0.98 - 0.03),
+           (x0 + 5 * cw + cw / 2 - 0.07, 4.95 - 3 * 0.98 - 0.33),
            color=C["red"])
-    _label(ax, x0 + 4.6 * cw, 1.82,
+    _label(ax, x0 + 4.4 * cw, 1.5,
            "rank 3 没有发起 seq 6 的 all_reduce（走了 rank 相关的分支）", 9.5,
            color=C["red"])
-    diag = _card(ax, 1.6, 0.15, 8.8, 1.2, "", fc="#fff8e1", ec="#c58a00",
+    diag = _card(ax, 1.6, 0.12, 8.8, 1.15, "", fc="#fff8e1", ec="#c58a00",
                  lw=1.0)
-    _label(ax, 6.0, 1.04, "fr_trace 的诊断（toy 实测输出）", 10,
+    _label(ax, 6.0, 1.0, "fr_trace 的诊断（toy 实测输出）", 10,
            weight="bold", in_box=diag)
-    _label(ax, 6.0, 0.68, "Not all ranks joining collective", 10, in_box=diag)
-    _label(ax, 6.0, 0.36, "seq 6，missing ranks {3} → 查 rank 3 的栈与 py-spy",
+    _label(ax, 6.0, 0.65, "Not all ranks joining collective", 10, in_box=diag)
+    _label(ax, 6.0, 0.34, "seq 6，missing ranks {3} → 查 rank 3 的栈与 py-spy",
            10, in_box=diag)
     save(fig, "long-running-training-fr-rings")
 
@@ -124,13 +124,17 @@ def step_time_phases():
     ax.tick_params(labelsize=9.5)
     fire = d["fire_step"]
     ax.axvline(fire, color=C["red"], lw=1.1, ls="--")
-    ax.text(fire + 2, 232, f"检测器开火：step {fire}\n（20 步中位数 > 基线 100ms × 1.10）",
-            fontsize=9.5, color=C["red"], va="top")
+    ax.annotate(f"检测器开火：step {fire}\n（20 步中位数 > 基线 100ms × 1.10）",
+                xy=(fire, 195), xytext=(2, 225), fontsize=9.5, color=C["red"],
+                va="top", ha="left",
+                arrowprops=dict(arrowstyle="->", color=C["red"], lw=0.9,
+                                shrinkB=0))
     ax.annotate("data 从 step 60 起每步 +2ms：\n慢化的嫌疑直接落在数据上",
-                xy=(112, 205), xytext=(52, 150), fontsize=9.5,
-                color="#8a5a00",
+                xy=(70, 78), xytext=(18, 175), fontsize=9.5,
+                color="#8a5a00", va="top", ha="left",
                 arrowprops=dict(arrowstyle="->", color="#8a5a00", lw=0.9))
-    ax.legend(fontsize=9, frameon=False, loc="upper left", ncols=2)
+    ax.legend(fontsize=9, frameon=False, loc="upper left", ncols=2,
+              bbox_to_anchor=(0.28, 1.0))
     ax.set_title("分阶段计时的堆叠面积：渐变慢一眼定位（toy 实测）", fontsize=11.5,
                  fontweight=600)
     save(fig, "long-running-training-step-time-phases")
@@ -151,13 +155,13 @@ def rank_step_heatmap():
     cb = fig.colorbar(im, ax=ax, pad=0.02)
     cb.set_label("compute（ms）", fontsize=9.5)
     cb.ax.tick_params(labelsize=9)
-    ax.annotate("rank 1 从 step 8 起 +30ms：step 时间被\nall_reduce 等齐，"
+    ax.annotate("rank 1 从 step 8 起 +30ms：step 时间被 all_reduce 等齐，"
                 "只有每 rank 计时能认出它",
-                xy=(11.2, 1), xytext=(13.2, 0.05), fontsize=9.5,
+                xy=(12, 0.55), xytext=(4.5, -1.05), fontsize=9.5,
                 color="#8a0000",
-                arrowprops=dict(arrowstyle="->", color="#8a0000", lw=0.9),
-                va="center", ha="left",
-                bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.2))
+                arrowprops=dict(arrowstyle="->", color="#8a0000", lw=0.9,
+                                connectionstyle="arc3,rad=0.15"),
+                va="bottom", ha="left")
     ax.set_title("rank × step 的 compute 时间（每 rank 计时，toy 实测）",
                  fontsize=11.5, fontweight=600)
     fig.subplots_adjust(bottom=0.32)
@@ -165,62 +169,79 @@ def rank_step_heatmap():
 
 
 def alert_timeline():
-    """F4：吞吐曲线 + page/record 阈值 + 告警泳道（pending→firing / suppressed）。"""
+    """F4：吞吐曲线 + 告警泳道；事件标注独立一行，泳道条块不上字。"""
     d = _load("11_obs_alert.json")
     T = [t / 60 for t in d["T"]]  # 分钟
     thr = d["throughput"]
-    hb = [h / 60 for h in d["heartbeat"]]
-    fig, (a1, a2) = plt.subplots(2, 1, figsize=(7.6, 4.0), sharex=True,
-                               gridspec_kw={"height_ratios": [2.2, 1.3],
-                                            "hspace": 0.18})
-    a1.plot(T, thr, color=C["blue"], lw=1.6, label="吞吐 tok/s（合成）")
+    fig = plt.figure(figsize=(7.6, 4.6))
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.32, 2.0, 1.35],
+                          hspace=0.12)
+    a0 = fig.add_subplot(gs[0])          # 事件标注行
+    a1 = fig.add_subplot(gs[1])          # 指标
+    a2 = fig.add_subplot(gs[2])          # 告警泳道
+    a0.axis("off")
+    a0.set_xlim(0, 32)
+    a0.set_ylim(0, 1)
+    # 三个事件：dip、心跳停、重启窗口，各居其事件中心
+    a0.text(12.5, 0.55, "10:00–15:00 掉 20%（5 分钟）", fontsize=9.5,
+            ha="center", color="#8a5a00")
+    a0.text(23.5, 0.55, "23:30 心跳停", fontsize=9.5, ha="center",
+            color=C["red"])
+    a0.text(28.2, 0.55, "25:00–28:00\n自动重启", fontsize=9.5, ha="center",
+            color="#1d4ed8")
+
+    a1.plot(T, thr, color=C["blue"], lw=1.6)
     a1.axhline(850, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(0.6, 878, "record 阈值：-15%（850）", fontsize=9, color="#555555")
+    a1.text(0.4, 862, "record 阈值：-15%（850 tok/s）", fontsize=9,
+            color="#555555", va="bottom")
     a1.set_ylim(700, 1080)
+    a1.set_xlim(0, 32)
     a1.set_yticks([700, 850, 1000])
     a1.set_ylabel("tok/s", fontsize=10)
     a1.tick_params(labelsize=9.5)
-    # dip 区域
+    a1.set_xticklabels([])
     a1.axvspan(10, 15, color="#fdecea", alpha=0.7)
-    a1.text(12.5, 1050, "5 分钟 dip：\nrecord，不 page", fontsize=9.5,
-            color="#8a5a00", ha="center")
-    # 心跳停
     a1.axvline(23.5, color=C["red"], lw=1.1, ls="--")
-    a1.text(22.3, 740, "心跳停\n(23:30)", fontsize=9.5, color=C["red"],
-            ha="right", va="top")
-    # 重启窗口
     a1.axvspan(25, 28, color="#dbeafe", alpha=0.8)
-    a1.text(26.5, 760, "重启窗口\n(25:00–28:00)", fontsize=9, color="#1d4ed8",
-            ha="center")
-    a1.legend(fontsize=9.5, frameon=False, loc="lower left")
 
-    # 泳道
-    lanes = [("TrainingMfuDegraded (page·for 30m)", 3,
-              [(10, 15, "pending", "#f0c8a0")], "未到 for:30m 即消失"),
-             ("ThroughputDip (record·for 2m)", 2,
-              [(10, 12, "pending", "#f0c8a0"), (12, 15, "firing", "#f5b04a")],
-              "pending 2 分钟后 firing；record，白天看"),
-             ("TrainingStepStalled (page·for 0m)", 1,
-              [(23.5, 25.25, "pending", "#f0c8a0"),
-               (25.25, 30, "firing", "#c4b5e0")],
-              "firing 落在重启窗口 → 被抑制")]
+    # 泳道：pending 浅橙 / firing 红 / 抑制灰斜线；无条内文字
+    lanes = [("TrainingMfuDegraded\n(page · for 30m)", 3,
+              [(10, 15, "pending")], "未到 for:30m 即消失"),
+             ("ThroughputDip\n(record · for 2m)", 2,
+              [(10, 12, "pending"), (12, 15, "firing")],
+              "pending 2 分钟后 firing"),
+             ("TrainingStepStalled\n(page · for 0m)", 1,
+              [(23.5, 25.25, "pending"), (25.25, 30, "suppressed")],
+              "firing 落在重启窗口\n→ 被抑制")]
+    FCS = {"pending": "#f0c8a0", "firing": "#e06666",
+           "suppressed": "#cccccc"}
     for name, row, segs, note in lanes:
-        for x0, x1, st, fc in segs:
-            a2.barh(row, x1 - x0, left=x0, height=0.55, color=fc,
-                    edgecolor="#888888", lw=0.6)
-            if x1 - x0 > 2.4:
-                a2.text((x0 + x1) / 2, row, st, fontsize=9, ha="center",
-                        va="center")
-        a2.text(-0.5, row, name, fontsize=9.5, ha="right", va="center")
-        a2.text(30.4, row, note, fontsize=9, ha="left", va="center",
+        for x0, x1, st in segs:
+            a2.barh(row, x1 - x0, left=x0, height=0.55, color=FCS[st],
+                    edgecolor="#888888", lw=0.6,
+                    hatch="///" if st == "suppressed" else None)
+        a2.text(-0.4, row, name, fontsize=9.5, ha="right", va="center")
+        a2.text(30.6, row, note, fontsize=9, ha="left", va="center",
                 color="#555555")
+    a2.axvspan(10, 15, color="#fdecea", alpha=0.5)
+    a2.axvline(23.5, color=C["red"], lw=1.1, ls="--")
     a2.axvspan(25, 28, color="#dbeafe", alpha=0.8)
+    # 图例：色块含义
+    hx = 0.5
+    for lab, st in (("pending", "pending"), ("firing", "firing"),
+                    ("firing（被抑制）", "suppressed")):
+        a2.barh(3.62, 1.6, left=hx, height=0.3, color=FCS[st],
+                edgecolor="#888888", lw=0.6,
+                hatch="///" if st == "suppressed" else None, clip_on=False)
+        a2.text(hx + 1.85, 3.62, lab, fontsize=9, va="center", ha="left")
+        hx += 1.85 + len(lab) * 0.62 + 0.7
     a2.set_yticks([])
-    a2.set_xlim(-13.5, 41)
-    a2.set_ylim(0.3, 3.7)
+    a2.set_xlim(-9.5, 41)
+    a2.set_ylim(0.4, 3.95)
     a2.set_xticks(range(0, 31, 5))
-    a2.set_xticklabels([f"{t:02d}:00" for t in range(0, 31, 5)], fontsize=9.5)
-    a2.set_xlabel("时间（分钟）", fontsize=10)
+    a2.set_xticklabels([f"{t:02d}:00" for t in range(0, 31, 5)],
+                       fontsize=9.5)
+    a2.set_xlabel("时间", fontsize=10)
     a2.spines[["left", "right", "top"]].set_visible(False)
     fig.suptitle("告警规则评估的模拟：for: 语义、page/record、抑制（toy 数据）",
                  fontsize=11.5, fontweight=600)

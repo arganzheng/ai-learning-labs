@@ -88,7 +88,7 @@ def states_grid():
 
 
 def mesh_8cards():
-    fig, ax = _canvas(7.6, 4.8, (0, 12), (0, 7.4))
+    fig, ax = _canvas(7.6, 4.55, (0, 12), (0.7, 7.4))
     _label(ax, 6, 6.95, "一张 8 卡的五元组摆法", 13)
     _label(ax, 6, 6.55, "TP=2 × DP=2 × PP=2；rank = tp + 2·dp + 4·pp；节点 = rank // 4", 9.5)
     nodes = [[0, 1, 2, 3], [4, 5, 6, 7]]
@@ -105,7 +105,7 @@ def mesh_8cards():
     for k in range(4):
         y = 4.48 + k * 0.17
         _arrow(ax, (xnode[0] + 4.55, y), (xnode[1], y), color=C["red"], lw=1.3, ms=9)
-    _label(ax, (xnode[0] + 4.55 + xnode[1]) / 2, 4.05, "PP 组：跨节点 IB", 7.6)
+    _label(ax, (xnode[0] + 4.55 + xnode[1]) / 2, 4.02, "PP 组：跨节点 IB", 7.0)
     _label(ax, 6, 2.92, "PP 组 {0,4} · {1,5} · {2,6} · {3,7}：rank i 与 rank i+4 配对，跨节点 IB", 8.1)
     _label(ax, 6, 2.45, "TP 组 {0,1} · {2,3} · {4,5} · {6,7}　DP 组 {0,2} · {1,3} · {4,6} · {5,7}：节点内 NVLink", 8.1)
     _label(ax, 6, 1.35, "Megatron 顺序 tp-cp-ep-dp-pp：TP 变化最快，PP 最慢；8 卡/节点且 TP=8 时，DP 组会跨节点", 8.3)

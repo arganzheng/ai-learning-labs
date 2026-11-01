@@ -52,7 +52,7 @@ def f2():
     lanes = [
         ("Megatron", C["blue"], "#eef3f9", [(2019, "TP", 0), (2021, "1F1B", 0), (2022, "SP", 0), (2023, "Megatron\nCore", 1), (2024, "EP / 分布式\n优化器", 0), (2026, "Megatron-\nFSDP", 0)]),
         ("DeepSpeed", C["orange"], "#fdf4ec", [(2019, "ZeRO", 0), (2020, "Stage 1–3", 1), (2021, "Offload", 0), (2022, "MoE", 1), (2023, "ZeRO++", 0), (2025, "AutoTP", 0)]),
-        ("PyTorch +\ntorchtitan", C["green"], "#eef6ef", [(2022, "DTensor\nRFC", 0), (2023, "DTensor", 1), (2024, "DeviceMesh / FSDP2\ntorchtitan 论文", 0), (2026, "v0.3\nShardingConfig", 0)]),
+        ("PyTorch +\ntorchtitan", C["green"], "#eef6ef", [(2022, "DTensor\nRFC", 0), (2023, "DTensor", 1), (2024, "DeviceMesh / FSDP2\ntorchtitan 论文", 0), (2026, "v0.3\nSharding\nConfig", 0)]),
     ]
     ys = [3.68, 2.28, 0.88]
     band_h = 0.60

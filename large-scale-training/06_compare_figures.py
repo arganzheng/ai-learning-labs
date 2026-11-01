@@ -10,8 +10,8 @@ PALETTE = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3", "#e7e7e7"]
 
 
 def f1():
-    fig, ax = plt.subplots(figsize=(7.6, 4.8))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.8); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.3))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.3); ax.axis("off")
     rows = [
         ("Megatron\nTP2×PP2×DP2 ZeRO-1", [0.75, 1.50, 0.75, 0.75, 0.75],
          ["bf16\n参数", "fp32\n梯度", "fp32\n主参数", "Adam\nm", "Adam\nv"], "4.50 GB", C["blue"]),
@@ -20,7 +20,7 @@ def f1():
         ("torchtitan\nFSDP4×TP2 tied", [0.618, 0.618, 0.618, 0.618],
          ["fp32\n参数＝主参数", "fp32\n梯度", "Adam\nm", "Adam\nv"], "2.47 GB\n不绑定 3.00", C["green"]),
     ]
-    y_positions = [3.35, 2.20, 1.05]
+    y_positions = [3.15, 1.85, 0.55]
     x0, total_w, h = 2.20, 4.20, 0.54
     for (name, vals, segnames, total, accent), y in zip(rows, y_positions):
         text(ax, 2.05, y + h / 2, name, ha="right", va="center", fontsize=10, color=accent)
@@ -37,34 +37,39 @@ def f1():
             text(ax, x + w / 2, y + h / 2, f"{val:g}", ha="center", va="center", fontsize=10)
             x += w
         text(ax, 6.55, y + h / 2, total, ha="left", va="center", fontsize=10, color=accent)
-    text(ax, 3.8, 0.18, "不含激活与临时 all-gather；torchtitan fp32 分片就是主参数。", ha="center", va="center", fontsize=10)
+    text(ax, 3.8, 0.10, "不含激活与临时 all-gather；torchtitan fp32 分片就是主参数。", ha="center", va="center", fontsize=10)
     ax.set_title("同一个模型，三种参数相关显存的常驻方式")
     save(fig, "compare-f1-resident-memory")
 
 
 def f2():
-    fig, ax = plt.subplots(figsize=(7.6, 4.4))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.4); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.9))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.9); ax.axis("off")
     x0, xstep = 1.30, 0.80
     def yr(y):
         return x0 + (y - 2019) * xstep
-    # (year, label, high) — labels on two heights so adjacent years never collide.
+    # (year, label, below) — labels hug their own lane: above or below the line, never floating.
     lanes = [
-        ("Megatron", C["blue"], [(2019, "TP", 0), (2021, "1F1B", 0), (2022, "SP", 0), (2023, "Megatron\nCore", 0), (2024, "EP / 分布式\n优化器", 0), (2026, "Megatron-\nFSDP", 0)]),
-        ("DeepSpeed", C["orange"], [(2019, "ZeRO", 0), (2020, "Stage 1–3", 1), (2021, "Offload", 0), (2022, "MoE", 1), (2023, "ZeRO++", 0), (2025, "AutoTP", 0)]),
-        ("PyTorch +\ntorchtitan", C["green"], [(2022, "DTensor\nRFC", 0), (2023, "DTensor", 1), (2024, "DeviceMesh / FSDP2\ntorchtitan 论文", 0), (2026, "v0.3\nShardingConfig", 1)]),
+        ("Megatron", C["blue"], "#eef3f9", [(2019, "TP", 0), (2021, "1F1B", 0), (2022, "SP", 0), (2023, "Megatron\nCore", 1), (2024, "EP / 分布式\n优化器", 0), (2026, "Megatron-\nFSDP", 0)]),
+        ("DeepSpeed", C["orange"], "#fdf4ec", [(2019, "ZeRO", 0), (2020, "Stage 1–3", 1), (2021, "Offload", 0), (2022, "MoE", 1), (2023, "ZeRO++", 0), (2025, "AutoTP", 0)]),
+        ("PyTorch +\ntorchtitan", C["green"], "#eef6ef", [(2022, "DTensor\nRFC", 0), (2023, "DTensor", 1), (2024, "DeviceMesh / FSDP2\ntorchtitan 论文", 0), (2026, "v0.3\nShardingConfig", 0)]),
     ]
-    ys = [3.15, 2.05, 0.95]
+    ys = [3.68, 2.28, 0.88]
+    band_h = 0.60
     for y in range(2019, 2027):
-        ax.plot([yr(y), yr(y)], [0.72, 3.62], color="#e4e4e4", lw=0.6, zorder=0)
-        text(ax, yr(y), 3.95, str(y), ha="center", va="center", fontsize=9, color="#888888")
-    for (name, color, events), y in zip(lanes, ys):
+        ax.plot([yr(y), yr(y)], [0.30, 4.30], color="#e4e4e4", lw=0.6, zorder=0)
+        text(ax, yr(y), 4.55, str(y), ha="center", va="center", fontsize=9, color="#888888")
+    for (name, color, tint, events), y in zip(lanes, ys):
+        ax.add_patch(patches.Rectangle((0.85, y - band_h), 6.55, band_h * 2, fc=tint, ec="none", zorder=0))
         text(ax, 0.72, y, name, ha="right", va="center", fontsize=10, color=color)
         ax.plot([x0 - 0.10, yr(2026) + 0.28], [y, y], color=color, lw=1.2)
-        for year, label, high in events:
+        for year, label, below in events:
             ax.plot([yr(year), yr(year)], [y - 0.08, y + 0.08], color=color, lw=1.4)
-            text(ax, yr(year), y + (0.62 if high else 0.16), label, ha="center", va="bottom", fontsize=9, color=color)
-    text(ax, 3.8, 0.24, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)
+            if below:
+                text(ax, yr(year), y - 0.16, label, ha="center", va="top", fontsize=9, color=color)
+            else:
+                text(ax, yr(year), y + 0.16, label, ha="center", va="bottom", fontsize=9, color=color)
+    text(ax, 3.8, 0.06, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)
     ax.set_title("三条线怎么走到今天：每次演进都在解决新的规模瓶颈")
     save(fig, "compare-f2-timeline")
 
@@ -86,14 +91,15 @@ def f3():
         ax.set_ylim(0, 800)
         ax.set_title(name, fontsize=11, loc="left", color=color)
         ax.set_yticks(ticks)
-        ax.set_yticklabels([f"{t:g}" for t in ticks])
+        ax.set_yticklabels(["" if (t == 0 and layers is not None) else f"{t:g}" for t in ticks])
         ax.grid(axis="y", color="#dddddd", linewidth=0.6)
         ax.axvline(bwd_start - 0.5, color="#999999", lw=0.9, ls="--")
         if layers is None:
             ax.plot([0, len(steps) - 1], [layer_mb, layer_mb], color=color, lw=2.2)
         else:
             ax.step(steps, [count * layer_mb for count in layers], where="post", color=color, lw=1.8)
-    axes[0].text(bwd_start + 0.6, 770, "前向结束 / 反向开始", fontsize=9, color="#777777", va="top")
+    axes[0].text(bwd_start + 0.6, 1.03, "前向结束 / 反向开始", fontsize=9, color="#333333",
+                 va="bottom", ha="left", transform=axes[0].get_xaxis_transform())
     axes[-1].set_xticks([])
     fig.suptitle("完整 bf16 参数在一个 step 内的占用：平线与两条锯齿", fontsize=12)
     save(fig, "compare-f3-live-parameters")
@@ -159,8 +165,8 @@ def f5():
                 pos += cell_w
                 cursor += 1
             text(ax, pos - n * cell_w / 2, y + cell_h + 0.08, pname, ha="center", va="bottom", fontsize=10)
-        text(ax, 6.5, y + cell_h / 2, f"r0 {sizes[0]}  |  r1 {sizes[1]}", ha="left", va="center", fontsize=10)
-    text(ax, 3.8, 0.24, "每格 1 个元素；灰格是 padding。边框颜色：蓝=r0，橙=r1", ha="center", fontsize=10)
+        text(ax, 6.5, y + cell_h / 2, f"rank0 {sizes[0]} 个｜rank1 {sizes[1]} 个", ha="left", va="center", fontsize=10)
+    text(ax, 3.8, 0.24, "每格 1 个元素；填充色＝属于哪个参数（A/B/c），灰格是 padding；边框色：蓝=r0、橙=r1", ha="center", fontsize=10)
     ax.set_title("23 个元素放进两张卡：分片边界取决于容器")
     save(fig, "compare-f5-shard-layouts")
 
@@ -201,7 +207,7 @@ def f7():
         return p
     q1 = node(2.55, 3.05, 2.5, 0.55, "模型能否改写成框架自己的层？")
     q2 = node(0.60, 1.95, 2.40, 0.50, "更看重什么？", "#f7f9fc", C["blue"])
-    ds = node(4.72, 1.88, 2.82, 0.68, "DeepSpeed：包裹任意 nn.Module\nZeRO-3 / offload 省显存", "#fff3e8", C["orange"])
+    ds = node(4.35, 1.88, 3.15, 0.68, "DeepSpeed\n包裹任意 nn.Module、ZeRO-3 / offload", "#fff3e8", C["orange"])
     m = node(0.20, 0.36, 2.30, 0.68, "Megatron\n手写通信重叠、TP/PP 最成熟", "#eef4fb", C["blue"])
     t = node(2.75, 0.36, 2.55, 0.68, "torchtitan\nDTensor + FSDP2，策略写成声明", "#eff8f0", C["green"])
     def arrow(a, b, label=None, tx=None, ty=None):
@@ -210,7 +216,7 @@ def f7():
             text(ax, tx, ty, label, ha="center", va="center", fontsize=9.5)
     arrow((3.20, 3.05), (1.80, 2.45), "能", 2.40, 2.78)
     arrow((4.60, 3.05), (6.15, 2.50), "不能", 5.50, 2.78)
-    arrow((1.30, 1.95), (1.35, 1.00), "千卡级极限 MFU", 0.55, 1.50)
+    arrow((1.30, 1.95), (1.35, 1.00), "千卡级极限 MFU", 1.62, 1.50)
     arrow((2.30, 1.95), (3.95, 1.00), "并行策略常改\nPyTorch 原生", 3.60, 1.52)
     ax.set_title("选型不是排行榜：先问模型约束，再问需求")
     save(fig, "compare-f7-decision")

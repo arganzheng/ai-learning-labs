@@ -1,0 +1,154 @@
+== shard ==
+[rank0] 参数 A[4,3] B[2,3] c[5]，共 23 个元素，N_d=2
+[rank0] -- a. Megatron 分布式优化器（一段连续 buffer + pad 到 N_d 倍数）
+[rank0] buffer 布局（逆序拍平）：[('c', 0, 5), ('B', 5, 11), ('A', 11, 23)]，pad=1
+[rank0] 本 rank 区间 [0,12)：['c[0:5]', 'B[0:6]', 'A[0:1]']
+[rank0] -- b. DeepSpeed ZeRO-3（每参数各自 pad + 均分，ds_tensor）
+[rank0] A: numel=12 pad=0 段长=6，本 rank 拿 A[0:6]
+[rank0] B: numel=6 pad=0 段长=3，本 rank 拿 B[0:3]
+[rank0] c: numel=5 pad=1 段长=3，本 rank 拿 c[0:3]
+[rank0] -- c. FSDP1（整单元拍平成 FlatParameter + pad + 均分）
+[rank0] FlatParameter numel=23 pad=1，本 rank [0,12)：['A[0:12]']
+[rank0] -- d. FSDP2（真实 DTensor，distribute_tensor Shard(0)）
+[rank0] A(4, 3): 全局形状 (4, 3)，本 rank to_local()=(2, 3)
+[rank0] B(2, 3): 全局形状 (2, 3)，本 rank to_local()=(1, 3)
+[rank0] c(5,): 全局形状 (5,)，本 rank to_local()=(3,)
+[rank1] 参数 A[4,3] B[2,3] c[5]，共 23 个元素，N_d=2
+[rank1] -- a. Megatron 分布式优化器（一段连续 buffer + pad 到 N_d 倍数）
+[rank1] buffer 布局（逆序拍平）：[('c', 0, 5), ('B', 5, 11), ('A', 11, 23)]，pad=1
+[rank1] 本 rank 区间 [12,24)：['A[1:12]']，外加 1 个 pad 元素
+[rank1] -- b. DeepSpeed ZeRO-3（每参数各自 pad + 均分，ds_tensor）
+[rank1] A: numel=12 pad=0 段长=6，本 rank 拿 A[6:12]
+[rank1] B: numel=6 pad=0 段长=3，本 rank 拿 B[3:6]
+[rank1] c: numel=5 pad=1 段长=3，本 rank 拿 c[3:5]（其余 1 个为 padding）
+[rank1] -- c. FSDP1（整单元拍平成 FlatParameter + pad + 均分）
+[rank1] FlatParameter numel=23 pad=1，本 rank [12,23)：['B[0:6]', 'c[0:5]']（尾部含 padding）
+[rank1] -- d. FSDP2（真实 DTensor，distribute_tensor Shard(0)）
+[rank1] A(4, 3): 全局形状 (4, 3)，本 rank to_local()=(2, 3)
+[rank1] B(2, 3): 全局形状 (2, 3)，本 rank to_local()=(1, 3)
+[rank1] c(5,): 全局形状 (5,)，本 rank to_local()=(2,)
+== pp ==
+PP=2、每个 stage m=4 个 micro-batch，只看 rank0（stage0）
+-- Megatron：过程式三段循环产生的序列
+  stage0: warmup ['F1'] | steady ['F2', 'B1', 'F3', 'B2', 'F4', 'B3'] | cooldown ['B4']
+          序列: F1 F2 B1 F3 B2 F4 B3 B4
+  stage1: warmup [] | steady ['F1', 'B1', 'F2', 'B2', 'F3', 'B3', 'F4', 'B4'] | cooldown []
+          序列: F1 B1 F2 B2 F3 B3 F4 B4
+-- DeepSpeed：TrainSchedule 的 stage0 指令流（按 v0.19.2 schedule.py 的 steps() 生成）
+   LoadMicroBatch(0)        ForwardPass(0)           SendActivation(0)        LoadMicroBatch(1)      
+   ForwardPass(1)           RecvGrad(0)              SendActivation(1)        BackwardPass(0)        
+   SendGrad(0)              LoadMicroBatch(2)        ForwardPass(2)           RecvGrad(1)            
+   SendActivation(2)        BackwardPass(1)          SendGrad(1)              LoadMicroBatch(3)      
+   ForwardPass(3)           RecvGrad(2)              SendActivation(3)        BackwardPass(2)        
+   SendGrad(2)              RecvGrad(3)              BackwardPass(3)          ReduceTiedGrads()      
+   ReduceGrads()            OptimizerStep()        
+-- PyTorch：真实 Schedule1F1B._get_pipeline_order + _format_pipeline_order（CPU 可生成）
+        Rank 0       Rank 1      
+Step 0: 0F0          1F1         
+Step 1: 0F1          1B0         
+Step 2: 0B0          1F2         
+Step 3: 0F2          1B1         
+Step 4: 0B1          1F3         
+Step 5: 0F3          1B2         
+Step 6: 0B2          1F4         
+Step 7: 0B3          1B3         
+Step 8: 0REDUCE_GRAD 1REDUCE_GRAD
+
+== saw ==
+  forward gather    layer0  live_full_layers=1
+  forward prefetch  layer1  live_full_layers=2
+  forward compute   layer0  live_full_layers=2
+  forward release   layer0  live_full_layers=1
+  forward prefetch  layer2  live_full_layers=2
+  forward compute   layer1  live_full_layers=2
+  forward release   layer1  live_full_layers=1
+  forward prefetch  layer3  live_full_layers=2
+  forward compute   layer2  live_full_layers=2
+  forward release   layer2  live_full_layers=1
+  forward prefetch  layer4  live_full_layers=2
+  forward compute   layer3  live_full_layers=2
+  forward release   layer3  live_full_layers=1
+  forward prefetch  layer5  live_full_layers=2
+  forward compute   layer4  live_full_layers=2
+  forward release   layer4  live_full_layers=1
+  forward prefetch  layer6  live_full_layers=2
+  forward compute   layer5  live_full_layers=2
+  forward release   layer5  live_full_layers=1
+  forward prefetch  layer7  live_full_layers=2
+  forward compute   layer6  live_full_layers=2
+  forward release   layer6  live_full_layers=1
+  forward prefetch  layer8  live_full_layers=2
+  forward compute   layer7  live_full_layers=2
+  forward release   layer7  live_full_layers=1
+  forward prefetch  layer9  live_full_layers=2
+  forward compute   layer8  live_full_layers=2
+  forward release   layer8  live_full_layers=1
+  forward prefetch  layer10 live_full_layers=2
+  forward compute   layer9  live_full_layers=2
+  forward release   layer9  live_full_layers=1
+  forward prefetch  layer11 live_full_layers=2
+  forward compute   layer10 live_full_layers=2
+  forward release   layer10 live_full_layers=1
+  forward prefetch  layer12 live_full_layers=2
+  forward compute   layer11 live_full_layers=2
+  forward release   layer11 live_full_layers=1
+  forward prefetch  layer13 live_full_layers=2
+  forward compute   layer12 live_full_layers=2
+  forward release   layer12 live_full_layers=1
+  forward prefetch  layer14 live_full_layers=2
+  forward compute   layer13 live_full_layers=2
+  forward release   layer13 live_full_layers=1
+  forward prefetch  layer15 live_full_layers=2
+  forward compute   layer14 live_full_layers=2
+  forward release   layer14 live_full_layers=1
+  forward compute   layer15 live_full_layers=1
+  forward release   layer15 live_full_layers=0
+  backward gather    layer15 live_full_layers=1
+  backward prefetch  layer14 live_full_layers=2
+  backward compute   layer15 live_full_layers=2
+  backward release   layer15 live_full_layers=1
+  backward prefetch  layer13 live_full_layers=2
+  backward compute   layer14 live_full_layers=2
+  backward release   layer14 live_full_layers=1
+  backward prefetch  layer12 live_full_layers=2
+  backward compute   layer13 live_full_layers=2
+  backward release   layer13 live_full_layers=1
+  backward prefetch  layer11 live_full_layers=2
+  backward compute   layer12 live_full_layers=2
+  backward release   layer12 live_full_layers=1
+  backward prefetch  layer10 live_full_layers=2
+  backward compute   layer11 live_full_layers=2
+  backward release   layer11 live_full_layers=1
+  backward prefetch  layer9  live_full_layers=2
+  backward compute   layer10 live_full_layers=2
+  backward release   layer10 live_full_layers=1
+  backward prefetch  layer8  live_full_layers=2
+  backward compute   layer9  live_full_layers=2
+  backward release   layer9  live_full_layers=1
+  backward prefetch  layer7  live_full_layers=2
+  backward compute   layer8  live_full_layers=2
+  backward release   layer8  live_full_layers=1
+  backward prefetch  layer6  live_full_layers=2
+  backward compute   layer7  live_full_layers=2
+  backward release   layer7  live_full_layers=1
+  backward prefetch  layer5  live_full_layers=2
+  backward compute   layer6  live_full_layers=2
+  backward release   layer6  live_full_layers=1
+  backward prefetch  layer4  live_full_layers=2
+  backward compute   layer5  live_full_layers=2
+  backward release   layer5  live_full_layers=1
+  backward prefetch  layer3  live_full_layers=2
+  backward compute   layer4  live_full_layers=2
+  backward release   layer4  live_full_layers=1
+  backward prefetch  layer2  live_full_layers=2
+  backward compute   layer3  live_full_layers=2
+  backward release   layer3  live_full_layers=1
+  backward prefetch  layer1  live_full_layers=2
+  backward compute   layer2  live_full_layers=2
+  backward release   layer2  live_full_layers=1
+  backward prefetch  layer0  live_full_layers=2
+  backward compute   layer1  live_full_layers=2
+  backward release   layer1  live_full_layers=1
+  backward compute   layer0  live_full_layers=1
+  backward release   layer0  live_full_layers=0
+  peak=2 layers

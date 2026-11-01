@@ -29,3 +29,5 @@ python 02_parallelism_toys.py tp ep         # 只跑几个
 ```
 
 `expected/02_parallelism_toys.txt` 是作者机器上的完整输出；随机种子固定，不同 torch 版本下小数末位可能有出入。
+| `06_compare_toys.py` | [三框架对比](https://arganzheng.life/megatron-deepspeed-torchtitan-architecture-and-source-guide.html) | shard pp saw | 十秒 |
+| `06_compare_figures.py` | 同上配图（out/compare-f*.svg → 博客 img/in-post/） | — | 秒级 |

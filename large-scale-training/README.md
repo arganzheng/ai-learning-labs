@@ -6,7 +6,8 @@
 |---|---|---|---|
 | `01_state_toys.py` | [训练任务的状态解剖](https://arganzheng.life/training-state-anatomy-memory-and-mfu.html) | bytes activations flops timeline | 秒级 |
 | `01_state_figures.py` | 同上配图（out/training-state-*.svg → 博客 img/in-post/） | — | 秒级 |
-| `02_parallelism_toys.py` | [并行策略全景](https://arganzheng.life/parallelism-strategies-which-state-to-shard.html) | zero tp cp pp ep | 十秒 |
+| `02_parallelism_toys.py` | [并行策略全景](https://arganzheng.life/parallelism-strategies-which-state-to-shard.html) | zero tp cp/ring ulysses pp bubble ep mesh | 十秒 |
+| `02_parallelism_figures.py` | 同上配图（out/parallelism-*.svg → 博客 img/in-post/） | — | 秒级 |
 | `03_megatron_toys.py` | [Megatron-LM](https://arganzheng.life/megatron-lm-architecture-and-source-guide.html) | groups buffer 1f1b | 十秒 |
 | `03_megatron_figures.py` | 同上配图（out/megatron-f*.svg → 博客 img/in-post/） | — | 秒级 |
 | `04_deepspeed_toys.py` | [DeepSpeed](https://arganzheng.life/deepspeed-architecture-and-source-guide.html) | shards lifecycle memory | 十秒 |

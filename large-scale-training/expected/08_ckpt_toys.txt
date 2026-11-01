@@ -1,0 +1,51 @@
+== dcp.save → ckpt/（4 rank，每 rank 一个分片文件）
+  .metadata  2297 B
+  __0_0.distcp  4731 B
+  __1_0.distcp  6308 B
+  __2_0.distcp  4731 B
+  __3_0.distcp  4731 B
+
+== .metadata：state_dict_metadata（FQN → 全局形状/dtype）
+  opt.m  size=(24,)
+  opt.v  size=(24,)
+  train_state  size=(1,)
+  w  size=(24,)
+
+== .metadata：storage_data（磁盘块 → 文件内偏移）
+  opt.m chunk@(0,) -> __0_0.distcp off=1577 len=1577
+  opt.m chunk@(12,) -> __2_0.distcp off=1577 len=1577
+  opt.m chunk@(18,) -> __3_0.distcp off=1577 len=1577
+  opt.m chunk@(6,) -> __1_0.distcp off=1577 len=1577
+  opt.v chunk@(0,) -> __0_0.distcp off=3154 len=1577
+  opt.v chunk@(12,) -> __2_0.distcp off=3154 len=1577
+  opt.v chunk@(18,) -> __3_0.distcp off=3154 len=1577
+  opt.v chunk@(6,) -> __1_0.distcp off=3154 len=1577
+  train_state chunk@(0,) -> __1_0.distcp off=4731 len=1577
+  w chunk@(0,) -> __0_0.distcp off=0 len=1577
+  w chunk@(12,) -> __2_0.distcp off=0 len=1577
+  w chunk@(18,) -> __3_0.distcp off=0 len=1577
+  w chunk@(6,) -> __1_0.distcp off=0 len=1577
+  rank 1: 本地块 w[8:16] = ['5.0', '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5']  误差 w=0.0e+00 m=0.0e+00 v=0.0e+00
+  rank 0: 本地块 w[0:8] = ['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5']  误差 w=0.0e+00 m=0.0e+00 v=0.0e+00
+  rank 2: 本地块 w[16:24] = ['9.0', '9.5', '10.0', '10.5', '11.0', '11.5', '12.0', '12.5']  误差 w=0.0e+00 m=0.0e+00 v=0.0e+00
+  rank 1: 本地块 w[12:24] = ['7.0', '7.5', '8.0', '8.5', '9.0', '9.5', '10.0', '10.5', '11.0', '11.5', '12.0', '12.5']  误差 w=0.0e+00 m=0.0e+00 v=0.0e+00
+  rank 0: 本地块 w[0:12] = ['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', '6.0', '6.5']  误差 w=0.0e+00 m=0.0e+00 v=0.0e+00
+== async 计时（CPU/gloo，~8 MB 分片张量，数字只看形状不看大小）
+  dcp.save       阻塞 311.6 ms
+  dcp.async_save 返回前 staging 阻塞 20.9 ms，后台写完共 57.6 ms
+===== save（4 rank）=====
+
+===== reshard → 3 rank =====
+
+===== reshard → 2 rank =====
+
+===== async（2 rank）=====
+
+===== young =====
+M = 54*24/419 = 3.09 h（Llama 3，正文 §九.3）
+       δ      τ_opt   f_min       期望损失/故障      每天保存  实现
+   600 s     60.9min   32.8%         30.5min       24  同步单写入者
+   120 s     27.2min   14.7%         13.6min       53  同步分片写、慢 PFS
+    60 s     19.3min   10.4%          9.6min       75  同步分片写
+    10 s      7.9min    4.2%          3.9min      183  异步 staging
+     2 s      3.5min    1.9%          1.8min      409  异步 pinned+重叠

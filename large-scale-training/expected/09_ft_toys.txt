@@ -1,0 +1,64 @@
+rank 1: 睡 6s 模拟 hang（不进 all_reduce）
+rank 0: 3.0s 后捕获 RuntimeError: [/Users/runner/work/pytorch/pytorch/third_party/gloo/gloo/transport/uv/unbound_buffer.cc:65] Timed out waiting 3000ms for recv operation to complete
+rank 1: 醒来，此时 rank 0 已超时
+step 0: quorum=[0, 1, 2]  rank0 w=-0.2000
+step 1: quorum=[0, 1, 2]  rank0 w=-0.3800
+step 2: quorum=[0, 1, 2]  rank0 w=-0.5420
+step 3: quorum=[0, 2]  rank0 w=-0.6878
+Traceback (most recent call last):
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 193, in <module>
+    main()
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 172, in main
+    {"watchdog": _worker_watchdog,
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 131, in _worker_elastic
+    grads = [get(f"g_{step}_{r}") for r in live]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 119, in get
+    return float(open(p).read())
+           ^^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: ''
+step 4: quorum=[0, 2]  rank0 w=-0.8190
+Traceback (most recent call last):
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 193, in <module>
+    main()
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 172, in main
+    {"watchdog": _worker_watchdog,
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 131, in _worker_elastic
+    grads = [get(f"g_{step}_{r}") for r in live]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 117, in get
+    raise TimeoutError(key)
+TimeoutError: g_5_1
+Traceback (most recent call last):
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 193, in <module>
+    main()
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 172, in main
+    {"watchdog": _worker_watchdog,
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 131, in _worker_elastic
+    grads = [get(f"g_{step}_{r}") for r in live]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/devin/repos/ai-learning-labs/large-scale-training/09_ft_toys.py", line 117, in get
+    raise TimeoutError(key)
+TimeoutError: g_5_1
+===== mtbf =====
+单卡 M_gpu = 50000 h（≈5.7 年）
+  N=  1024: 集群 M = M_gpu/N =  48.83 h =   175781 s
+  N= 16384: 集群 M = M_gpu/N =   3.05 h =    10986 s
+
+-- 场景 A 同步 δ=300s Td=600s Tr=300s Tl=120s
+   N=  1024 (M= 48.8 h): τ_opt=171.2 min  G=93.8%  [检测 T_d 0.3%、重启 T_r 0.2%、加载 T_l 0.1%、回退 τ/2 2.9%、保存 δ/τ 2.7%]
+   N= 16384 (M=  3.1 h): τ_opt= 42.8 min  G=70.8%  [检测 T_d 5.5%、重启 T_r 2.7%、加载 T_l 1.1%、回退 τ/2 11.7%、保存 δ/τ 8.3%]
+-- 场景 B 异步 δ=10s  其余同 A
+   N=  1024 (M= 48.8 h): τ_opt= 31.2 min  G=98.4%  [检测 T_d 0.3%、重启 T_r 0.2%、加载 T_l 0.1%、回退 τ/2 0.5%、保存 δ/τ 0.5%]
+   N= 16384 (M=  3.1 h): τ_opt=  7.8 min  G=86.7%  [检测 T_d 5.5%、重启 T_r 2.7%、加载 T_l 1.1%、回退 τ/2 2.1%、保存 δ/τ 1.9%]
+-- 场景 C 异步 δ=10s  Td=60s Tr=30s Tl=60s
+   N=  1024 (M= 48.8 h): τ_opt= 31.2 min  G=98.9%  [检测 T_d 0.0%、重启 T_r 0.0%、加载 T_l 0.0%、回退 τ/2 0.5%、保存 δ/τ 0.5%]
+   N= 16384 (M=  3.1 h): τ_opt=  7.8 min  G=94.5%  [检测 T_d 0.5%、重启 T_r 0.3%、加载 T_l 0.5%、回退 τ/2 2.1%、保存 δ/τ 2.0%]
+
+五项分解（16K 卡，G 的构成，与 F-new1 一致）：
+   A: 有效 70.8% + T_d 5.5% T_r 2.7% T_l 1.1% τ/2 11.7% δ/τ 8.3%
+   B: 有效 86.7% + T_d 5.5% T_r 2.7% T_l 1.1% τ/2 2.1% δ/τ 1.9%
+   C: 有效 94.5% + T_d 0.5% T_r 0.3% T_l 0.5% τ/2 2.1% δ/τ 2.0%
+===== watchdog（2 rank，timeout=3s）=====
+===== elastic（3 副本模拟 torchft）=====
+worker failed: [1, 1, 1]

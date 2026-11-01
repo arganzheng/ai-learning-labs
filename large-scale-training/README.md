@@ -20,6 +20,10 @@
 | `07_config_figures.py` | 同上配图（out/config-*.svg → 博客 img/in-post/） | — | 秒级 |
 | `08_ckpt_toys.py` | [分布式 checkpoint：格式、异步保存与重分片](https://arganzheng.life/distributed-checkpoint-format-async-save-and-resharding.html) | save reshard async young | 约三分钟（多进程 gloo） |
 | `08_ckpt_figures.py` | 同上配图（out/distributed-checkpoint-{6tb-breakdown,young-formula,reshard-4to3}.svg → 博客 img/in-post/） | — | 秒级 |
+| `09_ft_toys.py` | [容错与弹性](https://arganzheng.life/fault-tolerance-and-elastic-training.html) | mtbf watchdog elastic straggler | 约一分钟（多进程 gloo） |
+| `09_ft_figures.py` | 同上配图（out/fault-tolerance-{five-terms,restart-lanes,replica-groups}.svg → 博客 img/in-post/） | — | 秒级 |
+| `09_ft_toys.py` | [容错与弹性](https://arganzheng.life/fault-tolerance-and-elastic-training.html) | mtbf watchdog elastic straggler | 约一分钟（多进程 gloo） |
+| `09_ft_figures.py` | 同上配图（out/fault-tolerance-{five-terms,restart-lanes,replica-groups}.svg → 博客 img/in-post/） | — | 秒级 |
 
 **没有 GPU 也能跑。** `torch.distributed` 的 gloo 后端在 4 个 CPU 进程之间做 all-reduce / reduce-scatter / all-gather / all-to-all / send-recv，语义与 NCCL 在 GPU 之间完全相同，只是慢。每个子实验都把并行版的结果与「单进程算一遍」的参考值对数：
 

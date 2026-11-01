@@ -26,6 +26,8 @@
 | `10_stab_figures.py` | 同上配图（out/training-stability-{spike-rollback,clip-2d,logit-qkln,packing-vs-padding,resume-number-line}.svg → 博客 img/in-post/；读 expected/*.json） | — | 秒级 |
 | `11_obs_toys.py` | [长时间训练的可观测性与运维](https://arganzheng.life/long-running-training-observability-and-operations.html) | fr timers ranks alert | 约半分钟（多进程 gloo） |
 | `11_obs_figures.py` | 同上配图（out/long-running-training-{fr-rings,step-time-phases,rank-step-heatmap,alert-timeline}.svg → 博客 img/in-post/；读 expected/*.json） | — | 秒级 |
+| `12_recap_toys.py` | [系列总结与通关自测](https://arganzheng.life/large-scale-training-series-recap-and-self-test.html) | ledger | 秒级 |
+| `12_recap_figures.py` | 同上配图（out/large-scale-training-recap-{ledger-chain,state-grid}.svg → 博客 img/in-post/） | — | 秒级 |
 
 **没有 GPU 也能跑。** `torch.distributed` 的 gloo 后端在 4 个 CPU 进程之间做 all-reduce / reduce-scatter / all-gather / all-to-all / send-recv，语义与 NCCL 在 GPU 之间完全相同，只是慢。每个子实验都把并行版的结果与「单进程算一遍」的参考值对数：
 

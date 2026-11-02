@@ -294,17 +294,17 @@ def figure_one_step():
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
                 f"dθ = {r['d']:+.3f}", fs=8, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["d"][0], yc))
-            text(ax, 6.0, yc - .58, "-lr·g：步长与梯度成正比", fontsize=8,
-                 color="#555555")
+            text(ax, 6.5, yc + .18, "-lr·g：步长与梯度成正比", fontsize=8,
+                 ha="center", color="#555555")
         elif name == "Momentum":
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
-                f"m = b1·m0 + g\n= {r['m']:.3f}", fs=8)
+                f"m = β1·m0 + g\n= {r['m']:.3f}", fs=8)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
                 f"dθ = {r['d']:+.3f}", fs=8, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["d"][0], yc))
-            text(ax, cols["hat"][0], yc - .58, "-lr·m", fontsize=8,
-                 color="#555555")
+            text(ax, 8.2, yc + .18, "-lr·m", fontsize=8,
+                 ha="center", color="#555555")
         else:
             box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
                 f"m = {r['m']:.3f}\nv = {r['v']:.1e}", fs=8)
@@ -317,14 +317,15 @@ def figure_one_step():
             arrow(ax, (cols["hat"][0] + cols["hat"][1], yc), (cols["d"][0], yc))
     # AdamW 的 wd 支路：不进矩，单独一条
     yc = rows_y["AdamW"]
-    box(ax, cols["mid"][0], yc - 1.35, cols["hat"][0] + cols["hat"][1]
-        - cols["mid"][0], .62,
-        "wd 支路：-lr·λ·θ = -0.010（不进矩、不被 sqrt(v) 缩放）",
+    box(ax, cols["mid"][0], yc - 1.5, cols["hat"][0] + cols["hat"][1]
+        - cols["mid"][0], .95,
+        "wd 支路：-lr·λ·θ = -0.010\n（不进矩、不被 sqrt(v) 缩放）",
         fs=7.5, fc="#eef4fb", ec="#7a9ac0")
-    arrow(ax, (cols["hat"][0] + 1.0, yc - 0.73),
+    arrow(ax, (cols["hat"][0] + 2.2, yc - 0.53),
           (cols["d"][0] + cols["d"][1] / 2, yc - ch / 2), color="#7a9ac0")
-    text(ax, cols["d"][0], yc - 1.3, "dθ = Adam 项 -0.100 + wd 支路 -0.010",
-         fontsize=7.5, color="#555555")
+    text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.05,
+         "dθ = Adam 项 -0.100\n+ wd 支路 -0.010", fontsize=7.5,
+         ha="center", va="top", color="#555555")
     finish(fig, "dl-opt-one-step")
 
 
@@ -343,9 +344,11 @@ def figure_bias_correction():
     ax.set_xlabel("步 t"); ax.set_ylabel("对真值 g^2 的比值（对数）")
     ax.set_title("beta2 = 0.999、常数梯度：未修正的 v 从 0.001·g^2 慢慢爬",
                  fontweight=600, color="#111111")
-    ax.annotate("t=1：v = 0.001·g^2", xy=(1, 1e-3), xytext=(6, 8e-4),
-                fontsize=8, color=C["red"],
-                arrowprops=dict(arrowstyle="->", color=C["red"], lw=.8))
+    ax.text(2.4, 1.2e-2, "t=1：v = 0.001·g^2", fontsize=8, color=C["red"])
+    ax.add_patch(FancyArrowPatch((2.2, 1e-2), (1.15, 1.4e-3),
+                                 arrowstyle="-|>", mutation_scale=10,
+                                 color=C["red"], lw=.8,
+                                 shrinkA=1, shrinkB=1))
     ax.legend(fontsize=8, loc="lower right", frameon=False)
     finish(fig, "dl-opt-bias-correction")
 

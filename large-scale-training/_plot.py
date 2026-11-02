@@ -220,12 +220,17 @@ def collide(fig, margin=6.0):
         missing = [c for c in s if ord(c) > 127 and ord(c) not in cmaps[path]]
         if missing:
             errs.append(f"字形缺失（{os.path.basename(path)}）：{s!r} 缺 {''.join(sorted(set(missing)))!r}")
-    # 每个登记的盒子（含描边）都必须完整落在画布内，四周 ≥4px
+    # 每个登记的盒子（含描边）都必须完整落在画布内，四周 ≥4px；文字同样
+    fb = fig.bbox
+    for t, _, _ in items:
+        e = ext[t]
+        if e.x0 < 4 or e.y0 < 4 or e.x1 > fb.x1 - 4 or e.y1 > fb.y1 - 4:
+            errs.append(f"文字出画布边（{e.x0:.0f},{e.y0:.0f}–{e.x1:.0f},{e.y1:.0f}，"
+                        f"画布 {fb.x1:.0f}×{fb.y1:.0f}）：{t.get_text()!r}")
     for p in _PATCHES:
         if p.get_figure() is not fig:
             continue
         b = p.get_window_extent(renderer=ren).expanded(1 + p.get_linewidth() / 200, 1 + p.get_linewidth() / 200)
-        fb = fig.bbox
         if b.x0 < 4 or b.y0 < 4 or b.x1 > fb.x1 - 4 or b.y1 > fb.y1 - 4:
             errs.append(f"盒子出画布边（{b.x0:.0f},{b.y0:.0f}–{b.x1:.0f},{b.y1:.0f}，画布 {fb.x1:.0f}×{fb.y1:.0f}）")
     if errs:

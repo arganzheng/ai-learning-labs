@@ -288,8 +288,8 @@ def toy_saved():
 
 def figure_fold():
     W12 = np.array([[3., 2.], [1., 1.]])
-    fig, ax = base_fig("没有激活：两层 Linear 折叠成一层，结果一模一样", 7.6, 3.9,
-                       (0, 12), (0.5, 6.4))
+    fig, ax = base_fig("没有激活：两层 Linear 折叠成一层，结果一模一样", 7.6, 3.7,
+                       (0, 12), (1.0, 6.4))
     # 上排：x -> W1 -> h -> W2 -> out
     row1 = [("x", [[1, 1]]), ("W1", [[1, 2], [0, 1]]), ("h=xW1", [[1, 3]]),
             ("W2", [[1, 0], [1, 1]]), ("out", [[4, 3]])]
@@ -326,10 +326,12 @@ def figure_relu_fit():
     ax.plot(xs, xs ** 2, color="#111111", lw=1.8, label="目标 x^2")
     for c, w in zip(cs, coef[:5]):
         ax.plot(xs, w * np.maximum(xs - c, 0), color="#bbbbbb", lw=.8)
-    ax.plot(xs, fit, color=C["orange"], lw=1.6, label="5 个 hinge + 偏置")
+    ax.plot(xs, fit, color=C["orange"], lw=1.6, label="5 个加权 hinge + 偏置")
     ax.plot(xs, linfit, color=C["blue"], lw=1.2, ls="--", label="最佳线性拟合")
-    ax.plot([], [], color="#bbbbbb", lw=.8, label="各 hinge 分量")
-    ax.legend(loc="upper left", fontsize=8, frameon=False)
+    ax.plot([], [], color="#bbbbbb", lw=.8, label="各加权 hinge 分量")
+    ax.set_ylim(-1, 4.5)
+    ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=7.5,
+              frameon=False)
     ax.set_xticks([-2, -1, 0, 1, 2]); ax.set_yticks([0, 1, 2, 3, 4])
     ax.tick_params(labelsize=8)
     ax.set_xlabel("x"); ax.set_ylabel("y")
@@ -402,19 +404,22 @@ def figure_dead_relu():
     z0 = x * 1.0 + 0.5
     z1 = x * 1.0 - 9.5
     fig, axs = plt.subplots(1, 2, figsize=(7.6, 3.2), sharey=True)
-    for ax, z, t, c, xt in ((axs[0], z0, "更新前 b=0.5：95%+ 的输入能激活",
-                             C["blue"], [-2, 0, 2]),
-                            (axs[1], z1, "b -= 10 后：预激活全为负，输出与梯度全 0",
-                             C["orange"], [-12, -10, -8])):
+    for ax, z, t, c, xt, xl in ((axs[0], z0, "更新前 b=0.5：67.2% 的输入能激活",
+                                 C["blue"], [-2, 0, 2], None),
+                                (axs[1], z1, "b -= 10 后：预激活全为负，输出与梯度全 0",
+                                 C["orange"], [-12, -8, -4, 0], (-13, 1))):
         ax.hist(z.numpy(), bins=24, color=c, alpha=.75)
         ax.axvline(0, color="#111111", lw=1)
         ax.set_title(t, fontsize=9)
-        ax.set_xlabel("预激活 z"); ax.set_xticks(xt)
+        ax.set_xlabel("预激活 z", fontsize=9); ax.set_xticks(xt)
+        ax.tick_params(labelsize=9)
+        if xl:
+            ax.set_xlim(*xl)
         p = float((z > 0).float().mean())
-        ax.text(0.04, 0.92, f"z>0：{p*100:.1f}%", transform=ax.transAxes,
-                fontsize=9)
+        ax.text(0.96, 0.92, f"z>0：{p*100:.1f}%", transform=ax.transAxes,
+                ha="right", fontsize=9)
     fig.subplots_adjust(wspace=0.3)
-    axs[0].set_ylabel("输入个数")
+    axs[0].set_ylabel("输入个数", fontsize=9)
     fig.suptitle("dead ReLU 如何发生：一次过大的更新把预激活整体推过零点",
                  fontweight=600, color="#111111")
     fig.tight_layout(rect=[0, 0, 1, .92])
@@ -423,7 +428,7 @@ def figure_dead_relu():
 
 def figure_glu_example():
     fig, ax = base_fig("GLU 的逐维放行：门分支先过 σ，再与值分支逐元素乘",
-                       7.6, 3.4, (0, 12), (0.5, 6.0))
+                       7.6, 3.4, (0, 10.9), (0.5, 6.0))
     # 值分支
     text(ax, 1.6, 5.3, "值分支 xV", ha="center", va="center", fontsize=8.5)
     grid(ax, .7, 5.0, [[2, -1, 3]], cw=.6, fc="#dce9f7", zero_grey=False)
@@ -442,55 +447,62 @@ def figure_glu_example():
     arrow(ax, (8.5, 4.45), (4.9, 3.5), color=C["blue"], lw=.9)
     grid(ax, 3.7, 3.4, [[1.90, -.05, 1.50]], cw=.85, fs=7.5,
          fc="#fae6d6", ec=C["orange"], zero_grey=False)
-    text(ax, 6, 2.3, "第一维几乎全放行，第二维几乎关掉，第三维放一半；"
+    text(ax, 5.45, 2.3, "第一维几乎全放行，第二维几乎关掉，第三维放一半；"
          "门和内容用的是不同权重。", ha="center", va="center", fontsize=9)
-    text(ax, 6, 1.55, "反向沿两支分别回传：值支乘 σ(xW)，门支乘 xV·σ'(xW)。",
+    text(ax, 5.45, 1.55, "反向沿两支分别回传：值支乘 σ(xW)，门支乘 xV·σ'(xW)。",
          ha="center", va="center", fontsize=8.5, color="#555555")
     finish(fig, "activation-glu-example")
 
 
 def figure_ffn_position():
     fig, ax = base_fig("激活函数在 Transformer block 里的位置：FFN 内部那一处",
-                       7.6, 3.9, (0, 12), (0.4, 6.6))
-    chain = [("输入", .4, 1.1), ("LayerNorm", 1.7, 1.4), ("Attention", 3.5, 1.3),
-             ("+ 残差", 5.2, 1.0)]
-    y = 5.1
+                       7.6, 3.9, (0, 12.2), (0.4, 6.6))
+    chain = [("输入", .3, .8), ("LayerNorm", 1.3, 1.3), ("Attention", 2.8, 1.2),
+             ("+ 残差", 4.2, 1.0), ("LayerNorm", 5.4, 1.3)]
+    y = 4.7
     for lab, x, w in chain:
         p = box(ax, x, y, w, .8, "", fc="#dce9f7", ec=C["blue"])
         text(ax, x + w / 2, y + .4, lab, in_box=p, ha="center", va="center",
-             fontsize=8)
-    for a, b in ((1.52, 1.68), (3.12, 3.48), (4.82, 5.18)):
+             fontsize=7)
+    for a, b in ((1.12, 1.28), (2.62, 2.78), (4.02, 4.18), (5.22, 5.38)):
         arrow(ax, (a, y + .4), (b, y + .4), color=C["blue"], lw=.9)
-    # FFN 大框
-    ax.add_patch(Rectangle((6.55, 4.55), 4.4, 1.55, facecolor="#f5f8fc",
+    # FFN 大框（未登记容器：内部元素仍各自参与检查）
+    ax.add_patch(Rectangle((6.85, 4.3), 3.75, 1.9, facecolor="#f5f8fc",
                            edgecolor=C["blue"], lw=1.0))
-    text(ax, 8.75, 5.85, "FFN（SwiGLU）", ha="center", va="center",
+    text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
          fontsize=8.5)
-    mini = [("xW 门", 6.75), ("xV 值", 8.15), ("SiLU ⊙", 9.35)]
-    for lab, x in mini[:2]:
-        p2 = box(ax, x, 4.7, 1.25, .5, "", fc="#ffffff", ec="#888888")
-        text(ax, x + .625, 4.95, lab, in_box=p2, ha="center", va="center",
-             fontsize=7.5)
-    p2 = box(ax, 9.55, 4.7, 1.3, .5, "", fc="#fae6d6", ec=C["orange"])
-    text(ax, 10.2, 4.95, "SiLU ⊙", in_box=p2, ha="center", va="center",
-         fontsize=7.5)
-    arrow(ax, (8.02, 4.95), (8.13, 4.95), color=C["orange"], lw=.8)
-    arrow(ax, (9.42, 4.95), (9.53, 4.95), color=C["orange"], lw=.8)
-
-    arrow(ax, (6.3, y + .4), (6.5, y + .4), color=C["blue"], lw=.9)
-    # down + 残差
-    p = box(ax, 6.55, 2.9, 1.5, .7, "", fc="#dce9f7", ec=C["blue"])
-    text(ax, 7.3, 3.25, "W2 down", in_box=p, ha="center", va="center",
-         fontsize=8)
-    p = box(ax, 8.5, 2.9, 1.0, .7, "", fc="#dce9f7", ec=C["blue"])
-    text(ax, 9.0, 3.25, "+ 残差", in_box=p, ha="center", va="center",
-         fontsize=8)
-    p = box(ax, 10.0, 2.9, 1.3, .7, "", fc="#dce9f7", ec=C["blue"])
-    text(ax, 10.65, 3.25, "输出", in_box=p, ha="center", va="center",
-         fontsize=8)
-    arrow(ax, (10.0, 4.68), (7.35, 3.62), color=C["blue"], lw=.9)
-    arrow(ax, (8.05, 3.25), (8.45, 3.25), color=C["blue"], lw=.9)
-    arrow(ax, (9.5, 3.25), (9.95, 3.25), color=C["blue"], lw=.9)
+    arrow(ax, (6.72, y + .4), (6.83, y + .4), color=C["blue"], lw=.9)
+    # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
+    arrow(ax, (6.87, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
+    arrow(ax, (6.87, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
+    p2 = box(ax, 7.1, 5.35, .8, .42, "", fc="#ffffff", ec="#888888")
+    text(ax, 7.5, 5.56, "xW 门", in_box=p2, ha="center", va="center", fontsize=7)
+    p2 = box(ax, 8.35, 5.35, .65, .42, "", fc="#ffffff", ec="#888888")
+    text(ax, 8.675, 5.56, "SiLU", in_box=p2, ha="center", va="center", fontsize=7)
+    p2 = box(ax, 7.1, 4.55, .8, .42, "", fc="#ffffff", ec="#888888")
+    text(ax, 7.5, 4.76, "xV 值", in_box=p2, ha="center", va="center", fontsize=7)
+    arrow(ax, (7.92, 5.56), (8.33, 5.56), color=C["orange"], lw=.8)
+    arrow(ax, (9.02, 5.5), (9.18, 5.28), color=C["orange"], lw=.8)
+    arrow(ax, (7.92, 4.76), (9.18, 5.0), color=C["orange"], lw=.8)
+    p2 = box(ax, 9.2, 4.85, .45, .5, "", fc="#fae6d6", ec=C["orange"])
+    text(ax, 9.425, 5.1, "⊙", in_box=p2, ha="center", va="center", fontsize=8)
+    arrow(ax, (9.67, 5.1), (9.78, 5.1), color=C["orange"], lw=.8)
+    p2 = box(ax, 9.8, 4.75, .7, .7, "", fc="#fae6d6", ec=C["orange"])
+    text(ax, 10.15, 5.22, "W2", in_box=p2, ha="center", va="center", fontsize=7)
+    text(ax, 10.15, 4.97, "down", in_box=p2, ha="center", va="center",
+         fontsize=6)
+    # 形状标注：d → d_g（两支）→ d
+    text(ax, 6.95, 4.35, "d", ha="center", va="center", fontsize=7)
+    text(ax, 7.5, 5.9, "d_g", ha="center", va="center", fontsize=6.5)
+    text(ax, 7.5, 4.42, "d_g", ha="center", va="center", fontsize=6.5)
+    # +残差 → 输出
+    p = box(ax, 10.72, 4.7, .72, .8, "", fc="#dce9f7", ec=C["blue"])
+    text(ax, 11.08, 5.1, "+ 残差", in_box=p, ha="center", va="center",
+         fontsize=7)
+    p = box(ax, 11.55, 4.7, .62, .8, "", fc="#dce9f7", ec=C["blue"])
+    text(ax, 11.86, 5.1, "输出", in_box=p, ha="center", va="center", fontsize=7)
+    arrow(ax, (10.52, 5.1), (10.7, 5.1), color=C["blue"], lw=.9)
+    arrow(ax, (11.46, 5.1), (11.53, 5.1), color=C["blue"], lw=.9)
     text(ax, 6, 1.9, "每个 token 各自过同一个 FFN；激活函数在 gate/up 之间，"
          "形状变化 d → d_g → d。", ha="center", va="center", fontsize=9)
     text(ax, 6, 1.25, "注意力混合 token 之间信息；FFN 只在单 token 内部算。",

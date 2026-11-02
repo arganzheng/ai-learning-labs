@@ -87,7 +87,7 @@ def cmd_onehot_lookup():
 def figure_onehot_lookup():
     fig, ax = base_fig(r"查表 $=$ one-hot 行向量 $\times$ 表 $=$ 取第 $i$ 行"
                        "；反向只写被查到的行",
-                       h=4.4, xlim=(0, 12.6), ylim=(0.2, 7.0))
+                       h=3.9, xlim=(0, 12.6), ylim=(0.6, 7.0))
     # ---- 左：e_2^T × W(5×3) = W 第 2 行
     cw, ch = .62, .62
     text(ax, .3, 6.35, r"$e_2^{\top}$（$1\times5$）", fontsize=8.5)
@@ -120,7 +120,7 @@ def figure_onehot_lookup():
          fontsize=8, color="#555555")
     # ---- 右下：W.grad 5×3，只有第 0、2 行非零
     gx = 10.05
-    text(ax, gx, 6.35, r"$\mathrm{W.grad}$（$5\times3$）", fontsize=8.5)
+    text(ax, gx, 6.35, r"梯度 $\nabla_W L$（$5\times3$）", fontsize=8.5)
     g = np.zeros((5, 3))
     g[0] = 1
     g[2] = 2

@@ -1,0 +1,4 @@
+标量神经元：z=w*x+b, e=z-y, L=e^2
+x=2, w=3, b=-1, y=4 -> z=5, e=1, L=1
+dL/de=2, dL/dz=2, dL/dw=4, dL/db=2, dL/dx=6
+前向有限差分 eps=0.001: w+eps=3.001, L(w+eps)=1.004004, dL/dw≈4.004000

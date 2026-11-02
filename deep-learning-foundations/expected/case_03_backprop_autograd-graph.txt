@@ -1,0 +1,14 @@
+loss=0.441257387; BFS 遍历 loss.grad_fn.next_functions：
+00 NllLossBackward0
+01 LogSoftmaxBackward0
+02 AddmmBackward0
+03 torch::autograd::AccumulateGrad
+04 ReluBackward0
+05 TBackward0
+06 AddmmBackward0
+07 torch::autograd::AccumulateGrad
+08 torch::autograd::AccumulateGrad
+09 TBackward0
+10 torch::autograd::AccumulateGrad
+edges=0->1, 1->2, 2->3, 2->4, 2->5, 4->6, 5->7, 6->8, 6->9, 9->10
+unique autograd nodes=11

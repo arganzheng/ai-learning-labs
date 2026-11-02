@@ -323,15 +323,16 @@ def fig_checkpointing():
     chh = 0.62
     x0 = 1.85
 
-    def lane(y, cells, all_saved=False):
+    def lane(y, cells, all_saved=False, saved_inputs=False):
         x = x0
         for ln, phase in cells:
             if phase == "fwd":
                 if all_saved:
                     fc, ec = "#fae6d6", C["orange"]
+                elif saved_inputs and ln in (1, 5):
+                    fc, ec = "#ffffff", C["orange"]
                 else:
-                    fc, ec = ("#fae6d6" if ln in (1, 5) else "#f5f5f5",
-                              C["orange"] if ln in (1, 5) else "#aaaaaa")
+                    fc, ec = "#f5f5f5", "#aaaaaa"
                 hatch = None
             elif phase == "re":
                 fc, ec, hatch = "#f5f5f5", "#aaaaaa", "///"
@@ -342,6 +343,11 @@ def fig_checkpointing():
                     va="center", fontsize=7.5)
             if hatch:
                 p.set_hatch(hatch)
+            if phase == "fwd" and saved_inputs and ln in (1, 5):
+                ax.add_patch(Rectangle((x + cw_ * 0.35, y + chh * 0.35),
+                                       cw_ * 0.3, chh * 0.3,
+                                       facecolor="#fae6d6", edgecolor=C["orange"],
+                                       lw=0.5))
             x += cw_ + cgap
         return x
 
@@ -352,7 +358,7 @@ def fig_checkpointing():
     # ---- 图例（小色块 + 标签）----
     legend = [("#fae6d6", C["orange"], None, "全部保存"),
               ("#fae6d6", C["orange"], "ckpt", "只存块输入"),
-              ("#f5f5f5", "#aaaaaa", "///", "不保存、重算"),
+              ("#f5f5f5", "#aaaaaa", "///", "不保存、反向前重算"),
               ("#dce9f7", C["blue"], None, "反向")]
     lx = 0.55
     for fc, ec, kind, name in legend:
@@ -370,7 +376,7 @@ def fig_checkpointing():
         lx += 0.42 + 0.16 * len(name) + 0.55
 
     # ---- 全存 ----
-    y1 = 4.55
+    y1 = 4.85
     text(ax, 0.15, y1 + chh / 2, "全存", ha="left", va="center",
          fontsize=10)
     cells1 = [(i + 1, "fwd") for i in range(8)] + \
@@ -382,7 +388,7 @@ def fig_checkpointing():
               x0 + 16 * (cw_ + cgap), "反 L8→L1", C["blue"])
 
     # ---- 每 4 层 ckpt ----
-    y2 = 2.35
+    y2 = 2.55
     text(ax, 0.15, y2 + chh / 2, "ckpt", ha="left", va="center",
          fontsize=9.5)
     cells2 = ([(i + 1, "fwd") for i in range(8)] +
@@ -390,7 +396,7 @@ def fig_checkpointing():
               [(8 - i, "bwd") for i in range(4)] +
               [(i + 1, "re") for i in range(4)] +
               [(4 - i, "bwd") for i in range(4)])
-    lane(y2, cells2)
+    lane(y2, cells2, saved_inputs=True)
     u = cw_ + cgap
     seg_label(y2 + chh + 0.5, x0, x0 + 8 * u, "前向 L1→L8",
               C["orange"])
@@ -408,9 +414,10 @@ def fig_checkpointing():
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
     text(ax, bx + bw_max / 2, y1 + 0.31, f"{mb1:.1f}MB", ha="center",
          va="center", fontsize=8.5)
-    ax.add_patch(Rectangle((bx, y2 + 0.12), bw_max * mb2 / mb1, 0.38,
+    small_bar = max(bw_max * mb2 / mb1, 0.22)
+    ax.add_patch(Rectangle((bx, y2 + 0.12), small_bar, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
-    text(ax, bx + bw_max * mb2 / mb1 + 0.28, y2 + 0.31,
+    text(ax, bx + small_bar + 0.18, y2 + 0.31,
          f"{mb2:.1f}MB", ha="left", va="center", fontsize=8.5)
     text(ax, bx, y1 + chh + 0.5, "实测保存", ha="left", va="center",
          fontsize=8.5, color="#555555")

@@ -180,7 +180,7 @@ def toy_dropout():
 def sci(v):
     """大数用 mathtext 科学计数法，小数直接十进制。"""
     if v == 0 or (1e-2 <= abs(v) < 1e4):
-        return f"{v:g}"
+        return f"{v:.3g}"
     m, e = f"{v:.3g}".split("e")
     return rf"{m}\times10^{{{int(e)}}}"
 

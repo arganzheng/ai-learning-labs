@@ -262,8 +262,8 @@ def figure_residual_var():
     ax.set_title("64 个残差块：残差流标准差——无归一化翻倍、Pre-Norm 线性、加缩放近似平",
                  fontweight=600, color="#111111")
     ax.axhline(1, ls=":", c=C["gray"], lw=.8)
-    ax.text(32, 1e9, "2^32 = 4.3e9，实测 6.0e9",
-            fontsize=8, color=C["red"], ha="center")
+    ax.text(17, 3e6, "2^32 = 4.3e9，实测 6.0e9",
+            fontsize=8, color=C["red"])
     ax.annotate("块 64 实测 1.46", xy=(63, runs["prenorm-scaled"][63]),
                 xytext=(52, 3.0), fontsize=8, color=C["green"],
                 arrowprops=dict(arrowstyle="->", color=C["green"], lw=.8))

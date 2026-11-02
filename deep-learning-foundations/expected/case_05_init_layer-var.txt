@@ -1,0 +1,4 @@
+单层 Linear：n_in=256，batch=4096，Var(x)=1；公式 Var(y) = n_in * sigma_w^2 * Var(x)，ReLU 后二阶矩约 x1/2
+sigma_w^2 = 1/n_in  (0.00391): Var(y) 实测 0.9873 vs 公式 1.0016 | ReLU 后二阶矩 实测 0.4937 vs 公式 0.5008
+sigma_w^2 = 2/n_in  (0.00781): Var(y) 实测 2.0040 vs 公式 2.0033 | ReLU 后二阶矩 实测 1.0031 vs 公式 1.0016
+sigma_w^2 = 0.5/n_in (0.00195): Var(y) 实测 0.4925 vs 公式 0.5008 | ReLU 后二阶矩 实测 0.2467 vs 公式 0.2504

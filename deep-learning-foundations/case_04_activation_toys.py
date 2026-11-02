@@ -456,7 +456,7 @@ def figure_glu_example():
 
 def figure_ffn_position():
     fig, ax = base_fig("激活函数在 Transformer block 里的位置：FFN 内部那一处",
-                       7.6, 3.9, (0, 12.2), (0.4, 6.6))
+                       7.6, 3.5, (0, 12.2), (2.4, 6.6))
     chain = [("输入", .3, .8), ("LayerNorm", 1.3, 1.3), ("Attention", 2.8, 1.2),
              ("+ 残差", 4.2, 1.0), ("LayerNorm", 5.4, 1.3)]
     y = 4.7
@@ -472,6 +472,7 @@ def figure_ffn_position():
     text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
          fontsize=8.5)
     arrow(ax, (6.72, y + .4), (6.83, y + .4), color=C["blue"], lw=.9)
+    text(ax, 6.78, 5.66, "d", ha="center", va="center", fontsize=6.5)
     # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
     arrow(ax, (6.87, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
     arrow(ax, (6.87, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
@@ -492,9 +493,9 @@ def figure_ffn_position():
     text(ax, 10.15, 4.97, "down", in_box=p2, ha="center", va="center",
          fontsize=6)
     # 形状标注：d → d_g（两支）→ d
-    text(ax, 6.95, 4.35, "d", ha="center", va="center", fontsize=7)
     text(ax, 7.5, 5.9, "d_g", ha="center", va="center", fontsize=6.5)
-    text(ax, 7.5, 4.42, "d_g", ha="center", va="center", fontsize=6.5)
+    text(ax, 7.5, 5.12, "d_g", ha="center", va="center", fontsize=6.5)
+    text(ax, 10.61, 5.66, "d", ha="center", va="center", fontsize=6.5)
     # +残差 → 输出
     p = box(ax, 10.72, 4.7, .72, .8, "", fc="#dce9f7", ec=C["blue"])
     text(ax, 11.08, 5.1, "+ 残差", in_box=p, ha="center", va="center",
@@ -503,9 +504,9 @@ def figure_ffn_position():
     text(ax, 11.86, 5.1, "输出", in_box=p, ha="center", va="center", fontsize=7)
     arrow(ax, (10.52, 5.1), (10.7, 5.1), color=C["blue"], lw=.9)
     arrow(ax, (11.46, 5.1), (11.53, 5.1), color=C["blue"], lw=.9)
-    text(ax, 6, 1.9, "每个 token 各自过同一个 FFN；激活函数在 gate/up 之间，"
+    text(ax, 6, 3.55, "每个 token 各自过同一个 FFN；激活函数在 gate/up 之间，"
          "形状变化 d → d_g → d。", ha="center", va="center", fontsize=9)
-    text(ax, 6, 1.25, "注意力混合 token 之间信息；FFN 只在单 token 内部算。",
+    text(ax, 6, 2.9, "注意力混合 token 之间信息；FFN 只在单 token 内部算。",
          ha="center", va="center", fontsize=8.5, color="#555555")
     finish(fig, "activation-ffn-position")
 

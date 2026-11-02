@@ -537,7 +537,7 @@ def f12_activation_three_meanings():
     p1 = box(ax, 0.3, 6.75, 3.6, 1.85, "", fc="#f5f8fc", ec=C["blue"], lw=1.0)
     box_title(ax, 2.1, 8.25, "① 函数 f", p1, color=C["blue"])
     xs = np.linspace(-1, 1, 60)
-    ax.plot(1.55 + xs * 0.75, 7.15 + np.maximum(xs, 0) * 0.5, color=C["blue"],
+    ax.plot(1.35 + xs * 0.65, 7.42 + np.maximum(xs, 0) * 0.45, color=C["blue"],
             lw=1.6)
     text(ax, 2.1, 7.05, "一个函数", in_box=p1, ha="center",
          va="center", fontsize=9.5)

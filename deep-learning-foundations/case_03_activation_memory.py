@@ -323,13 +323,16 @@ def fig_checkpointing():
     chh = 0.62
     x0 = 1.85
 
-    def lane(y, cells):
+    def lane(y, cells, all_saved=False):
         x = x0
         for ln, phase in cells:
             if phase == "fwd":
-                fc, ec, hatch = ("#fae6d6" if ln in (1, 5) else "#f5f5f5",
-                                 C["orange"] if ln in (1, 5) else "#aaaaaa",
-                                 None if ln in (1, 5) else None)
+                if all_saved:
+                    fc, ec = "#fae6d6", C["orange"]
+                else:
+                    fc, ec = ("#fae6d6" if ln in (1, 5) else "#f5f5f5",
+                              C["orange"] if ln in (1, 5) else "#aaaaaa")
+                hatch = None
             elif phase == "re":
                 fc, ec, hatch = "#f5f5f5", "#aaaaaa", "///"
             else:
@@ -346,20 +349,40 @@ def fig_checkpointing():
         text(ax, (x_from + x_to) / 2, y, s, ha="center", va="center",
              fontsize=8, color=color)
 
+    # ---- 图例（小色块 + 标签）----
+    legend = [("#fae6d6", C["orange"], None, "全部保存"),
+              ("#fae6d6", C["orange"], "ckpt", "只存块输入"),
+              ("#f5f5f5", "#aaaaaa", "///", "不保存、重算"),
+              ("#dce9f7", C["blue"], None, "反向")]
+    lx = 0.55
+    for fc, ec, kind, name in legend:
+        r = Rectangle((lx, 6.35), 0.28, 0.24, facecolor=fc, edgecolor=ec,
+                      lw=0.8)
+        if kind == "///":
+            r.set_hatch("///")
+        ax.add_patch(r)
+        if kind == "ckpt":
+            r2 = Rectangle((lx + 0.09, 6.42), 0.1, 0.1, facecolor="#ffffff",
+                           edgecolor=ec, lw=0.5)
+            ax.add_patch(r2)
+        text(ax, lx + 0.38, 6.47, name, ha="left", va="center",
+             fontsize=8.5, color="#444444")
+        lx += 0.42 + 0.16 * len(name) + 0.55
+
     # ---- 全存 ----
-    y1 = 4.35
+    y1 = 4.55
     text(ax, 0.15, y1 + chh / 2, "全存", ha="left", va="center",
          fontsize=10)
     cells1 = [(i + 1, "fwd") for i in range(8)] + \
              [(8 - i, "bwd") for i in range(8)]
-    xe = lane(y1, cells1)
+    xe = lane(y1, cells1, all_saved=True)
     seg_label(y1 + chh + 0.5, x0, x0 + 8 * (cw_ + cgap), "前向 L1→L8",
               C["orange"])
     seg_label(y1 + chh + 0.5, x0 + 8 * (cw_ + cgap),
               x0 + 16 * (cw_ + cgap), "反 L8→L1", C["blue"])
 
     # ---- 每 4 层 ckpt ----
-    y2 = 2.2
+    y2 = 2.35
     text(ax, 0.15, y2 + chh / 2, "ckpt", ha="left", va="center",
          fontsize=9.5)
     cells2 = ([(i + 1, "fwd") for i in range(8)] +

@@ -344,8 +344,8 @@ def fig_checkpointing():
             if hatch:
                 p.set_hatch(hatch)
             if phase == "fwd" and saved_inputs and ln in (1, 5):
-                ax.add_patch(Rectangle((x + cw_ * 0.35, y + chh * 0.35),
-                                       cw_ * 0.3, chh * 0.3,
+                ax.add_patch(Rectangle((x + 0.035, y + chh - 0.19),
+                                       0.15, 0.16,
                                        facecolor="#fae6d6", edgecolor=C["orange"],
                                        lw=0.5))
             x += cw_ + cgap
@@ -369,8 +369,8 @@ def fig_checkpointing():
             r.set_hatch("///")
         ax.add_patch(r)
         if kind == "ckpt":
-            r2 = Rectangle((lx + 0.1, 6.42), 0.08, 0.1, facecolor="#fae6d6",
-                           edgecolor=ec, lw=0.5)
+            r2 = Rectangle((lx + 0.025, 6.35 + 0.24 - 0.095), 0.075, 0.08,
+                           facecolor="#fae6d6", edgecolor=ec, lw=0.5)
             ax.add_patch(r2)
         text(ax, lx + 0.38, 6.47, name, ha="left", va="center",
              fontsize=8.5, color="#444444")
@@ -409,16 +409,16 @@ def fig_checkpointing():
               C["blue"])
 
     # ---- 右列：实测保存量的比例条 ----
-    bx, bw_max = 10.65, 1.2
+    bx, bw_max = 10.4, 0.9
     mb1, mb2 = t1 / 1024 / 1024, t2 / 1024 / 1024
     ax.add_patch(Rectangle((bx, y1 + 0.12), bw_max, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
-    text(ax, bx + bw_max / 2, y1 + 0.31, f"{mb1:.1f}MB", ha="center",
+    text(ax, bx + bw_max + 0.3, y1 + 0.31, f"{mb1:.1f}MB", ha="left",
          va="center", fontsize=8.5)
-    small_bar = max(bw_max * mb2 / mb1, 0.12)
+    small_bar = max(bw_max * mb2 / mb1, 0.1)
     ax.add_patch(Rectangle((bx, y2 + 0.12), small_bar, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
-    text(ax, bx + small_bar + 0.18, y2 + 0.31,
+    text(ax, bx + small_bar + 0.3, y2 + 0.31,
          f"{mb2:.1f}MB", ha="left", va="center", fontsize=8.5)
     text(ax, bx, y1 + chh + 0.5, "实测保存", ha="left", va="center",
          fontsize=8.5, color="#555555")

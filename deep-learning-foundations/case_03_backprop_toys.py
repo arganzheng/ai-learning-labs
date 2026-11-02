@@ -305,7 +305,7 @@ def toy_graph():
 
 
 def figure_overview():
-    fig,ax=base_fig("前向算 loss，反向沿原路把梯度送回每个参数",7.6,4.1,(0,12),(0.4,7.0))
+    fig,ax=base_fig("前向算 loss，反向沿原路把梯度送回每个参数",7.6,3.9,(0,12),(1.3,7.0))
     xs=[.35,2.55,4.75,6.95,9.15]; y=4.7; w=1.6
     fw=[("X","输入"),("H","Linear"),("A","ReLU"),("Z","Linear"),("L","loss")]
     for x,(a,b) in zip(xs,fw):
@@ -317,20 +317,19 @@ def figure_overview():
         p=box(ax,x,6.0,1.2,.65,"",fc="#f0f0f0",ec="#888888")
         text(ax,x+.6,6.32,lab,in_box=p,ha="center",va="center",fontsize=8)
         arrow(ax,(x+.6,5.97),(x+.6,5.75),color="#888888",lw=.8)
-    band=3.55
+    band=3.9
     text(ax,10.85,band,"反向：逐节点回走",ha="left",va="center",fontsize=9.5,color=C["orange"])
     cxs=[x+w/2 for x in xs]
     for i in (4,3,2,1):
-        arrow(ax,(cxs[i],y-.05),(cxs[i],band+.05),color=C["orange"],lw=.9)
         arrow(ax,(cxs[i]-.15,band),(cxs[i-1]+.15,band),color=C["orange"])
     labs=["G_X（不算）","×mask = G_H","×W2^T = G_A","G_Z=(P-Y)/m"]
     for i,(a,b) in enumerate(((0,1),(1,2),(2,3),(3,4))):
         mid=(cxs[a]+cxs[b])/2
-        text(ax,mid,band-.45,labs[i],ha="center",va="center",fontsize=7.5,color=C["orange"])
+        text(ax,mid,band-.42,labs[i],ha="center",va="center",fontsize=7.5,color=C["orange"])
     for cx,lab in ((cxs[1],"dW1 = X^T G_H"),(cxs[3],"dW2 = A^T G_Z")):
-        p=box(ax,cx-1.3,1.55,2.6,.85,"",fc="#fff3e0",ec=C["orange"])
-        box_title(ax,cx,1.98,lab,p,color="#111111")
-        arrow(ax,(cx,band-.05),(cx,2.45),color=C["orange"])
+        p=box(ax,cx-1.3,1.85,2.6,.85,"",fc="#fff3e0",ec=C["orange"])
+        box_title(ax,cx,2.28,lab,p,color="#111111")
+        arrow(ax,(cx,band-.05),(cx,2.75),color=C["orange"])
     finish(fig,"backprop-overview")
 
 
@@ -356,11 +355,10 @@ def figure_scalar():
     arrow(ax,(4.55,4.8),(3.5,2.45),color=C["orange"],lw=.9)
     arrow(ax,(5.15,4.8),(5.7,2.45),color=C["orange"],lw=.9)
     arrow(ax,(8.45,4.8),(9.05,2.45),color=C["orange"],lw=.9)
-    lab=[((2.9,4.5),"×w=3\ndL/dx=6"),((6.6,4.5),"×1\ndL/dz=2"),
-         ((9.6,4.5),"×2e=2\ndL/de=2"),((2.5,3.55),"×x=2\ndL/dw=4"),
-         ((6.2,3.55),"×1\ndL/db=2"),((9.35,3.55),"×-1\ndL/dy=-2")]
-    for (x,y),s in lab:
-        ha="center" if y>4 else ("right" if x<4 else "left")
+    lab=[((2.9,4.5),"×w=3\ndL/dx=6","center"),((6.6,4.5),"×1\ndL/dz=2","center"),
+         ((9.6,4.5),"×2e=2\ndL/de=2","center"),((3.95,3.15),"×x=2\ndL/dw=4","left"),
+         ((5.15,3.95),"×1\ndL/db=2","right"),((8.9,3.67),"×-1\ndL/dy=-2","left")]
+    for (x,y),s,ha in lab:
         text(ax,x,y,s,ha=ha,va="center",fontsize=7.5,color=C["orange"])
     finish(fig,"backprop-scalar-graph")
 
@@ -471,7 +469,7 @@ def figure_batched_jacobian():
     W=np.array([[1.,2.],[-1.,.5]]); G=np.array([[.2,-.3],[1.,.5],[.7,-.1]])
     dX=G@W.T
     assert np.allclose(dX.reshape(-1),J.T@G.reshape(-1))
-    fig,ax=base_fig("batch Linear 的 Jacobian 分块对角：VJP 就是矩阵乘",7.6,4.0,(0,12),(0.5,7.4))
+    fig,ax=base_fig("batch Linear 的 Jacobian 分块对角：VJP 就是矩阵乘",7.6,3.8,(0,12),(0.5,6.2))
     text(ax,1.5,5.75,"6×6 Jacobian（toy 实测）",ha="center",fontsize=8.5)
     cell=.37; x0,y0=.4,5.3
     for r in range(6):
@@ -487,7 +485,7 @@ def figure_batched_jacobian():
     text(ax,1.5,2.75,"对角块都是 W^T，其余全 0\n（样本互不依赖）",ha="center",va="center",fontsize=8)
     text(ax,5.2,5.15,"G (3×2)",ha="center",fontsize=8)
     grid(ax,4.7,4.9,G.tolist(),cw=.5,zero_grey=False,fs=7)
-    text(ax,6.65,4.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,6.65,4.15,"×",ha="center",va="center",fontsize=12)
     text(ax,7.75,5.15,"W^T",ha="center",fontsize=8)
     grid(ax,7.35,4.9,W.T.tolist(),cw=.5,zero_grey=False,fs=7)
     text(ax,8.7,4.15,"=",ha="center",va="center",fontsize=11)

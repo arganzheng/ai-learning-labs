@@ -126,7 +126,7 @@ def cell2(ax, x, y, w, h, head, sub, fs_h=8.5, fs_s=8,
 
 def figure_training_step():
     fig, ax = base_fig("一次训练迭代：系列各篇在这条流水线上的位置",
-                       h=4.6, xlim=(0, 13.4), ylim=(0.3, 7.3))
+                       h=4.3, xlim=(0, 13.4), ylim=(0.8, 7.3))
     y, ch, cw = 4.1, 1.2, 1.9
     cy = y + ch / 2
 

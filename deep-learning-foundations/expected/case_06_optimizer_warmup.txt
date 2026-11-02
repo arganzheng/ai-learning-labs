@@ -1,0 +1,19 @@
+64 层 Pre-Norm + Adam（beta2=0.95），峰值 lr 1e-2，warmup 0 vs 100 步，前 20 步实测：
+
+  warmup 0 步（lr_t 为当时的学习率）：
+    步   1   lr_t = 0.0100   max|dθ|/lr_t = 1.000   loss = 2.779
+    步   2   lr_t = 0.0100   max|dθ|/lr_t = 1.000   loss = 4.239
+    步   3   lr_t = 0.0100   max|dθ|/lr_t = 1.001   loss = 5.180
+    步   5   lr_t = 0.0100   max|dθ|/lr_t = 1.002   loss = 5.731
+    步  10   lr_t = 0.0100   max|dθ|/lr_t = 0.991   loss = 2.520
+    步  20   lr_t = 0.0100   max|dθ|/lr_t = 1.017   loss = 2.123
+    loss @20 2.123  @100 0.323  @200 0.454
+
+  warmup 100 步（lr_t 为当时的学习率）：
+    步   1   lr_t = 0.0001   max|dθ|/lr_t = 1.000   loss = 2.779
+    步   2   lr_t = 0.0002   max|dθ|/lr_t = 1.000   loss = 2.181
+    步   3   lr_t = 0.0003   max|dθ|/lr_t = 1.001   loss = 1.629
+    步   5   lr_t = 0.0005   max|dθ|/lr_t = 1.002   loss = 1.197
+    步  10   lr_t = 0.0010   max|dθ|/lr_t = 0.977   loss = 0.601
+    步  20   lr_t = 0.0020   max|dθ|/lr_t = 0.888   loss = 0.659
+    loss @20 0.659  @100 0.330  @200 0.310

@@ -23,6 +23,7 @@ plt.rcParams.update({
     "font.weight": 600,             # Hiragino Sans GB W6；W3/Light 笔画太细
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
+    "mathtext.fontset": "cm",        # $...$ 用 Computer Modern 排，与正文 KaTeX 风格一致
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
     "axes.titlesize": 12,
     "axes.labelsize": 11,

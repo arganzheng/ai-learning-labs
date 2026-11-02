@@ -15,7 +15,7 @@ import os
 import sys
 
 import numpy as np
-from matplotlib.patches import FancyArrowPatch
+from matplotlib.patches import FancyArrowPatch, Rectangle
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -207,41 +207,53 @@ def figure_lstm_cell():
     c_t = f * c_prev + i * g
     h_t = o * np.tanh(c_t)
     fig, ax = base_fig("LSTM 一个时间步的数字流（门值固定）",
-                       h=4.2, xlim=(0, 12.6), ylim=(0.6, 6.6))
-    y = 4.9
-    ch, cw = 1.0, 1.55
+                       h=3.8, xlim=(0, 12.6), ylim=(0.5, 6.3))
+    y = 4.4
+    cy = y + .5
+    ch, cw = 1.0, 1.6
+
+    def lab(xc, s):
+        return text(ax, xc, cy + .55, s, fontsize=8,
+                    ha="center", color="#555555")
+
     p0 = cell(ax, .3, y, cw, ch, "$c_{t-1}=1.0$", fs=9)
-    t1 = text(ax, 2.35, y - .3, r"$\times f$（$0.9$）",
-              fontsize=8, ha="center", color="#555555")
-    arrow(ax, (1.9, y + ch / 2), (2.8, y + ch / 2))
-    p1 = cell(ax, 2.85, y, cw, ch, f"${f * c_prev:.1f}$", fs=9)
-    t2 = text(ax, 4.9, y - .3, r"$+\ i\cdot g$（$0.2\times0.5$）",
-              fontsize=8, ha="center", color="#555555")
-    arrow(ax, (4.45, y + ch / 2), (5.35, y + ch / 2))
+    arrow(ax, (1.95, cy), (2.8, cy))
+    lab(2.38, r"$\times f$（$0.9$）")
+    p1 = cell(ax, 2.85, y, cw, ch, r"$f\,c_{t-1}=0.9$", fs=8.5)
+    arrow(ax, (4.5, cy), (5.35, cy))
+    lab(4.93, r"$+$")
     p2 = cell(ax, 5.4, y, cw, ch, f"$c_t={c_t:.1f}$", fs=9,
               fc="#fae6d6", ec=C["orange"])
-    arrow(ax, (7.0, y + ch / 2), (7.9, y + ch / 2))
-    t3 = text(ax, 7.45, y - .3, r"$\tanh$", fontsize=8,
-              ha="center", color="#555555")
-    p3 = cell(ax, 7.95, y, cw, ch, f"${np.tanh(c_t):.3f}$", fs=9)
-    arrow(ax, (9.55, y + ch / 2), (10.45, y + ch / 2))
-    t4 = text(ax, 10.0, y - .3, r"$\times o$（$0.8$）",
-              fontsize=8, ha="center", color="#555555")
+    # i·g 从下方经 + 汇入 c_t
+    pg = cell(ax, 5.15, y - 1.7, 2.1, .9,
+              r"$i\cdot g=0.2\times0.5=0.1$", fs=8.5)
+    arrow(ax, (6.2, y - .75), (6.2, y - .05))
+    text(ax, 6.32, y - .42, r"$+$", fontsize=9, ha="left", va="center",
+         color="#555555")
+    arrow(ax, (7.05, cy), (7.9, cy))
+    lab(7.48, r"$\tanh$")
+    p3 = cell(ax, 7.95, y, cw, ch, r"$\tanh c_t=0.762$", fs=8.5)
+    arrow(ax, (9.6, cy), (10.45, cy))
+    lab(10.03, r"$\times o$（$0.8$）")
     p4 = cell(ax, 10.5, y, cw, ch, f"$h_t={h_t:.2f}$", fs=9,
               fc="#e8f3e8", ec=C["green"])
-    # 门来源小注
-    text(ax, .3, 3.7,
-         r"四门的值由 $h_{t-1}$ 与 $x_t$ 经过 sigmoid/tanh 算出；"
-         r"$c$ 走加法通路：$\partial c_t/\partial c_{t-1}=\mathrm{diag}(f)+J_h$，"
-         r"其中 $J_h$ 依赖 $h_{t-1}$",
-         fontsize=8, color="#555555")
-    # 梯度通路
-    p5 = cell(ax, .3, 1.9, 2.6, .9, r"$f\approx1$ 时 $c$ 的梯度近乎不衰减",
-              fs=8, fc="#eef4fb", ec="#7a9ac0")
-    text(ax, 3.3, 2.35,
-         r"$0.9^{30}=0.042$；$0.99^{30}=0.740$"
+    # 底部：30 步后 ∏f 残存比例，小柱状对比
+    y0, bh = 1.0, 1.5
+    for k, (fv, v, col) in enumerate([(0.9, 0.042, C["blue"]),
+                                    (0.99, 0.740, C["orange"])]):
+        bx = 1.2 + k * 1.7
+        hgt = v / 0.740 * bh
+        ax.add_patch(Rectangle((bx, y0), .9, hgt,
+                                        fc=col, ec="#555555", lw=.8))
+        text(ax, bx + .45, y0 + hgt + .22, f"${v:.3f}$", fontsize=8,
+             ha="center", color="#333333")
+        text(ax, bx + .45, y0 - .28, f"$f={fv}$", fontsize=8,
+             ha="center", va="top", color="#555555")
+    ax.plot([.8, 4.3], [y0, y0], color="#555555", lw=.8)
+    text(ax, 5.1, y0 + .75,
+         r"30 步后 $\prod f$ 的残存比例"
          "（遗忘门偏置初始化为 1 的原因）",
-         fontsize=8.5, color="#555555", va="center")
+         fontsize=8.5, ha="left", va="center", color="#555555")
     finish(fig, "rnn-lstm-cell")
 
 

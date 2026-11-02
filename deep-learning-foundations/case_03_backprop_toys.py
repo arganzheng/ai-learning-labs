@@ -336,13 +336,13 @@ def figure_overview():
 def figure_scalar():
     fig,ax=base_fig("标量计算图：每条边反向下传「上游梯度 × 局部导数」",7.6,3.8,(0,12),(0.9,6.6))
     top=4.9
-    node(ax,.7,top,"x","2",w=1.4,h=1.1)
+    node(ax,.7,top,r"$x$","2",w=1.4,h=1.1)
     node(ax,3.7,top,r"$z=wx+b$","5",w=2.4,h=1.1)
     node(ax,7.1,top,"e=z-y","1",w=2.0,h=1.1)
     node(ax,10.1,top,r"$L=e^2$","1",w=1.5,h=1.1)
-    node(ax,2.6,1.3,"w","3",w=1.5,h=1.05)
-    node(ax,5.1,1.3,"b","-1",w=1.5,h=1.05)
-    node(ax,8.2,1.3,"y","4",w=1.5,h=1.05)
+    node(ax,2.6,1.3,r"$w$","3",w=1.5,h=1.05)
+    node(ax,5.1,1.3,r"$b$","-1",w=1.5,h=1.05)
+    node(ax,8.2,1.3,r"$y$","4",w=1.5,h=1.05)
     arrow(ax,(2.15,5.45),(3.65,5.45),color=C["blue"])
     arrow(ax,(6.15,5.45),(7.05,5.45),color=C["blue"])
     arrow(ax,(9.15,5.45),(10.05,5.45),color=C["blue"])
@@ -367,14 +367,14 @@ def figure_gate():
     fig,ax=base_fig("反向节点只做一件事：上游梯度 × 局部导数",7.6,3.9,(0,12),(0.8,6.7))
     p=box(ax,3.5,5.3,5.0,1.0,"",fc="#f5f8fc",ec=C["blue"])
     text(ax,6.0,5.8,"下游梯度 = 上游梯度 g × 局部导数 f'",in_box=p,ha="center",va="center",fontsize=9.5)
-    arrow(ax,(1.6,5.8),(3.45,5.8),color=C["orange"]); text(ax,2.5,5.35,"上游 g",ha="center",fontsize=8.5,color=C["orange"])
+    arrow(ax,(1.6,5.8),(3.45,5.8),color=C["orange"]); text(ax,2.5,5.35,r"上游 $g$",ha="center",fontsize=8.5,color=C["orange"])
     arrow(ax,(8.55,5.8),(10.4,5.8),color=C["orange"]); text(ax,9.5,5.35,"下游",ha="center",fontsize=8.5,color=C["orange"])
     gates=[("加法","2","3","5","4","4","原样分发"),
            ("乘法","2","3","6","12","8","乘另一个输入"),
            ("max","2","3","3","0","4","只给被选中的一路")]
     for cx,(op,i1,i2,o,g1,g2,rule) in zip((.3,4.25,8.2),gates):
-        cell(ax,cx,3.15,.85,.72,i1,"g="+g1,fc="#dce9f7",ec=C["blue"])
-        cell(ax,cx,2.15,.85,.72,i2,"g="+g2,fc="#dce9f7",ec=C["blue"])
+        cell(ax,cx,3.15,.85,.72,i1,"$g$="+g1,fc="#dce9f7",ec=C["blue"])
+        cell(ax,cx,2.15,.85,.72,i2,"$g$="+g2,fc="#dce9f7",ec=C["blue"])
         p=box(ax,cx+1.35,2.5,1.15,1.0,"",fc="#f5f8fc",ec="#777777")
         box_title(ax,cx+1.925,3.1,op,p); text(ax,cx+1.925,2.72,"gate",in_box=p,ha="center",va="center",fontsize=7)
         cell(ax,cx+2.95,2.65,.85,.75,o)
@@ -391,8 +391,8 @@ def figure_gate():
 
 def figure_fanout():
     fig,ax=base_fig("一个量走了两条路：两路梯度在 x 处相加",7.6,3.7,(0,12),(0.4,6.4))
-    node(ax,.5,3.85,"x","2",w=1.3,h=1.05)
-    node(ax,.5,1.3,"y","3",w=1.3,h=1.05)
+    node(ax,.5,3.85,r"$x$","2",w=1.3,h=1.05)
+    node(ax,.5,1.3,r"$y$","3",w=1.3,h=1.05)
     node(ax,3.4,3.8,"x*y","6",w=1.8,h=1.05)
     node(ax,6.6,2.45,"+","f=8",w=1.6,h=1.05)
     arrow(ax,(1.85,4.3),(3.35,4.3),color=C["blue"])
@@ -418,20 +418,20 @@ def figure_fanout():
 
 def figure_shapes():
     fig,ax=base_fig("梯度与被求导的量同形；向量对向量才得到 Jacobian",7.6,3.6,(0,12),(0.6,6.9))
-    text(ax,2.2,5.55,"标量 L 对向量 x",ha="center",fontsize=9.5)
+    text(ax,2.2,5.55,r"标量 $L$ 对向量 $x$",ha="center",fontsize=9.5)
     grid(ax,.6,4.95,[[1,2,3]],cw=.5,zero_grey=False)
     arrow(ax,(2.25,4.4),(2.75,4.4),color=C["blue"])
     grid(ax,2.85,4.95,[[2,4,6]],cw=.5,fc="#fae6d6",zero_grey=False)
     text(ax,2.35,3.45,(r"$L=\sum_i x_i^2$" + "\n" + "$dL/dx$ 与 $x$ 同形"),ha="center",va="center",fontsize=8)
-    text(ax,5.95,5.55,"标量 L 对矩阵 W",ha="center",fontsize=9.5)
+    text(ax,5.95,5.55,r"标量 $L$ 对矩阵 $W$",ha="center",fontsize=9.5)
     grid(ax,4.35,4.95,[[1,2],[3,4]],cw=.5,zero_grey=False)
     arrow(ax,(5.5,4.4),(6.0,4.4),color=C["blue"])
     grid(ax,6.1,4.95,[[2,4],[6,8]],cw=.5,fc="#fae6d6",zero_grey=False)
     text(ax,5.95,3.45,(r"$L=\sum_{ij}W_{ij}^2$" + "\n" + "$dW$ 与 $W$ 同形"),ha="center",va="center",fontsize=8)
-    text(ax,9.5,5.55,"向量 y 对向量 x：Jacobian",ha="center",fontsize=9.5)
+    text(ax,9.5,5.55,r"向量 $y$ 对向量 $x$：Jacobian",ha="center",fontsize=9.5)
     grid(ax,8.1,4.95,[[1,1,0],[0,3,2]],cw=.5,zero_grey=False)
-    text(ax,9.85,4.42,"y1 的梯度",ha="left",va="center",fontsize=7.5)
-    text(ax,9.85,3.92,"y2 的梯度",ha="left",va="center",fontsize=7.5)
+    text(ax,9.85,4.42,r"$y_1$ 的梯度",ha="left",va="center",fontsize=7.5)
+    text(ax,9.85,3.92,r"$y_2$ 的梯度",ha="left",va="center",fontsize=7.5)
     text(ax,9.6,3.45,(r"$y=(x_1+x_2,\,x_2 x_3)$" + "\n" + r"$x=(1,2,3)$，$J$ 为 $2\times3$"),ha="center",va="center",fontsize=8)
     text(ax,6,2.35,r"每格 $g_{ij}$：$W_{ij}$ 增 $\epsilon$，$L$ 约增 $g_{ij}\epsilon$。$W\leftarrow W-\eta\,dW$ 逐元素对应，",ha="center",fontsize=8.5)
     text(ax,6,1.9,"所以标量对参数的梯度必须与参数同形；只有向量对向量才产生 Jacobian。",ha="center",fontsize=8.5)
@@ -441,13 +441,13 @@ def figure_shapes():
 def figure_relu_jacobian():
     fig,ax=base_fig("ReLU 的 Jacobian 是对角掩码：VJP 等于逐元素乘",7.6,3.3,(0,12),(0.5,6.6))
     text(ax,.5,6.0,r"$x=(-1,\,2,\,0.5)$；mask$_i=1$ 当 $x_i>0$，否则 $0$",ha="left",fontsize=9)
-    text(ax,1.25,5.15,"J",ha="center",fontsize=8.5)
+    text(ax,1.25,5.15,r"$J$",ha="center",fontsize=8.5)
     grid(ax,.5,4.95,[[0,0,0],[0,1,0],[0,0,1]],cw=.5)
     text(ax,3.0,5.15,r"$g_y$",ha="center",fontsize=8.5)
     grid(ax,2.75,4.95,[[.3],[-.2],[.5]],cw=.5,zero_grey=False)
     text(ax,4.45,5.15,r"$g_x$",ha="center",fontsize=8.5)
     grid(ax,4.2,4.95,[[0],[-.2],[.5]],cw=.5,fc="#fae6d6",zero_grey=False)
-    text(ax,2.35,4.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,2.35,4.15,r"$\times$",ha="center",va="center",fontsize=12)
     text(ax,3.85,4.15,"=",ha="center",va="center",fontsize=11)
     text(ax,5.7,4.15,r"$g_x=J^{\top}g_y$；负元素的梯度被挡住",ha="left",va="center",fontsize=8.5)
     text(ax,1.25,2.75,"mask",ha="center",fontsize=8.5)
@@ -456,7 +456,7 @@ def figure_relu_jacobian():
     grid(ax,2.9,2.55,[[.3,-.2,.5]],cw=.5,zero_grey=False)
     text(ax,5.45,2.75,r"$g_x$",ha="center",fontsize=8.5)
     grid(ax,4.85,2.55,[[0,-.2,.5]],cw=.5,fc="#fae6d6",zero_grey=False)
-    text(ax,2.2,2.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,2.2,2.15,r"$\times$",ha="center",va="center",fontsize=12)
     text(ax,4.6,2.15,"=",ha="center",va="center",fontsize=11)
     text(ax,6.85,2.15,r"逐元素乘：同一结果，不建 $3\times3$",ha="left",va="center",fontsize=8.5)
     finish(fig,"backprop-relu-jacobian")
@@ -494,7 +494,7 @@ def figure_batched_jacobian():
     text(ax,7.7,3.1,r"乘大矩阵 = 直接 $G\,W^{\top}$，结果一致",ha="center",va="center",fontsize=8)
     text(ax,4.2,2.0,"本文第一层 batch 128：",ha="left",fontsize=8.5)
     text(ax,4.2,1.6,r"$(128\times784)\times(128\times256)\times4$B",ha="left",fontsize=8)
-    vals=[("Jacobian",2.3,"13 GB",C["red"]),("dX",.55,"392 KiB",C["blue"]),("W1",.7,"784 KiB",C["green"])]
+    vals=[("Jacobian",2.3,"13 GB",C["red"]),(r"$dX$",.55,"392 KiB",C["blue"]),(r"$W_1$",.7,"784 KiB",C["green"])]
     for i,(lab,wdt,value,c) in enumerate(vals):
         yy=2.15-i*.45
         text(ax,8.35,yy,lab,ha="right",va="center",fontsize=7.5)
@@ -573,18 +573,18 @@ def figure_mini():
 def figure_mlp():
     fig,ax=base_fig("784-256-10：前向、主梯度链、参数梯度分三排",7.6,4.2,(0,12),(0.6,7))
     xs=[.45,2.75,5.05,7.35,9.65]
-    fw=[("X",r"$128\times784$"),("H",r"$128\times256$"),("A",r"$128\times256$"),("Z",r"$128\times10$"),("L","scalar")]
+    fw=[(r"$X$",r"$128\times784$"),(r"$H$",r"$128\times256$"),(r"$A$",r"$128\times256$"),(r"$Z$",r"$128\times10$"),(r"$L$","scalar")]
     for x,(a,b) in zip(xs,fw):
         p=box(ax,x,5.22,1.55,1.05,"",fc="#dce9f7",ec=C["blue"]); box_title(ax,x+.775,5.96,a,p)
         text(ax,x+.775,5.5,b,in_box=p,ha="center",va="center",fontsize=7.2)
     for i in range(4): arrow(ax,(xs[i]+1.6,5.72),(xs[i+1]-.05,5.72),color=C["blue"])
-    tags=[(.45,"存 X"),(2.75,"存 H 符号"),(5.05,"存 A")]
+    tags=[(.45,r"存 $X$"),(2.75,r"存 $H$ 符号"),(5.05,r"存 $A$")]
     for x,label in tags:
         p=box(ax,x,4.42,1.55,.52,"",fc="#fae6d6",ec=C["orange"],lw=.8)
         text(ax,x+.775,4.68,label,in_box=p,ha="center",va="center",fontsize=8)
     for x in (.45,2.75,5.05):
         arrow(ax,(x+.775,5.22),(x+.775,4.96),color=C["orange"],lw=.9)
-    grads=[(r"$G_H$",r"$128\times256$"),(r"$G_A$",r"$128\times256$"),(r"$G_Z$","(P-Y)/m")]
+    grads=[(r"$G_H$",r"$128\times256$"),(r"$G_A$",r"$128\times256$"),(r"$G_Z$",r"$(P-Y)/m$")]
     gx=[2.3,5.2,8.1]
     for x,(a,b) in zip(gx,grads):
         p=box(ax,x,3.2,1.65,.9,"",fc="#fff3e0",ec=C["orange"]); box_title(ax,x+.825,3.82,a,p)
@@ -599,20 +599,20 @@ def figure_mlp():
     dashed_line(ax,(5.1,4.4),(5.1,2.6)); arrow(ax,(5.1,2.6),(7.5,2.6),color=C["orange"],lw=.9)
     arrow(ax,(7.5,2.6),(7.5,2.05),color=C["orange"],lw=.9)
     text(ax,10.5,4.7,"橙色虚线：保存边",ha="center",fontsize=7.5,color=C["orange"])
-    text(ax,6,.75,"参数梯度从主链分支；W1、W2 是常驻参数，不计入激活。",ha="center",fontsize=8.5)
+    text(ax,6,.75,r"参数梯度从主链分支；$W_1$、$W_2$ 是常驻参数，不计入激活。",ha="center",fontsize=8.5)
     finish(fig,"backprop-mlp-flow")
 
 
 def figure_flops():
     fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,2.9,(0,12),(0.7,4.8))
-    items=[(.5,"前向","X[m,k] * W[k,n]","2mkn",C["blue"]),(4.3,r"反向 $dW$",r"$X^{\top}[k,m]\,G[m,n]$","2mkn",C["orange"]),(8.1,"反向 dX",r"$G[m,n]\,W^{\top}[n,k]$","2mkn",C["green"])]
+    items=[(.5,"前向",r"$X[m,k]\,W[k,n]$","$2mkn$",C["blue"]),(4.3,r"反向 $dW$",r"$X^{\top}[k,m]\,G[m,n]$","$2mkn$",C["orange"]),(8.1,r"反向 $dX$",r"$G[m,n]\,W^{\top}[n,k]$","$2mkn$",C["green"])]
     for x,title,formula,cost,color in items:
         p=box(ax,x,1.75,3.25,1.5,"",fc="#f7f7f7",ec=color); box_title(ax,x+1.625,2.82,title,p)
         text(ax,x+1.625,2.3,formula,in_box=p,ha="center",va="center",fontsize=8)
         text(ax,x+1.625,1.95,cost,in_box=p,ha="center",va="center",fontsize=8.5,color=color)
     arrow(ax,(3.82,2.5),(4.25,2.5),color="#777777",lw=1.0)
     arrow(ax,(7.62,2.5),(8.05,2.5),color="#777777",lw=1.0)
-    text(ax,6,1.05,"前向 2mkn；反向 2+2=4mkn = 2 × 前向。",ha="center",fontsize=9)
+    text(ax,6,1.05,r"前向 $2mkn$；反向 $2+2=4mkn=2\times$ 前向。",ha="center",fontsize=9)
     finish(fig,"backprop-linear-flops")
 
 
@@ -624,11 +624,11 @@ def figure_eps():
     ax.loglog(epses,results[np.float64],"o-",label="fp64",color=C["blue"],lw=1.6)
     ax.set_xlabel("epsilon"); ax.set_ylabel("relative error")
     ax.set_xticks([1e-1,1e-3,1e-5,1e-7,1e-9])
-    ax.set_xticklabels(["1e-1","1e-3","1e-5","1e-7","1e-9"])
+    ax.set_xticklabels([r"$10^{-1}$",r"$10^{-3}$",r"$10^{-5}$",r"$10^{-7}$",r"$10^{-9}$"], fontsize=7.5)
     ax.set_yticks([1,1e-4,1e-8,1e-12])
-    ax.set_yticklabels(["1","1e-4","1e-8","1e-12"])
+    ax.set_yticklabels(["1",r"$10^{-4}$",r"$10^{-8}$",r"$10^{-12}$"], fontsize=7.5)
     ax.grid(True,which="major",alpha=.2); ax.legend(frameon=False)
-    text(ax,3e-6,3e-2,"fp32 在 1e-6 附近已开始舍入失控",fontsize=8,color=C["orange"])
+    text(ax,3e-6,3e-2,r"fp32 在 $10^{-6}$ 附近已开始舍入失控",fontsize=8,color=C["orange"])
     save(fig,"backprop-epsilon-sweep")
 
 

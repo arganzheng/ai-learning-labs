@@ -291,8 +291,8 @@ def figure_fold():
     fig, ax = base_fig("没有激活：两层 Linear 折叠成一层，结果一模一样", 7.6, 3.7,
                        (0, 12), (1.0, 6.4))
     # 上排：x -> W1 -> h -> W2 -> out
-    row1 = [("x", [[1, 1]]), ("W1", [[1, 2], [0, 1]]), (r"$h=xW_1$", [[1, 3]]),
-            ("W2", [[1, 0], [1, 1]]), ("out", [[4, 3]])]
+    row1 = [(r"$x$", [[1, 1]]), (r"$W_1$", [[1, 2], [0, 1]]), (r"$h=xW_1$", [[1, 3]]),
+            (r"$W_2$", [[1, 0], [1, 1]]), (r"$\mathrm{out}$", [[4, 3]])]
     xs = [.3, 2.7, 5.1, 7.5, 9.9]
     for (lab, vals), gx in zip(row1, xs):
         top = 5.5 if len(vals) == 2 else 5.25
@@ -301,7 +301,7 @@ def figure_fold():
     for gx in xs[:-1]:
         arrow(ax, (gx + 1.15, 5.0), (gx + 2.25, 5.0), color=C["blue"], lw=.9)
     # 下排：x -> W1W2 -> out
-    row2 = [("x", [[1, 1]]), (r"$W_1W_2$", [[3, 2], [1, 1]]), ("out", [[4, 3]])]
+    row2 = [(r"$x$", [[1, 1]]), (r"$W_1W_2$", [[3, 2], [1, 1]]), (r"$\mathrm{out}$", [[4, 3]])]
     xs2 = [3.3, 5.7, 8.1]
     for (lab, vals), gx in zip(row2, xs2):
         top = 2.9 if len(vals) == 2 else 2.65
@@ -489,7 +489,7 @@ def figure_ffn_position():
     text(ax, 9.425, 5.1, r"$\odot$", in_box=p2, ha="center", va="center", fontsize=8)
     arrow(ax, (9.67, 5.1), (9.78, 5.1), color=C["orange"], lw=.8)
     p2 = box(ax, 9.8, 4.75, .7, .7, "", fc="#fae6d6", ec=C["orange"])
-    text(ax, 10.15, 5.22, "W2", in_box=p2, ha="center", va="center", fontsize=7)
+    text(ax, 10.15, 5.22, r"$W_2$", in_box=p2, ha="center", va="center", fontsize=7)
     text(ax, 10.15, 4.97, "down", in_box=p2, ha="center", va="center",
          fontsize=6)
     # 形状标注：d → d_g（两支）→ d

@@ -6,6 +6,7 @@
     save(fig, "01-overfit-curve")      # -> out/01-overfit-curve.svg
 """
 import os
+import re
 
 import matplotlib
 
@@ -21,7 +22,7 @@ plt.rcParams.update({
     # 日文 Hiragino Sans 缺不少简体字形，会逐字回退造成同一行字重不一
     "font.family": ["Hiragino Sans GB", "Heiti SC", "Hiragino Sans", "Arial Unicode MS", "DejaVu Sans"],
     "font.weight": 600,             # Hiragino Sans GB W6；W3/Light 笔画太细
-    "axes.unicode_minus": False,
+    "axes.unicode_minus": True,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
     "mathtext.fontset": "cm",        # $...$ 用 Computer Modern 排，与正文 KaTeX 风格一致
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
@@ -207,6 +208,13 @@ def collide(fig, margin=6.0):
         for t in ts[1:]:
             if abs(ext[t].y0 - y0) > 1.5:
                 errs.append(f"同排标签基线不齐（row={row}）：{t.get_text()!r}")
+    # mathtext 里不允许 e± 科学计数法（会被排成减法）——写 \times10^{}
+    for t, _, _ in items:
+        s = t.get_text()
+        for m in re.finditer(r"\$([^$]*)\$", s):
+            if re.search(r"\d\s*e[+-]\d", m.group(1)):
+                errs.append(f"mathtext 内科学计数法（会排成减法）：{s!r}，"
+                            f"改用 \\times10^{{}}")
     # 每个非 ASCII 字符都必须落在实际解析出的字体 cmap 里——逐字回退会让同一行字重不一
     cmaps = {}
     for t, _, _ in items:

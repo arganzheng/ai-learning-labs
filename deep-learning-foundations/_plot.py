@@ -1,5 +1,6 @@
 """画图的公共设置（与 classical-ml/_plot.py 相同）：中文字体、博客列宽、SVG 输出到 out/。"""
 import os
+import re
 
 import matplotlib
 
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 plt.rcParams.update({
     "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
-    "axes.unicode_minus": False,
+    "axes.unicode_minus": True,
     "svg.fonttype": "path",         # 文字与 mathtext 都落成轮廓，读者端不依赖字体
     "mathtext.fontset": "cm",       # $...$ 用 Computer Modern，与正文 KaTeX 一致
     "font.size": 9,
@@ -27,6 +28,14 @@ C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c
 
 
 def save(fig, name):
+    # mathtext 里不允许 e± 科学计数法（会被排成减法）——写 \times10^{}
+    for ax in fig.axes:
+        for t in list(ax.texts) + [ax.title, ax.xaxis.label, ax.yaxis.label]:
+            s = t.get_text()
+            for m in re.finditer(r"\$([^$]*)\$", s):
+                if re.search(r"\d\s*e[+-]\d", m.group(1)):
+                    raise AssertionError(
+                        f"mathtext 内科学计数法（会排成减法）：{s!r}，改用 \\times10^{{}}")
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})

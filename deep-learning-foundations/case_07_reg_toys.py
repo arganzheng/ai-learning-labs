@@ -177,6 +177,14 @@ def toy_dropout():
 
 # ---------------------------------------------------------------- figures
 
+def sci(v):
+    """大数用 mathtext 科学计数法，小数直接十进制。"""
+    if v == 0 or (1e-2 <= abs(v) < 1e4):
+        return f"{v:g}"
+    m, e = f"{v:.3g}".split("e")
+    return rf"{m}\times10^{{{int(e)}}}"
+
+
 def figure_weight_decay():
     x_tr, y_tr, x_te, y_te = _poly_data()
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
@@ -193,8 +201,8 @@ def figure_weight_decay():
     for lam, tr, te, nw, w in poly_rows():
         yh = np.vander(x_te, 10, increasing=True) @ w
         ax.plot(x_te, np.clip(yh, -2.1, 2.1), color=cols[lam], lw=1.6,
-                label=rf"$\lambda={lam:g}$：$\|w\|={nw:.3g}$，"
-                      rf"测试MSE$={te:.3g}$")
+                label=rf"$\lambda={lam:g}$：$\|w\|={sci(nw)}$，"
+                      rf"测试MSE$={sci(te)}$")
     ax.scatter(x_tr, y_tr, s=22, color="#222222", zorder=5,
                label="10 个训练点（含噪声）")
     ax.set_title(r"9 次多项式拟合 10 个带噪点：$\lambda$ 越大曲线越平、"

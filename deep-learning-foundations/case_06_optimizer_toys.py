@@ -277,6 +277,12 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
     return fig, ax
 
 
+def sci(v):
+    """科学计数法 -> mathtext 段（2.5e-04 -> 2.5\\times10^{-4}）"""
+    m, e = f"{v:.1e}".split("e")
+    return rf"{m}\times10^{{{int(e)}}}"
+
+
 def figure_one_step():
     rows = one_step_rows()
     fig, ax = base_fig(r"同一个梯度 $g=0.500$ 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta=0.1$）",
@@ -307,7 +313,7 @@ def figure_one_step():
                  ha="center", color="#555555")
         else:
             box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
-                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={r['v']:.1e}$", fs=8)
+                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={sci(r['v'])}$", fs=8)
             box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0,
                 rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=8)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,

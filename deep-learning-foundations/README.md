@@ -13,6 +13,7 @@
 | `case_04_activation_toys.py` | 04《激活函数》：线性折叠、ReLU 折线拟合、反向 f'(H)、逐层梯度衰减、dead ReLU、GLU 数字例、saved_tensors 实测与 7 张配图 | PyTorch + NumPy | 30 s |
 | `case_02_loss_toys.py` | 02《损失函数》：均匀初始化 CE = ln V、逐位置 -log p 平均、DPO 一对样本的 margin 与梯度符号，3 张配图 | NumPy | 30 s |
 | `case_07_reg_toys.py` | 07《正则化与泛化》：多项式 + L2 三档（训练/测试 MSE 与 ‖w‖）、inverted dropout 的 mask 与 ×1/(1-p) 缩放，2 张配图（mathtext 排版） | NumPy | 30 s |
+| `case_08_cnn_toys.py` | 08《CNN》：4×4 输入的卷积展开成 4×16 稀疏矩阵（与 conv2d 差 0）、感受野公式 vs 梯度法实测，2 张配图 | NumPy + torch | 10 s |
 | `case_05_init_toys.py` | 05《初始化、归一化与残差》：单层方差公式实测、64 块残差流 std 三种接法、尺度不变性、LN vs RMSNorm，3 张配图 | NumPy + PyTorch | 1 min |
 | `case_06_optimizer_toys.py` | 06《优化器》：四种优化器单步中间量、偏差修正 v vs v_hat、梯度累积等价性、warmup 更新范数，2 张配图 | NumPy | 2 min |
 | `02_init_norm_residual.py` | [深度学习基础（05）：训练为什么不稳定——初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |

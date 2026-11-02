@@ -329,7 +329,7 @@ def figure_relu_fit():
     ax.plot(xs, fit, color=C["orange"], lw=1.6, label="5 个加权 hinge + 偏置")
     ax.plot(xs, linfit, color=C["blue"], lw=1.2, ls="--", label="最佳线性拟合")
     ax.plot([], [], color="#bbbbbb", lw=.8, label="各加权 hinge 分量")
-    ax.set_ylim(-1, 4.5)
+    ax.set_ylim(-1, 5.4)
     ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=7.5,
               frameon=False)
     ax.set_xticks([-2, -1, 0, 1, 2]); ax.set_yticks([0, 1, 2, 3, 4])

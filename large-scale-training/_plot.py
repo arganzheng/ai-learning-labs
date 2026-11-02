@@ -133,6 +133,48 @@ def collide(fig, margin=6.0):
                 gap = max(b.x0 - e.x1, e.x0 - b.x1)
                 if gap < 16:
                     errs.append(f"行内标注距盒 {gap:.0f}px<16px：{t.get_text()!r}")
+    # 文字/图例不得压到数据折线：所有文本 bbox 与 Line2D 的显示坐标线段相交即失败
+    def _seg_rect(a, b, r):
+        x0, y0, x1, y1 = r
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        lo, hi = 0.0, 1.0
+        for p, q in ((-dx, a[0] - x0), (dx, x1 - a[0]),
+                     (-dy, a[1] - y0), (dy, y1 - a[1])):
+            if p == 0:
+                if q <= 0:
+                    return False
+            else:
+                rr = q / p
+                if p < 0:
+                    lo = max(lo, rr)
+                else:
+                    hi = min(hi, rr)
+                if lo >= hi:
+                    return False
+        return True
+    line_texts = [t for t, _, _ in items]
+    for ax in fig.axes:
+        for t in ax.texts:
+            if t.get_text().strip() and t.get_visible() and t not in ext:
+                line_texts.append(t)
+                ext[t] = t.get_window_extent(renderer=ren)
+        for ln in ax.lines:
+            if not ln.get_visible():
+                continue
+            xd, yd = ln.get_xdata(), ln.get_ydata()
+            if len(xd) < 2:
+                continue
+            pts = ax.transData.transform(list(zip(xd, yd)))
+            for k in range(len(pts) - 1):
+                a, b = tuple(pts[k]), tuple(pts[k + 1])
+                for t in line_texts:
+                    e = ext[t]
+                    if _seg_rect(a, b, (e.x0 + 1, e.y0 + 1, e.x1 - 1, e.y1 - 1)):
+                        errs.append(f"文字压折线：{t.get_text()!r}")
+                        break
+                else:
+                    continue
+                break
     # 矩形-矩形：不同对象的填充矩形不得相交；一个完整套在另一个里的（内方块、图例 swatch、轴背景）不算
     rects = [p for p in _PATCHES if p.get_figure() is fig]
     for ax in fig.axes:

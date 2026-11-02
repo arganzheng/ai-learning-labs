@@ -262,10 +262,10 @@ def figure_residual_var():
     ax.set_title("64 个残差块：残差流标准差——无归一化翻倍、Pre-Norm 线性、加缩放近似平",
                  fontweight=600, color="#111111")
     ax.axhline(1, ls=":", c=C["gray"], lw=.8)
-    ax.text(48, runs["res-nonorm"][63] * 0.35, "2^32 = 4.3e9，实测 6.0e9",
-            fontsize=8, color=C["red"])
+    ax.text(32, 1e9, "2^32 = 4.3e9，实测 6.0e9",
+            fontsize=8, color=C["red"], ha="center")
     ax.annotate("块 64 实测 1.46", xy=(63, runs["prenorm-scaled"][63]),
-                xytext=(43, 4.5), fontsize=8, color=C["green"],
+                xytext=(52, 3.0), fontsize=8, color=C["green"],
                 arrowprops=dict(arrowstyle="->", color=C["green"], lw=.8))
     ax.legend(fontsize=7.5, loc="upper left", frameon=False)
     finish(fig, "dl-init-residual-var")
@@ -373,7 +373,7 @@ def figure_diagnosis():
     ax.set_yticklabels(["1e-9", "1e-3", "1", "1e3", "1e9"], fontsize=7)
     ax.set_xticks([0, 32, 64])
     ax.set_xlabel("块", fontsize=8); ax.tick_params(labelsize=7)
-    ax.legend(fontsize=6.5, frameon=False, loc="upper left")
+    ax.legend(fontsize=6.5, frameon=False, loc="lower right")
     ax = axes[1]
     for k, col, lab in (("prenorm", C["green"], "prenorm（健康）"),
                         ("ln", C["red"], "ln 无残差（病态）")):
@@ -397,7 +397,8 @@ def figure_diagnosis():
     ax.axhline(1e-3, ls=":", c=C["gray"], lw=.8)
     ax.set_xticks([0, 150, 300])
     ax.set_xlabel("步", fontsize=8); ax.tick_params(labelsize=7)
-    ax.legend(fontsize=6.5, frameon=False, loc="lower left")
+    ax.legend(fontsize=6.5, frameon=False, loc="upper center",
+              bbox_to_anchor=(0.5, -0.28), ncol=1)
     finish(fig, "dl-init-diagnosis")
 
 

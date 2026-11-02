@@ -13,6 +13,7 @@
 | `case_04_activation_toys.py` | 04《激活函数》：线性折叠、ReLU 折线拟合、反向 f'(H)、逐层梯度衰减、dead ReLU、GLU 数字例、saved_tensors 实测与 7 张配图 | PyTorch + NumPy | 30 s |
 | `case_02_loss_toys.py` | 02《损失函数》：均匀初始化 CE = ln V、逐位置 -log p 平均、DPO 一对样本的 margin 与梯度符号，3 张配图 | NumPy | 30 s |
 | `case_07_reg_toys.py` | 07《正则化与泛化》：多项式 + L2 三档（训练/测试 MSE 与 ‖w‖）、inverted dropout 的 mask 与 ×1/(1-p) 缩放，2 张配图（mathtext 排版） | NumPy | 30 s |
+| `case_01_history_toys.py` | 01《演进史》：感知机学习规则训 AND/OR/XOR（XOR 100 epoch 不收敛）、手工 2-2-1 隐藏层解 XOR，1 张配图 | NumPy + matplotlib | 5 s |
 | `case_08_cnn_toys.py` | 08《CNN》：4×4 输入的卷积展开成 4×16 稀疏矩阵（与 conv2d 差 0）、感受野公式 vs 梯度法实测，2 张配图 | NumPy + torch | 10 s |
 | `case_09_emb_toys.py` | 09《Embedding》：one-hot 查表 = 取 W 第 i 行、序列 [2,0,2] 的 W.grad 稀疏性（重复查累加），1 张配图 | NumPy + torch | 10 s |
 | `case_10_rnn_toys.py` | 10《RNN》：标量/矩阵版 BPTT 梯度随距离衰减、LSTM 单步数字流与 f≈1 的残存梯度，2 张配图 | torch + matplotlib | 10 s |

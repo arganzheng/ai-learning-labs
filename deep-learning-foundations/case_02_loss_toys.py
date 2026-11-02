@@ -159,7 +159,7 @@ def toy_dpo():
 
 def figure_overview():
     fig, ax = base_fig("任务 → 输出层 → loss → 对 logit 的梯度（每行一个实测数字例）",
-                       h=4.6, xlim=(0, 12.4), ylim=(0, 7.6))
+                       h=4.6, xlim=(0, 12.25), ylim=(0, 7.6))
     heads = ("输出层", "loss", "对 logit 的梯度")
     xs = (1.9, 4.9, 8.2); ws = (2.8, 3.1, 4.0)
     for h_, x, w in zip(heads, xs, ws):
@@ -179,7 +179,7 @@ def figure_overview():
     ]
     y = 6.15
     for name, c1, c2, c3 in rows:
-        text(ax, .15, y + .3, name, fontsize=8.5, color="#111111")
+        text(ax, .15, y + .12, name, fontsize=8.5, va="center", color="#111111")
         for s, x, w in zip((c1, c2, c3), xs, ws):
             box(ax, x, y - .35, w, .95, s, fs=7.5)
         y -= 1.15
@@ -188,7 +188,7 @@ def figure_overview():
 
 def figure_lm_tokens():
     fig, ax = base_fig("一句话 4 个 token：逐位置 -log p 求平均就是 loss",
-                       h=3.4, xlim=(0, 12), ylim=(0, 5.6))
+                       h=3.0, xlim=(0, 11.3), ylim=(0.7, 5.6))
     text(ax, .15, 5.0, "模型对正确 token 的概率 p", fontsize=8, color="#555555")
     n = len(TOY_PROBS)
     cw, gap = 1.15, .55
@@ -207,7 +207,7 @@ def figure_lm_tokens():
         fc="#fde9d9", ec="#c98a4a")
     text(ax, 8.1, 2.1, f"perplexity = e^loss = {np.exp(loss):.2f}",
          fontsize=8, color="#555555")
-    text(ax, .3, 1.35, "初始：logits 接近均匀 → 每个位置 -log(1/V) = ln V"
+    text(ax, .3, 1.1, "初始：logits 接近均匀 → 每个位置 -log(1/V) = ln V"
          "（GPT-2 V=50257 → 10.82）", fontsize=8, color="#555555")
     finish(fig, "dl-loss-lm-tokens")
 
@@ -217,7 +217,7 @@ def figure_dpo():
     delta, z = rw - rl, BETA * (rw - rl)
     sig = 1 / (1 + np.exp(-z)); loss = -np.log(sig)
     fig, ax = base_fig("DPO 一对样本：log ratio 差 × β 进 sigmoid 就是 loss",
-                       h=4.0, xlim=(0, 12), ylim=(0, 6.6))
+                       h=3.7, xlim=(0, 12), ylim=(0.5, 6.6))
     for i, (name, lp, lpr, r, col, note) in enumerate((
             ("chosen", LP_W, LPR_W, rw, C["green"], "梯度为负 → log p 被推高 ↑"),
             ("rejected", LP_L, LPR_L, rl, C["red"], "梯度为正 → log p 被压低 ↓"))):

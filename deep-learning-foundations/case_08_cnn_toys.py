@@ -211,79 +211,113 @@ def cmd_receptive_field():
 
 def figure_conv_matrix():
     out, M = conv_matrix()
-    fig, ax = base_fig("卷积 $=$ 稀疏矩阵 $y=Mx$："
-                       r"$4\times16$ 个元素里只有 $9$ 个不同值",
-                       h=4.5, xlim=(0, 12.6), ylim=(0.2, 7.0))
-    # 左：输入 + 核
-    text(ax, .2, 6.0, r"输入 $x$（$4\times4$）", fontsize=8.5)
-    grid(ax, .2, 5.7, X4.astype(int), cw=.62, ch=.62, fs=8)
-    text(ax, 3.1, 6.0, r"核 $k$（$3\times3$）", fontsize=8.5)
-    grid(ax, 3.1, 5.7, K3.astype(int), cw=.62, ch=.62, fs=8,
+    fig, ax = base_fig(r"卷积 $=$ 稀疏矩阵 $y=Mx$："
+                       r"局部性（每行 9 个非零）$+$ 参数共享（同色同一权重）",
+                       h=4.6, xlim=(0, 12.6), ylim=(0.0, 7.0))
+    cw = .62
+    # ---- 上行：x * k = y，运算符号连接，无箭头
+    text(ax, .3, 6.35, r"输入 $x$（$4\times4$）", fontsize=8.5)
+    grid(ax, .3, 6.1, X4.astype(int), cw=cw, ch=cw, fs=8)
+    # 橙框标出第一个 3×3 窗口（行 0–2、列 0–2）
+    box(ax, .3, 6.1 - 3 * cw, 3 * cw - .02, 3 * cw - .02,
+        fc="none", ec=C["orange"], lw=1.6, r=.01)
+    text(ax, 3.26, 4.86, r"$\ast$", fontsize=14, va="center")
+    text(ax, 3.75, 6.35, r"核 $k$（$3\times3$）", fontsize=8.5)
+    grid(ax, 3.75, 6.1, K3.astype(int), cw=cw, ch=cw, fs=8,
          fc="#fae6d6", ec=C["orange"], zero_grey=False)
-    text(ax, .2, 3.0, r"输出 $y$（$2\times2$）", fontsize=8.5)
-    grid(ax, .2, 2.7, out.astype(int), cw=.72, ch=.62, fs=6.5,
+    text(ax, 6.32, 4.86, r"$=$", fontsize=14, va="center")
+    text(ax, 7.0, 6.35, r"输出 $y$（$2\times2$）", fontsize=8.5)
+    grid(ax, 7.0, 6.1, out.astype(int), cw=.72, ch=.62, fs=6.5,
          fc="#e8f3e8", ec=C["green"], zero_grey=False)
-    arrow(ax, (2.72, 4.9), (3.06, 4.9))
-    text(ax, 4.4, 3.2, "$x$ 拉直成 16 维向量 →", fontsize=8,
-         color="#555555")
-    arrow(ax, (5.35, 4.75), (6.75, 4.4))
-    # 右：4×16 矩阵，同色 = 同一个权重
+    # 348 格与上行窗口同色描边
+    box(ax, 7.0, 6.1 - .62, .7, .6, fc="none", ec=C["orange"], lw=1.6, r=.01)
+    # ---- 下行：y = Mx 的矩阵乘排版
+    # x 拉直成横条放 M 上方（列对齐），y 拉直成竖条放 M 右侧（行对齐）
+    text(ax, .3, 3.4, r"拉直后就是矩阵乘 $y=Mx$：", fontsize=8.5)
     cmap = {v: c for v, c in zip(
         (1, 2, 3, 4, 5, 6, 7, 8, 9),
-        ("#d6e6f5", "#c2d8f0", "#aecdEE".lower(), "#9ac2ea",
+        ("#d6e6f5", "#c2d8f0", "#aecdee", "#9ac2ea",
          "#f5c98f", "#f0b570", "#f0dfc0", "#e8e0f5", "#cbe8c5"))}
     cmap[0.0] = "#f0f0f0"
-    text(ax, 6.6, 6.0, r"矩阵 $M$（$4\times16$，空白 $=0$）", fontsize=8.5)
-    cw, ch = .36, .5
+    mx, mcw, mch = .3, .42, .45
+    # x 横条（1..16），与 M 的列对齐
+    for j in range(16):
+        p = box(ax, mx + j * mcw, 2.62, mcw - .02, .42,
+                fc="#dce9f7", ec="#7a7a7a", lw=.4, r=.003)
+        text(ax, mx + j * mcw + (mcw - .02) / 2, 2.62 + .21,
+             f"{j + 1:g}", in_box=p, ha="center", va="center", fontsize=5.5)
+    text(ax, mx + 16 * mcw + .38, 2.62 + .21, r"$x$（拉直 $16$）",
+         fontsize=8, va="center", color="#555555")
+    # M（4×16）
     for i in range(4):
         for j in range(16):
             v = M[i, j]
-            p = box(ax, 6.6 + j * cw, 5.7 - (i + 1) * ch, cw - .02, ch - .02,
-                    fc=cmap[v], ec="#bbbbbb" if v == 0 else "#888888",
-                    lw=.35, r=.003)
+            p = box(ax, mx + j * mcw, 2.48 - (i + 1) * mch, mcw - .02,
+                    mch - .02, fc=cmap[v],
+                    ec="#bbbbbb" if v == 0 else "#888888", lw=.35, r=.003)
             if v != 0:
-                text(ax, 6.6 + j * cw + (cw - .02) / 2,
-                     5.7 - (i + 1) * ch + (ch - .02) / 2,
+                text(ax, mx + j * mcw + (mcw - .02) / 2,
+                     2.48 - (i + 1) * mch + (mch - .02) / 2,
                      f"{v:g}", in_box=p, ha="center", va="center", fontsize=5.5)
-    text(ax, 6.6, 2.95, "同色格 $=$ 同一个权重：\n"
-         r"每行 9 个非零，各行是同一个 $3\times3$ 模式的平移",
+    # M 第 0 行同色描边 —— 对应上行那个窗口
+    box(ax, mx, 2.48 - mch, 16 * mcw - .02, mch - .02,
+        fc="none", ec=C["orange"], lw=1.6, r=.01)
+    # y 竖条（348,393,528,573），与 M 的行对齐
+    ys = mx + 16 * mcw + .6
+    for i, v in enumerate(out.reshape(-1)):
+        p = box(ax, ys, 2.48 - (i + 1) * mch, .58, mch - .02,
+                fc="#e8f3e8", ec=C["green"], lw=.5, r=.003)
+        text(ax, ys + .29, 2.48 - (i + 1) * mch + (mch - .02) / 2,
+             f"{v:g}", in_box=p, ha="center", va="center", fontsize=5.5)
+    text(ax, ys + .29, 2.48 - 4 * mch - .13, r"$y$（拉直 $4$）", fontsize=8,
+         ha="center", va="top", color="#555555")
+    text(ax, ys + 1.0, 2.48 - mch / 2,
+         "第 0 行与 $x$ 内积\n$=$ 输出 $(0,0)$ 的 $348$",
+         fontsize=7.5, va="center", color="#555555")
+    # ---- 底注
+    text(ax, .3, .38,
+         r"参数量：卷积 $=9$（核的 $3\times3$）"
+         r"vs 等价全连接 $=4\times16=64$",
          fontsize=8, color="#555555")
-    box(ax, 6.7, 1.0, 5.0, 1.5,
-        "参数量：卷积 $=9$\n"
-        "等价全连接 $=4\\times16=64$\n"
-        "（真尺寸如 §二.2：六量级的差距）",
-        fs=8, fc="#eef4fb", ec="#7a9ac0")
-    arrow(ax, (11.9, 3.55), (11.9, 2.55))
     finish(fig, "cnn-conv-as-matrix")
 
 
 def figure_receptive_field():
-    fig, ax = base_fig(r"感受野：$r_l=r_{l-1}+(k-1)\prod s$，"
+    fig, ax = base_fig(r"感受野：$r_l=r_{l-1}+(k_l-1)\prod_{i<l}s_i$，"
                        r"每层 $3\times3$（stride 1）加宽 2",
-                       h=4.0, xlim=(0, 12), ylim=(0.4, 6.4))
-    # 一维：3 层逐层扩张的格子条
+                       h=4.2, xlim=(0, 12), ylim=(0.4, 6.6))
     n = 13
     cw = .62
     x0 = (12 - n * cw) / 2
-    rows = [(5.5, 1, "第 3 层输出（1 个位置）"),
-            (4.2, 3, "第 2 层：看到 $3$"),
-            (2.9, 5, "第 1 层：看到 $5$"),
-            (1.6, 7, r"输入：看到 $7=1+2\times3$")]
     center = n // 2
+    # 从下到上：输入 / 第 1 层 / 第 2 层 / 第 3 层
+    rows = [(1.6, 7, r"输入：影响顶端输出的格子数 $7=1+3\times2$"),
+            (2.9, 5, r"第 1 层：$5$"),
+            (4.2, 3, r"第 2 层：$3$"),
+            (5.5, 1, r"第 3 层输出：$1$ 个位置")]
+    # 半透明锥形带连接相邻层高亮区两端
+    from matplotlib.patches import Polygon
+    for ui in range(3):
+        lo_span = rows[ui][1]
+        hi_span = rows[ui + 1][1]
+        lo_l = x0 + (center - lo_span // 2) * cw
+        lo_r = x0 + (center + lo_span // 2 + 1) * cw
+        hi_l = x0 + (center - hi_span // 2) * cw
+        hi_r = x0 + (center + hi_span // 2 + 1) * cw
+        lo_y = rows[ui][0]
+        hi_y = rows[ui + 1][0] - cw
+        ax.add_patch(Polygon([(lo_l, lo_y), (lo_r, lo_y),
+                              (hi_r, hi_y), (hi_l, hi_y)],
+                             closed=True, fc=C["orange"], ec="#c89030",
+                             lw=.8, alpha=.25))
     for y, span, lab in rows:
         for j in range(n):
             on = abs(j - center) <= span // 2
             fc = "#fae6d6" if on else "#f0f0f0"
-            p = box(ax, x0 + j * cw, y - cw, cw - .02, cw - .02,
-                    fc=fc, ec=C["orange"] if on else "#bbbbbb", lw=.5, r=.005)
+            box(ax, x0 + j * cw, y - cw, cw - .02, cw - .02,
+                fc=fc, ec=C["orange"] if on else "#bbbbbb", lw=.5, r=.005)
         text(ax, x0 + n * cw + .3, y - cw / 2, lab, fontsize=8, va="center",
              color="#555555")
-    row_y = [5.5, 4.2, 2.9, 1.6]
-    for ui in range(3):
-        for dj in (-1, 0, 1):
-            arrow(ax, (x0 + (center + dj) * cw + cw / 2, row_y[ui + 1]),
-                  (x0 + center * cw + cw / 2, row_y[ui] - cw),
-                  color=C["orange"], lw=.7)
     finish(fig, "cnn-receptive-field")
 
 

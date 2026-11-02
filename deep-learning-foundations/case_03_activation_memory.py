@@ -314,7 +314,7 @@ def fig_checkpointing():
     t2, p2, f2, g2 = _measure_saved(ref, X, Y, ckpt=4)
 
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
-    ax.set_xlim(0, 12); ax.set_ylim(0, 7.6); ax.axis("off")
+    ax.set_xlim(0, 13.2); ax.set_ylim(0, 7.6); ax.axis("off")
     ax.set_title("激活重算（checkpointing）：每 4 层只存一个输入，反向先重算",
                  fontweight=600, color="#111111")
 
@@ -408,8 +408,8 @@ def fig_checkpointing():
     seg_label(y2 + chh + 0.5, x0 + 20 * u, x0 + 24 * u, "反 L4-1",
               C["blue"])
 
-    # ---- 右列：实测保存量的比例条 ----
-    bx, bw_max = 10.4, 0.9
+    # ---- 右列：实测保存量的比例条（起点对齐，同在 ckpt 行最右格之外）----
+    bx, bw_max = x0 + 24 * (cw_ + cgap) + 0.42, 0.9
     mb1, mb2 = t1 / 1024 / 1024, t2 / 1024 / 1024
     ax.add_patch(Rectangle((bx, y1 + 0.12), bw_max, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))

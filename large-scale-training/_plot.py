@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager as _fm  # noqa: E402
 from matplotlib import patheffects as _pe  # noqa: E402
 from matplotlib.ft2font import FT2Font  # noqa: E402
-from matplotlib.patches import FancyBboxPatch  # noqa: E402
+from matplotlib.patches import FancyBboxPatch, Rectangle  # noqa: E402
 
 plt.rcParams.update({
     # Hiragino Sans GB 是简体中文字体，W3/W6 两档都在 Hiragino Sans GB.ttc 里；
@@ -133,6 +133,27 @@ def collide(fig, margin=6.0):
                 gap = max(b.x0 - e.x1, e.x0 - b.x1)
                 if gap < 16:
                     errs.append(f"行内标注距盒 {gap:.0f}px<16px：{t.get_text()!r}")
+    # 矩形-矩形：不同对象的填充矩形不得相交；一个完整套在另一个里的（内方块、图例 swatch、轴背景）不算
+    rects = [p for p in _PATCHES if p.get_figure() is fig]
+    for ax in fig.axes:
+        for p in ax.patches:
+            if isinstance(p, Rectangle) and p not in rects:
+                rects.append(p)
+    rext = {p: p.get_window_extent(renderer=ren) for p in rects}
+    for i in range(len(rects)):
+        for j in range(i + 1, len(rects)):
+            a, b = rext[rects[i]], rext[rects[j]]
+            iw = min(a.x1, b.x1) - max(a.x0, b.x0)
+            ih = min(a.y1, b.y1) - max(a.y0, b.y0)
+            if iw <= 1 or ih <= 1:
+                continue
+            inside = ((a.x0 >= b.x0 - 1 and a.y0 >= b.y0 - 1 and
+                       a.x1 <= b.x1 + 1 and a.y1 <= b.y1 + 1) or
+                      (b.x0 >= a.x0 - 1 and b.y0 >= a.y0 - 1 and
+                       b.x1 <= a.x1 + 1 and b.y1 <= a.y1 + 1))
+            if not inside:
+                errs.append(f"矩形重叠：({a.x0:.0f},{a.y0:.0f}–{a.x1:.0f},{a.y1:.0f}) "
+                            f"× ({b.x0:.0f},{b.y0:.0f}–{b.x1:.0f},{b.y1:.0f})")
     # 同一 row 组的标签必须在同一基线上
     groups = {}
     for t, _, row in items:

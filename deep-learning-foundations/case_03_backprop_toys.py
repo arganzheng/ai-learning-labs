@@ -565,8 +565,8 @@ def figure_mini():
     arrow(ax,(3.7,2.55),(3.0,2.05),color=C["orange"],lw=.9)
     arrow(ax,(8.4,2.55),(7.9,2.05),color=C["orange"],lw=.9)
     text(ax,4.5,.3,f"有限差分最大相对误差 = {err:.1e}",ha="center",fontsize=9)
-    p=box(ax,9.0,.55,2.9,1.45,"",fc="#f5f5f5",ec="#888888")
-    text(ax,10.45,1.28,"参数 W1=[[.5,-.3],[.8,.4]] b1=[1,0]\nW2=[[.7,-.5],[.2,.6]] b2=[.05,-.1]",in_box=p,ha="center",va="center",fontsize=6.5)
+    p=box(ax,9.3,.55,2.65,1.45,"",fc="#f5f5f5",ec="#888888")
+    text(ax,10.625,1.28,"参数 W1=[[.5,-.3],[.8,.4]] b1=[1,0]\nW2=[[.7,-.5],[.2,.6]] b2=[.05,-.1]",in_box=p,ha="center",va="center",fontsize=6.5)
     finish(fig,"backprop-mini-network")
 
 

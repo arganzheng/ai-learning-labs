@@ -693,20 +693,27 @@ def figure_mlp_columns():
                     alpha=.35, zorder=0)
             ax.plot([6.17, 10.28], [y1, y2], color="#5a83a8", lw=.5,
                     alpha=.35, zorder=0)
-    p = box(ax, 2.3, 2.7, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
-    text(ax, 3.85, 3.32, "第一层 Linear", in_box=p, ha="center", fontsize=8.5,
-         color="#111111")
-    text(ax, 3.85, 2.94, r"$W_1:784\times256$，$b_1:256$", in_box=p,
-         ha="center", fontsize=8.5, color="#333333")
-    p = box(ax, 6.75, 2.7, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
-    text(ax, 8.3, 3.32, "第二层 Linear", in_box=p, ha="center", fontsize=8.5,
-         color="#111111")
-    text(ax, 8.3, 2.94, r"$W_2:256\times10$，$b_2:10$", in_box=p,
-         ha="center", fontsize=8.5, color="#333333")
-    text(ax, 6, 1.85, "每个隐藏神经元连着全部 784 个输入（784 条边，"
+    lin_boxes = [(2.3, 2.4), (6.75, 2.4)]
+    for bx, by in lin_boxes:
+        rect = (bx, by, bx + 3.1, by + 1.0)
+        for ln in ax.get_lines():                       # 盒-边相交检查
+            xs, ys = ln.get_xdata(), ln.get_ydata()
+            assert not _segment_hits_rect(
+                (xs[0], ys[0]), (xs[-1], ys[-1]), rect), \
+                f"Linear 框压边: {rect}"
+        p = box(ax, bx, by, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
+    text(ax, 3.85, 3.02, "第一层 Linear", in_box=ax.patches[-2],
+         ha="center", fontsize=8.5, color="#111111")
+    text(ax, 3.85, 2.64, r"$W_1:784\times256$，$b_1:256$",
+         in_box=ax.patches[-2], ha="center", fontsize=8.5, color="#333333")
+    text(ax, 8.3, 3.02, "第二层 Linear", in_box=ax.patches[-1],
+         ha="center", fontsize=8.5, color="#111111")
+    text(ax, 8.3, 2.64, r"$W_2:256\times10$，$b_2:10$",
+         in_box=ax.patches[-1], ha="center", fontsize=8.5, color="#333333")
+    text(ax, 6, 1.95, "每个隐藏神经元连着全部 784 个输入（784 条边，"
          "对应 $W_1$ 的一列），每个输出连着全部 256 个隐藏神经元。",
          ha="center", fontsize=8.5, color="#333333")
-    text(ax, 6, 1.35, "参数 = 边数 + 偏置数"
+    text(ax, 6, 1.45, "参数 = 边数 + 偏置数"
          r" $=784\times256+256+256\times10+10=203{,}530$",
          ha="center", fontsize=9, color="#111111")
     finish(fig, "backprop-two-layer-mlp")

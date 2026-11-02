@@ -367,7 +367,7 @@ def _mcells(ax, x, y, labels, cw, ch, fs=7.5, fc="#ffffff",
 def figure_sliding_window():
     fig, ax = base_fig("卷积：$3\\times3$ 的核在 $5\\times5$ 输入上滑动，"
                      "每个位置对应相乘再相加", h=4.5, xlim=(0, 12.0),
-                     ylim=(0.5, 8.2))
+                     ylim=(0.85, 8.2))
     cw = .64
     ix, iy = .45, 6.85            # 输入 5×5
     lbl = [[f"${v:g}$" for v in row] for row in X5]
@@ -412,7 +412,7 @@ def figure_sliding_window():
          va="center", fontsize=9)
     arrow(ax, (px + 3 * pw + 1.975, 2.65), (ox + 1.5 * cw, oy - 3 * cw - .12),
           color="#c98a00")
-    text(ax, 6.2, .75, "全连接 $25\\to9$ 需要 $25\\times9=225$ 个权重，"
+    text(ax, 6.2, 1.08, "全连接 $25\\to9$ 需要 $25\\times9=225$ 个权重，"
          "卷积只有 9 个：只看局部、处处共享",
          ha="center", fontsize=9, color="#333333")
     finish(fig, "cnn-convolution-sliding-window")

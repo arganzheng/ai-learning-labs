@@ -11,6 +11,7 @@
 | `case_03_activation_memory.py` | 03 / 04 补实验：autograd 保存清单、checkpoint 实测、三张配图 | PyTorch（CPU） | 30 s |
 | `case_03_backprop_toys.py` | 03《反向传播》：标量链式法则、分叉、Jacobian、Linear、softmax、迷你网络、梯度检查、Autograd 图与 14 张配图 | PyTorch + NumPy | 30 s |
 | `case_04_activation_toys.py` | 04《激活函数》：线性折叠、ReLU 折线拟合、反向 f'(H)、逐层梯度衰减、dead ReLU、GLU 数字例、saved_tensors 实测与 7 张配图 | PyTorch + NumPy | 30 s |
+| `case_02_loss_toys.py` | 02《损失函数》：均匀初始化 CE = ln V、逐位置 -log p 平均、DPO 一对样本的 margin 与梯度符号，3 张配图 | NumPy | 30 s |
 | `case_05_init_toys.py` | 05《初始化、归一化与残差》：单层方差公式实测、64 块残差流 std 三种接法、尺度不变性、LN vs RMSNorm，3 张配图 | NumPy + PyTorch | 1 min |
 | `case_06_optimizer_toys.py` | 06《优化器》：四种优化器单步中间量、偏差修正 v vs v_hat、梯度累积等价性、warmup 更新范数，2 张配图 | NumPy | 2 min |
 | `02_init_norm_residual.py` | [深度学习基础（05）：训练为什么不稳定——初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |

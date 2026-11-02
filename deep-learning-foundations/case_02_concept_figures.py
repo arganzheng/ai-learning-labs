@@ -231,9 +231,9 @@ def plot_product():
     ]
     for a, color in curves:
         ax.plot(L, a ** L.astype(float), color=color, linewidth=LW,
-                label=f"a = {a}")
+                label=rf"$a={a}$")
     ax.set_yscale("log")
-    ax.set_xlabel("Depth L", fontsize=15)
+    ax.set_xlabel("Depth $L$", fontsize=15)
     ax.set_ylabel("$a^L$", fontsize=15)
     ax.set_title("Per-layer factor $a$: $a^L$ vs depth", fontsize=15)
     ax.tick_params(labelsize=13)
@@ -352,7 +352,7 @@ def plot_ln_vs_rms():
     ax.set_xticks(groups)
     ax.set_xticklabels(["$x_1$", "$x_2$", "$x_3$", "$x_4$"], fontsize=14)
     ax.set_ylabel("value", fontsize=15)
-    ax.set_title("LayerNorm vs RMSNorm on x = [2, 4, 6, 8]", fontsize=15)
+    ax.set_title(r"LayerNorm vs RMSNorm on $x=[2,4,6,8]$", fontsize=15)
     ax.tick_params(labelsize=13)
     ax.legend(frameon=True, framealpha=0.9, fontsize=12)
     ax.grid(alpha=0.2, axis="y")
@@ -420,7 +420,7 @@ def plot_bn_sequence():
     ax.set_xticklabels([str(m) for m in ms], fontsize=10)
     ax.set_xlabel("batch size m", fontsize=13)
     ax.set_ylabel("std of batch mean", fontsize=13)
-    ax.set_title("BN statistics are noisy at small m", fontsize=14)
+    ax.set_title(r"BN statistics are noisy at small $m$", fontsize=14)
     ax.grid(alpha=0.2, which="both")
     ax.legend(frameon=True, framealpha=0.9, fontsize=10.5, loc="lower left")
     ax.annotate("inference: batch = 1, one token\n"

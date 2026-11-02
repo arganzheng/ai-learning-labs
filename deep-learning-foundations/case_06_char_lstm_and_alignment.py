@@ -111,7 +111,7 @@ def exp_lstm():
           (1250, 1.6965, 1.8532), (1500, 1.5555, 1.7179), (1750, 1.4989, 1.6616), (2000, 1.4977, 1.6599)]
     ax.plot([r[0] for r in ng], [r[2] for r in ng], "^--", ms=3, c=C["gray"], label="nanoGPT 4 层 val（Transformer 04）")
     ax.axhline(np.log(V), ls=":", c=C["gray"], lw=0.8); ax.text(1300, np.log(V) - 0.25, f"ln {V} = {np.log(V):.2f}（65 个字符乱猜）", fontsize=7, color=C["gray"])
-    ax.set_xlabel("步（batch 12 × 64 字符）"); ax.set_ylabel("loss（每字符）"); ax.legend(fontsize=7); ax.set_title("同一份莎士比亚、同一预算：LSTM vs 小 Transformer")
+    ax.set_xlabel("步（batch $12\\times64$ 字符）"); ax.set_ylabel("loss（每字符）"); ax.legend(fontsize=7); ax.set_title("同一份莎士比亚、同一预算：LSTM vs 小 Transformer")
     save(fig, "case-06-char-lstm")
 
 
@@ -141,7 +141,7 @@ def exp_align():
     fig, ax = plt.subplots(figsize=(4.0, 3.6))
     im = ax.imshow(A, cmap="Blues", vmin=0, vmax=1)
     ax.set_xticks(range(T)); ax.set_xticklabels([f"x{j + 1}" for j in range(T)]); ax.set_yticks(range(T)); ax.set_yticklabels([f"y{t + 1}" for t in range(T)])
-    ax.set_xlabel("输入位置（编码器）"); ax.set_ylabel("输出步（解码器）"); ax.set_title(f"倒序任务学到的对齐 α（整句正确率 {seq_acc:.0%}）")
+    ax.set_xlabel("输入位置（编码器）"); ax.set_ylabel("输出步（解码器）"); ax.set_title(f"倒序任务学到的对齐 $\\alpha$（整句正确率 {seq_acc:.0%}）")
     for t in range(T):
         for j in range(T):
             if A[t, j] > 0.15:

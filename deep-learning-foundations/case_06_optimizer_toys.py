@@ -279,7 +279,7 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
 
 def figure_one_step():
     rows = one_step_rows()
-    fig, ax = base_fig("同一个梯度 g = 0.500 的第 1 步：四种优化器的中间量与 dθ（lr 0.1）",
+    fig, ax = base_fig(r"同一个梯度 $g=0.500$ 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta=0.1$）",
                        h=4.0, xlim=(0, 12), ylim=(0, 6.9))
     cols = dict(g=(1.95, 1.5), mid=(4.2, 2.5), hat=(7.4, 2.5), d=(10.25, 1.7))
     ch = .85
@@ -288,30 +288,30 @@ def figure_one_step():
         y0 = yc - ch / 2
         text(ax, .1, yc, name, fontsize=9, color="#111111")
         box(ax, cols["g"][0], y0, cols["g"][1], ch,
-            f"g = {rows[name][0]['g']:.3f}", fs=8)
+            rf"$g={rows[name][0]['g']:.3f}$", fs=8)
         r = rows[name][0]
         if name == "SGD":
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                f"dθ = {r['d']:+.3f}", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["d"][0], yc))
-            text(ax, 6.5, yc + .18, "-lr·g：步长与梯度成正比", fontsize=8,
+            text(ax, 6.5, yc + .18, r"$-\eta\,g$：步长与梯度成正比", fontsize=8,
                  ha="center", color="#555555")
         elif name == "Momentum":
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
-                f"m = β1·m0 + g\n= {r['m']:.3f}", fs=8)
+                rf"$m=\beta_1 m_0+g$" + "\n" + rf"$={r['m']:.3f}$", fs=8)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                f"dθ = {r['d']:+.3f}", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["d"][0], yc))
-            text(ax, 8.2, yc + .18, "-lr·m", fontsize=8,
+            text(ax, 8.2, yc + .18, r"$-\eta\,m$", fontsize=8,
                  ha="center", color="#555555")
         else:
             box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
-                f"m = {r['m']:.3f}\nv = {r['v']:.1e}", fs=8)
+                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={r['v']:.1e}$", fs=8)
             box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0,
-                f"m_hat = {r['mh']:.3f}\nv_hat = {r['vh']:.3f}", fs=8)
+                rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=8)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                f"dθ = {r['d']:+.3f}", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["hat"][0], yc))
             arrow(ax, (cols["hat"][0] + cols["hat"][1], yc), (cols["d"][0], yc))
@@ -319,12 +319,12 @@ def figure_one_step():
     yc = rows_y["AdamW"]
     box(ax, cols["mid"][0], yc - 1.5, cols["hat"][0] + cols["hat"][1]
         - cols["mid"][0], .95,
-        "wd 支路：-lr·λ·θ = -0.010\n（不进矩、不被 sqrt(v) 缩放）",
+        r"wd 支路：$-\eta\,\lambda\,\theta=-0.010$" + "\n" + r"（不进矩、不被 $\sqrt{\hat v}$ 缩放）",
         fs=7.5, fc="#eef4fb", ec="#7a9ac0")
     arrow(ax, (cols["hat"][0] + 2.2, yc - 0.53),
           (cols["d"][0] + cols["d"][1] / 2, yc - ch / 2), color="#7a9ac0")
     text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.05,
-         "dθ = Adam 项 -0.100\n+ wd 支路 -0.010", fontsize=7.5,
+         r"$\Delta\theta=$ Adam 项 $-0.100$" + "\n" + r"$+$ wd 支路 $-0.010$", fontsize=7.5,
          ha="center", va="top", color="#555555")
     finish(fig, "dl-opt-one-step")
 
@@ -334,17 +334,17 @@ def figure_bias_correction():
     ts = np.arange(1, 21)
     v = 1 - B2 ** ts
     fig, ax = plt.subplots(figsize=(7.0, 3.0))
-    ax.plot(ts, v, c=C["red"], lw=1.4, label="v_t / g^2（未修正）")
+    ax.plot(ts, v, c=C["red"], lw=1.4, label=r"$v_t/g^2$（未修正）")
     ax.plot(ts, np.ones_like(ts), c=C["green"], lw=1.4, ls="--",
-            label="v_hat_t / g^2（修正后）")
+            label=r"$\hat v_t/g^2$（修正后）")
     ax.set_yscale("log")
     ax.set_yticks([1e-3, 1e-2, 1e-1, 1])
     ax.set_yticklabels(["1e-3", "1e-2", "1e-1", "1"], fontsize=8)
     ax.set_xticks([1, 5, 10, 15, 20])
     ax.set_xlabel("步 t"); ax.set_ylabel("对真值 g^2 的比值（对数）")
-    ax.set_title("beta2 = 0.999、常数梯度：未修正的 v 从 0.001·g^2 慢慢爬",
+    ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 $v$ 从 $0.001\,g^2$ 慢慢爬",
                  fontweight=600, color="#111111")
-    ax.text(2.4, 1.2e-2, "t=1：v = 0.001·g^2", fontsize=8, color=C["red"])
+    ax.text(2.4, 1.2e-2, r"$t=1$：$v=0.001\,g^2$", fontsize=8, color=C["red"])
     ax.add_patch(FancyArrowPatch((2.2, 1e-2), (1.15, 1.4e-3),
                                  arrowstyle="-|>", mutation_scale=10,
                                  color=C["red"], lw=.8,

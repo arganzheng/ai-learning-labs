@@ -180,8 +180,10 @@ def toy_dropout():
 def figure_weight_decay():
     x_tr, y_tr, x_te, y_te = _poly_data()
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
-    ax.set_xlim(-0.03, 1.35); ax.set_ylim(-1.9, 1.9)
-    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xlim(-0.03, 1.03); ax.set_ylim(-2.0, 2.0)
+    ax.set_xticks([0, .5, 1.0]); ax.set_yticks([-2, -1, 0, 1, 2])
+    ax.set_xlabel(r"$x$", fontsize=9); ax.set_ylabel(r"$y$", fontsize=9)
+    ax.tick_params(labelsize=8)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.spines["left"].set_color("#aaaaaa"); ax.spines["bottom"].set_color("#aaaaaa")
@@ -190,7 +192,7 @@ def figure_weight_decay():
     cols = {0.0: C["red"], 1e-3: C["green"], 1e-1: C["blue"]}
     for lam, tr, te, nw, w in poly_rows():
         yh = np.vander(x_te, 10, increasing=True) @ w
-        ax.plot(x_te, np.clip(yh, -1.85, 1.85), color=cols[lam], lw=1.6,
+        ax.plot(x_te, np.clip(yh, -2.1, 2.1), color=cols[lam], lw=1.6,
                 label=rf"$\lambda={lam:g}$：$\|w\|={nw:.3g}$，"
                       rf"测试MSE$={te:.3g}$")
     ax.scatter(x_tr, y_tr, s=22, color="#222222", zorder=5,
@@ -199,8 +201,8 @@ def figure_weight_decay():
                  r"$\|w\|$ 越小",
                  fontsize=10.5, fontweight=600, color="#111111", loc="left",
                  pad=8)
-    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.02), fontsize=8,
-              frameon=False)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2,
+              fontsize=7.5, frameon=False)
     save(fig, "dl-reg-weight-decay")
 
 

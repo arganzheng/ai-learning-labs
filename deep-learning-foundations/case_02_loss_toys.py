@@ -166,49 +166,49 @@ def figure_overview():
         text(ax, x + w / 2, 6.85, h_, fontsize=8.5, ha="center",
              color="#555555")
     rows = [
-        ("回归", "y_hat（连续）", "MSE：e = y_hat-y = 2.0\nL = e^2 = 4.0",
-         "dL/dy_hat = 2e = 4.0（随误差线性长）"),
-        ("分类", "softmax，p_y = 0.62", "CE：-log 0.62 = 0.478",
-         "p - y：正确类 -0.38，逐类分推动"),
-        ("语言模型", "V = 50257 softmax", "next-token CE 逐位平均\n初始 = ln V = 10.82",
-         "同 p - y；每步在 V 类上推"),
-        ("对比学习", "相似度 × 1/τ", "InfoNCE（τ=0.1）\n= -log e^正 / Σ e^行 = 5.96",
+        ("回归", r"$\hat y$（连续）", r"MSE：$e=\hat y-y=2.0$" + "\n" + r"$L=e^2=4.0$",
+         r"$dL/d\hat y=2e=4.0$（随误差线性长）"),
+        ("分类", r"softmax，$p_y=0.62$", r"CE：$-\log 0.62=0.478$",
+         r"$p-y$：正确类 $-0.38$，逐类分推动"),
+        ("语言模型", r"$V=50257$ softmax", r"next-token CE 逐位平均" + "\n" + r"初始 $=\ln V=10.82$",
+         r"同 $p-y$；每步在 $V$ 类上推"),
+        ("对比学习", r"相似度 $\times\,1/\tau$", r"InfoNCE（$\tau=0.1$）" + "\n" + r"$=-\log e^{s^+}/\sum_j e^{s_j}=5.96$",
          "行内 softmax 差：正例推高、其余压低"),
-        ("偏好对齐", "logπ - logπref 差", "DPO = -log σ(β·margin)\n= -log 0.532 = 0.630",
-         "chosen ↑β(1-σ)、rejected ↓同量"),
+        ("偏好对齐", r"$\log\pi-\log\pi_{\mathrm{ref}}$ 差", r"DPO $=-\log\sigma(\beta\cdot\mathrm{margin})$" + "\n" + r"$=-\log 0.532=0.630$",
+         r"chosen ↑$\beta(1-\sigma)$、rejected ↓同量"),
     ]
-    y = 6.15
+    y = 5.9
     for name, c1, c2, c3 in rows:
         text(ax, .15, y + .12, name, fontsize=8.5, va="center", color="#111111")
         for s, x, w in zip((c1, c2, c3), xs, ws):
-            box(ax, x, y - .35, w, .95, s, fs=7.5)
-        y -= 1.15
+            box(ax, x, y - .45, w, 1.15, s, fs=7.5)
+        y -= 1.25
     finish(fig, "dl-loss-overview")
 
 
 def figure_lm_tokens():
-    fig, ax = base_fig("一句话 4 个 token：逐位置 -log p 求平均就是 loss",
+    fig, ax = base_fig(r"一句话 4 个 token：逐位置 $-\log p$ 求平均就是 loss",
                        h=3.0, xlim=(0, 11.3), ylim=(0.7, 5.6))
-    text(ax, .15, 5.0, "模型对正确 token 的概率 p", fontsize=8, color="#555555")
+    text(ax, .15, 5.0, r"模型对正确 token 的概率 $p$", fontsize=8, color="#555555")
     n = len(TOY_PROBS)
     cw, gap = 1.15, .55
     x0 = .3
     for i, p in enumerate(TOY_PROBS):
         x = x0 + i * (cw + gap)
-        box(ax, x, 4.15, cw, .6, f"p{i + 1} = {p:.2f}", fs=8)
-        box(ax, x, 2.55, cw, .95, f"-log p\n{-np.log(p):.3f}", fs=8,
+        box(ax, x, 4.15, cw, .6, rf"$p_{i + 1}={p:.2f}$", fs=8)
+        box(ax, x, 2.55, cw, .95, rf"$-\log p$" + "\n" + rf"${-np.log(p):.3f}$", fs=8,
             fc="#eef4fb", ec="#7a9ac0")
         arrow(ax, (x + cw / 2, 4.15), (x + cw / 2, 3.55))
         arrow(ax, (x + cw / 2, 2.55), (x + cw / 2, 2.4))
     ax.plot([x0 + cw / 2, 9.2], [2.4, 2.4], color="#555555", lw=1.0)
     arrow(ax, (9.2, 2.4), (9.2, 2.85))
     loss = np.mean([-np.log(p) for p in TOY_PROBS])
-    box(ax, 8.1, 2.85, 2.2, .9, f"loss = 平均\n= {loss:.3f}", fs=8,
+    box(ax, 8.1, 2.85, 2.2, .9, rf"loss = 平均" + "\n" + rf"$={loss:.3f}$", fs=8,
         fc="#fde9d9", ec="#c98a4a")
-    text(ax, 8.1, 2.1, f"perplexity = e^loss = {np.exp(loss):.2f}",
+    text(ax, 8.1, 2.1, rf"perplexity $=e^{{L}}={np.exp(loss):.2f}$",
          fontsize=8, color="#555555")
-    text(ax, .3, 1.1, "初始：logits 接近均匀 → 每个位置 -log(1/V) = ln V"
-         "（GPT-2 V=50257 → 10.82）", fontsize=8, color="#555555")
+    text(ax, .3, 1.1, r"初始：logits 接近均匀 → 每个位置 $-\log(1/V)=\ln V$"
+         r"（GPT-2 $V=50257$ → $10.82$）", fontsize=8, color="#555555")
     finish(fig, "dl-loss-lm-tokens")
 
 
@@ -216,28 +216,28 @@ def figure_dpo():
     rw, rl = LP_W - LPR_W, LP_L - LPR_L
     delta, z = rw - rl, BETA * (rw - rl)
     sig = 1 / (1 + np.exp(-z)); loss = -np.log(sig)
-    fig, ax = base_fig("DPO 一对样本：log ratio 差 × β 进 sigmoid 就是 loss",
+    fig, ax = base_fig(r"DPO 一对样本：$\log$ ratio 差 $\times\,\beta$ 进 sigmoid 就是 loss",
                        h=3.7, xlim=(0, 12), ylim=(0.5, 6.6))
     for i, (name, lp, lpr, r, col, note) in enumerate((
-            ("chosen", LP_W, LPR_W, rw, C["green"], "梯度为负 → log p 被推高 ↑"),
-            ("rejected", LP_L, LPR_L, rl, C["red"], "梯度为正 → log p 被压低 ↓"))):
+            ("chosen", LP_W, LPR_W, rw, C["green"], r"梯度为负 → $\log p$ 被推高 ↑"),
+            ("rejected", LP_L, LPR_L, rl, C["red"], r"梯度为正 → $\log p$ 被压低 ↓"))):
         y = 5.0 - i * 1.9
         text(ax, .1, y + .15, name, fontsize=8.5, color=col)
         box(ax, 1.55, y - .35, 3.6, .95,
-            f"log πθ - log πref\n= {lp} - ({lpr})", fs=7.5)
-        box(ax, 5.6, y - .35, 1.6, .95, f"ratio\n{r:+.2f}", fs=8)
+            rf"$\log\pi_\theta-\log\pi_{{\mathrm{{ref}}}}$" + "\n" + rf"$={lp}-({lpr})$", fs=7.5)
+        box(ax, 5.6, y - .35, 1.6, .95, "ratio" + "\n" + rf"${r:+.2f}$", fs=8)
         arrow(ax, (5.15, y + .12), (5.6, y + .12))
         text(ax, 7.85, y + .12, note, fontsize=7.5, color="#555555")
-    box(ax, 5.6, 1.55, 2.45, .85, f"margin = {delta:+.2f}\nβ·margin = {z:.3f}",
+    box(ax, 5.6, 1.55, 2.45, .85, rf"margin $={delta:+.2f}$" + "\n" + rf"$\beta\cdot$margin $={z:.3f}$",
         fs=8, fc="#eef4fb", ec="#7a9ac0")
     arrow(ax, (6.9, 4.65), (8.0, 2.42))     # chosen ratio ↓ 合流
     arrow(ax, (6.4, 2.75), (6.4, 2.42))     # rejected ratio ↓ 合流（相减）
-    box(ax, 8.45, 1.55, 1.5, .85, f"σ({z:.2f})\n= {sig:.3f}", fs=8)
+    box(ax, 8.45, 1.55, 1.5, .85, rf"$\sigma({z:.2f})$" + "\n" + rf"$={sig:.3f}$", fs=8)
     arrow(ax, (8.05, 1.97), (8.45, 1.97))
-    box(ax, 10.2, 1.55, 1.7, .85, f"loss\n= {loss:.3f}", fs=8,
+    box(ax, 10.2, 1.55, 1.7, .85, "loss" + "\n" + rf"$={loss:.3f}$", fs=8,
         fc="#fde9d9", ec="#c98a4a")
     arrow(ax, (9.95, 1.97), (10.2, 1.97))
-    text(ax, 8.05, 1.0, "-log σ：margin 越大 loss 越小", fontsize=7.5,
+    text(ax, 8.05, 1.0, r"$-\log\sigma$：margin 越大 loss 越小", fontsize=7.5,
          color="#555555")
     finish(fig, "dl-loss-dpo")
 

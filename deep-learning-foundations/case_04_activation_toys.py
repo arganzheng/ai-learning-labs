@@ -291,7 +291,7 @@ def figure_fold():
     fig, ax = base_fig("没有激活：两层 Linear 折叠成一层，结果一模一样", 7.6, 3.7,
                        (0, 12), (1.0, 6.4))
     # 上排：x -> W1 -> h -> W2 -> out
-    row1 = [("x", [[1, 1]]), ("W1", [[1, 2], [0, 1]]), ("h=xW1", [[1, 3]]),
+    row1 = [("x", [[1, 1]]), ("W1", [[1, 2], [0, 1]]), (r"$h=xW_1$", [[1, 3]]),
             ("W2", [[1, 0], [1, 1]]), ("out", [[4, 3]])]
     xs = [.3, 2.7, 5.1, 7.5, 9.9]
     for (lab, vals), gx in zip(row1, xs):
@@ -301,7 +301,7 @@ def figure_fold():
     for gx in xs[:-1]:
         arrow(ax, (gx + 1.15, 5.0), (gx + 2.25, 5.0), color=C["blue"], lw=.9)
     # 下排：x -> W1W2 -> out
-    row2 = [("x", [[1, 1]]), ("W1W2", [[3, 2], [1, 1]]), ("out", [[4, 3]])]
+    row2 = [("x", [[1, 1]]), (r"$W_1W_2$", [[3, 2], [1, 1]]), ("out", [[4, 3]])]
     xs2 = [3.3, 5.7, 8.1]
     for (lab, vals), gx in zip(row2, xs2):
         top = 2.9 if len(vals) == 2 else 2.65
@@ -309,7 +309,7 @@ def figure_fold():
         text(ax, gx + .55, 3.25, lab, ha="center", va="center", fontsize=8.5)
     for gx in xs2[:-1]:
         arrow(ax, (gx + 1.15, 2.4), (gx + 2.25, 2.4), color=C["blue"], lw=.9)
-    text(ax, 6, 1.4, "两层链 (4,3) 与一层折叠 (4,3) 完全相同：中间没有非线性，"
+    text(ax, 6, 1.4, r"两层链 $(4,3)$ 与一层折叠 $(4,3)$ 完全相同：中间没有非线性，"
          "多叠的层不增加表达能力。", ha="center", va="center", fontsize=9)
     finish(fig, "activation-fold")
 
@@ -323,7 +323,7 @@ def figure_relu_fit():
     lin = np.polyfit(xs, xs ** 2, 1)
     linfit = np.polyval(lin, xs)
     fig, ax = plt.subplots(figsize=(7.6, 3.6))
-    ax.plot(xs, xs ** 2, color="#111111", lw=1.8, label="目标 x^2")
+    ax.plot(xs, xs ** 2, color="#111111", lw=1.8, label=r"目标 $x^2$")
     for c, w in zip(cs, coef[:5]):
         ax.plot(xs, w * np.maximum(xs - c, 0), color="#bbbbbb", lw=.8)
     ax.plot(xs, fit, color=C["orange"], lw=1.6, label="5 个加权 hinge + 偏置")
@@ -351,13 +351,13 @@ def figure_backward():
             ("sigmoid", sig * (1 - sig)),
             ("tanh", 1 - th ** 2),
             ("GELU", Phi + H * phi)]
-    fig, ax = base_fig("反向：G_H = G_A ⊙ f'(H)，f 的导数决定梯度怎么传",
+    fig, ax = base_fig(r"反向：$G_H=G_A\odot f'(H)$，$f$ 的导数决定梯度怎么传",
                        7.6, 3.7, (0, 12), (0.4, 6.2))
-    text(ax, 2.3, 5.6, "f'(H)", ha="center", va="center", fontsize=8.5)
-    text(ax, 4.6, 5.6, "⊙", ha="center", va="center", fontsize=11)
-    text(ax, 6.4, 5.6, "G_A", ha="center", va="center", fontsize=8.5)
+    text(ax, 2.3, 5.6, r"$f'(H)$", ha="center", va="center", fontsize=8.5)
+    text(ax, 4.6, 5.6, r"$\odot$", ha="center", va="center", fontsize=11)
+    text(ax, 6.4, 5.6, r"$G_A$", ha="center", va="center", fontsize=8.5)
     text(ax, 8.5, 5.6, "=", ha="center", va="center", fontsize=11)
-    text(ax, 10.3, 5.6, "G_H", ha="center", va="center", fontsize=8.5)
+    text(ax, 10.3, 5.6, r"$G_H$", ha="center", va="center", fontsize=8.5)
     y = 5.05
     for name, fp in rows:
         text(ax, .15, y - .25, name, ha="left", va="center", fontsize=8)
@@ -368,7 +368,7 @@ def figure_backward():
         grid(ax, 9.0, y, [[round(v, 3) for v in G_A * fp]], cw=.85, fs=6.5,
              fc="#fae6d6", ec=C["orange"], zero_grey=False)
         y -= 1.0
-    text(ax, 6, 0.75, "H = (-1, 0.5, 2)，G_A = (0.3, -0.2, 0.5)；"
+    text(ax, 6, 0.75, r"$H=(-1,0.5,2)$，$G_A=(0.3,-0.2,0.5)$；"
          "ReLU 把负位置的梯度直接挡成 0。", ha="center", va="center", fontsize=8.5)
     finish(fig, "activation-backward-fprime")
 
@@ -416,7 +416,7 @@ def figure_dead_relu():
         if xl:
             ax.set_xlim(*xl)
         p = float((z > 0).float().mean())
-        ax.text(0.96, 0.92, f"z>0：{p*100:.1f}%", transform=ax.transAxes,
+        ax.text(0.96, 0.92, rf"$z>0$：{p*100:.1f}%", transform=ax.transAxes,
                 ha="right", fontsize=9)
     fig.subplots_adjust(wspace=0.3)
     axs[0].set_ylabel("输入个数", fontsize=9)
@@ -430,26 +430,26 @@ def figure_glu_example():
     fig, ax = base_fig("GLU 的逐维放行：门分支先过 σ，再与值分支逐元素乘",
                        7.6, 3.4, (0, 10.9), (0.5, 6.0))
     # 值分支
-    text(ax, 1.6, 5.3, "值分支 xV", ha="center", va="center", fontsize=8.5)
+    text(ax, 1.6, 5.3, r"值分支 $xV$", ha="center", va="center", fontsize=8.5)
     grid(ax, .7, 5.0, [[2, -1, 3]], cw=.6, fc="#dce9f7", zero_grey=False)
     # 门分支 -> σ
-    text(ax, 4.4, 5.3, "门分支 xW", ha="center", va="center", fontsize=8.5)
+    text(ax, 4.4, 5.3, r"门分支 $xW$", ha="center", va="center", fontsize=8.5)
     grid(ax, 3.5, 5.0, [[3, -3, 0]], cw=.6, fc="#dce9f7", zero_grey=False)
     p = box(ax, 5.8, 4.35, 1.0, .7, "", fc="#f5f8fc", ec="#777777")
-    text(ax, 6.3, 4.7, "σ", in_box=p, ha="center", va="center", fontsize=10)
+    text(ax, 6.3, 4.7, r"$\sigma$", in_box=p, ha="center", va="center", fontsize=10)
     arrow(ax, (5.4, 4.7), (5.75, 4.7), color=C["blue"], lw=.9)
-    text(ax, 8.5, 5.3, "σ(xW)", ha="center", va="center", fontsize=8.5)
+    text(ax, 8.5, 5.3, r"$\sigma(xW)$", ha="center", va="center", fontsize=8.5)
     grid(ax, 7.6, 5.0, [[.95, .05, .50]], cw=.6, fc="#dce9f7", zero_grey=False)
     arrow(ax, (6.85, 4.7), (7.55, 4.7), color=C["blue"], lw=.9)
     # ⊙ 汇合
-    text(ax, 4.3, 3.8, "xV ⊙ σ(xW)", ha="center", va="center", fontsize=8.5)
+    text(ax, 4.3, 3.8, r"$xV\odot\sigma(xW)$", ha="center", va="center", fontsize=8.5)
     arrow(ax, (1.6, 4.45), (3.4, 3.5), color=C["blue"], lw=.9)
     arrow(ax, (8.5, 4.45), (4.9, 3.5), color=C["blue"], lw=.9)
     grid(ax, 3.7, 3.4, [[1.90, -.05, 1.50]], cw=.85, fs=7.5,
          fc="#fae6d6", ec=C["orange"], zero_grey=False)
     text(ax, 5.45, 2.3, "第一维几乎全放行，第二维几乎关掉，第三维放一半；"
          "门和内容用的是不同权重。", ha="center", va="center", fontsize=9)
-    text(ax, 5.45, 1.55, "反向沿两支分别回传：值支乘 σ(xW)，门支乘 xV·σ'(xW)。",
+    text(ax, 5.45, 1.55, r"反向沿两支分别回传：值支乘 $\sigma(xW)$，门支乘 $xV\cdot\sigma'(xW)$。",
          ha="center", va="center", fontsize=8.5, color="#555555")
     finish(fig, "activation-glu-example")
 
@@ -472,30 +472,30 @@ def figure_ffn_position():
     text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
          fontsize=8.5)
     arrow(ax, (6.72, y + .4), (6.83, y + .4), color=C["blue"], lw=.9)
-    text(ax, 6.78, 5.66, "d", ha="center", va="center", fontsize=6.5)
+    text(ax, 6.78, 5.66, r"$d$", ha="center", va="center", fontsize=6.5)
     # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
     arrow(ax, (6.87, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
     arrow(ax, (6.87, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
     p2 = box(ax, 7.1, 5.35, .8, .42, "", fc="#ffffff", ec="#888888")
-    text(ax, 7.5, 5.56, "xW 门", in_box=p2, ha="center", va="center", fontsize=7)
+    text(ax, 7.5, 5.56, r"$xW$ 门", in_box=p2, ha="center", va="center", fontsize=7)
     p2 = box(ax, 8.35, 5.35, .65, .42, "", fc="#ffffff", ec="#888888")
     text(ax, 8.675, 5.56, "SiLU", in_box=p2, ha="center", va="center", fontsize=7)
     p2 = box(ax, 7.1, 4.55, .8, .42, "", fc="#ffffff", ec="#888888")
-    text(ax, 7.5, 4.76, "xV 值", in_box=p2, ha="center", va="center", fontsize=7)
+    text(ax, 7.5, 4.76, r"$xV$ 值", in_box=p2, ha="center", va="center", fontsize=7)
     arrow(ax, (7.92, 5.56), (8.33, 5.56), color=C["orange"], lw=.8)
     arrow(ax, (9.02, 5.5), (9.18, 5.28), color=C["orange"], lw=.8)
     arrow(ax, (7.92, 4.76), (9.18, 5.0), color=C["orange"], lw=.8)
     p2 = box(ax, 9.2, 4.85, .45, .5, "", fc="#fae6d6", ec=C["orange"])
-    text(ax, 9.425, 5.1, "⊙", in_box=p2, ha="center", va="center", fontsize=8)
+    text(ax, 9.425, 5.1, r"$\odot$", in_box=p2, ha="center", va="center", fontsize=8)
     arrow(ax, (9.67, 5.1), (9.78, 5.1), color=C["orange"], lw=.8)
     p2 = box(ax, 9.8, 4.75, .7, .7, "", fc="#fae6d6", ec=C["orange"])
     text(ax, 10.15, 5.22, "W2", in_box=p2, ha="center", va="center", fontsize=7)
     text(ax, 10.15, 4.97, "down", in_box=p2, ha="center", va="center",
          fontsize=6)
     # 形状标注：d → d_g（两支）→ d
-    text(ax, 7.5, 5.9, "d_g", ha="center", va="center", fontsize=6.5)
-    text(ax, 7.5, 5.12, "d_g", ha="center", va="center", fontsize=6.5)
-    text(ax, 10.61, 5.66, "d", ha="center", va="center", fontsize=6.5)
+    text(ax, 7.5, 5.9, r"$d_g$", ha="center", va="center", fontsize=6.5)
+    text(ax, 7.5, 5.12, r"$d_g$", ha="center", va="center", fontsize=6.5)
+    text(ax, 10.61, 5.66, r"$d$", ha="center", va="center", fontsize=6.5)
     # +残差 → 输出
     p = box(ax, 10.72, 4.7, .72, .8, "", fc="#dce9f7", ec=C["blue"])
     text(ax, 11.08, 5.1, "+ 残差", in_box=p, ha="center", va="center",

@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 plt.rcParams.update({
     "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
-    "svg.fonttype": "none",
+    "svg.fonttype": "path",         # 文字与 mathtext 都落成轮廓，读者端不依赖字体
+    "mathtext.fontset": "cm",       # $...$ 用 Computer Modern，与正文 KaTeX 一致
     "font.size": 9,
     "axes.titlesize": 10,
     "axes.labelsize": 9,

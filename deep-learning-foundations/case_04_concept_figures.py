@@ -70,14 +70,15 @@ def double_descent_schematic():
     ax.annotate("插值阈值：参数量≈样本量\n训练误差刚到 0", (3.62, 3.15),
                 xytext=(4.35, 3.5), ha="left", fontsize=9, color="#333333",
                 arrowprops=dict(arrowstyle="-", color="#555555", lw=0.8))
-    ax.text(1.1, 0.45, "欠拟合", ha="center", fontsize=10, color="#333333",
+    ax.text(1.1, 0.45, "欠拟合：经典 U 形", ha="center", fontsize=10,
+            color="#333333",
             weight="bold")
-    ax.annotate("经典过拟合峰", (3.25, 2.6), xytext=(1.35, 3.4),
+    ax.annotate("经典过拟合峰", (3.35, 3.08), xytext=(1.35, 3.4),
                 ha="center", fontsize=10, color="#c0392b", weight="bold",
                 arrowprops=dict(arrowstyle="-", color="#c0392b", lw=0.8))
     ax.text(7.3, 1.05, "过参数化区：\n继续加参数，测试误差继续降",
             ha="center", fontsize=9.5, color="#333333")
-    ax.annotate("", (8.7, 0.42), xytext=(7.9, 0.85),
+    ax.annotate("", (8.7, 0.2), xytext=(7.9, 0.85),
                 arrowprops=dict(arrowstyle="->", color=RED, lw=1.0))
     ax.text(7.1, 0.32, "训练误差 $\\to0$", ha="center", fontsize=9,
             color="#333333")

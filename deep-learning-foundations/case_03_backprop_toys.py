@@ -670,42 +670,45 @@ def figure_mlp_columns():
     """两层 MLP 三列节点图（784 / 256 / 10，两组全连接边）。"""
     fig, ax = base_fig("两层 MLP：$784\\to256\\to10$，"
                      "两组全连接边就是 $W_1$、$W_2$", h=4.4,
-                     xlim=(0, 12), ylim=(0.4, 7.6))
-    cols = [(1.55, r"输入 $x\in\mathbb{R}^{784}$", "$28\\times28$ 像素"),
-            (6.0, r"$a=\mathrm{ReLU}(xW_1+b_1)$", "256 个神经元"),
-            (10.45, r"$z=aW_2+b_2\to\mathrm{softmax}$", "10 个类别")]
+                     xlim=(0, 12), ylim=(0.9, 7.6))
+    from matplotlib.patches import Circle
+    cols = [(1.55, C["blue"], "#dce9f7", r"输入 $x\in\mathbb{R}^{784}$",
+             "$28\\times28$ 像素"),
+            (6.0, C["orange"], "#fae6d6", r"$a=\mathrm{ReLU}(xW_1+b_1)$",
+             "256 个神经元"),
+            (10.45, C["green"], "#e2f0e4", r"$z=aW_2+b_2\to\mathrm{softmax}$",
+             "10 个类别")]
     ys = [6.45, 6.0, 5.55, 4.55, 4.1, 3.65]
-    for cx, main, sub in cols:
+    for cx, ec_, fc_, main, sub in cols:
         for yv in ys:
-            ax.add_patch(Rectangle((cx - .09, yv - .09), .18, .18,
-                                   facecolor="#dce9f7", edgecolor=C["blue"],
-                                   lw=.7))
+            ax.add_patch(Circle((cx, yv), .11, facecolor=fc_,
+                                edgecolor=ec_, lw=.9))
         text(ax, cx, 5.05, "$\\vdots$", ha="center", va="center",
              fontsize=10, color="#555555")
         text(ax, cx, 7.05, main, ha="center", fontsize=9, color="#111111")
         text(ax, cx, 6.78, sub, ha="center", fontsize=8, color="#555555")
     for y1 in ys:                                   # 全连接边（可见节点全对全）
         for y2 in ys:
-            ax.plot([1.72, 5.83], [y1, y2], color=C["blue"], lw=.4,
-                    alpha=.18, zorder=0)
-            ax.plot([6.17, 10.28], [y1, y2], color=C["blue"], lw=.4,
-                    alpha=.18, zorder=0)
-    p = box(ax, 2.3, 1.5, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
-    text(ax, 3.85, 2.12, "第一层 Linear", in_box=p, ha="center", fontsize=8.5,
+            ax.plot([1.72, 5.83], [y1, y2], color="#5a83a8", lw=.5,
+                    alpha=.35, zorder=0)
+            ax.plot([6.17, 10.28], [y1, y2], color="#5a83a8", lw=.5,
+                    alpha=.35, zorder=0)
+    p = box(ax, 2.3, 2.7, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
+    text(ax, 3.85, 3.32, "第一层 Linear", in_box=p, ha="center", fontsize=8.5,
          color="#111111")
-    text(ax, 3.85, 1.74, r"$W_1:784\times256$，$b_1:256$", in_box=p,
+    text(ax, 3.85, 2.94, r"$W_1:784\times256$，$b_1:256$", in_box=p,
          ha="center", fontsize=8.5, color="#333333")
-    p = box(ax, 6.75, 1.5, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
-    text(ax, 8.3, 2.12, "第二层 Linear", in_box=p, ha="center", fontsize=8.5,
+    p = box(ax, 6.75, 2.7, 3.1, 1.0, "", fc="#f7f7f7", ec="#777777", r=.02)
+    text(ax, 8.3, 3.32, "第二层 Linear", in_box=p, ha="center", fontsize=8.5,
          color="#111111")
-    text(ax, 8.3, 1.74, r"$W_2:256\times10$，$b_2:10$", in_box=p,
+    text(ax, 8.3, 2.94, r"$W_2:256\times10$，$b_2:10$", in_box=p,
          ha="center", fontsize=8.5, color="#333333")
-    text(ax, 6, .95, "每个隐藏神经元连着全部 784 个输入（784 条边"
-         " $=$ $W_1$ 的一列），每个输出连着全部 256 个隐藏神经元。",
+    text(ax, 6, 1.85, "每个隐藏神经元连着全部 784 个输入（784 条边，"
+         "对应 $W_1$ 的一列），每个输出连着全部 256 个隐藏神经元。",
          ha="center", fontsize=8.5, color="#333333")
-    text(ax, 6, .58, r"参数 $=$ 边数 $+$ 偏置 $=784\times256+256+"
-         r"256\times10+10=203{,}530$", ha="center", fontsize=9,
-         color="#111111")
+    text(ax, 6, 1.35, "参数 = 边数 + 偏置数"
+         r" $=784\times256+256+256\times10+10=203{,}530$",
+         ha="center", fontsize=9, color="#111111")
     finish(fig, "backprop-two-layer-mlp")
 
 

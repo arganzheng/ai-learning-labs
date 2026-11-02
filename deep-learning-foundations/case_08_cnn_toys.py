@@ -366,8 +366,8 @@ def _mcells(ax, x, y, labels, cw, ch, fs=7.5, fc="#ffffff",
 
 def figure_sliding_window():
     fig, ax = base_fig("卷积：$3\\times3$ 的核在 $5\\times5$ 输入上滑动，"
-                     "每个位置对应相乘再相加", h=4.8, xlim=(0, 12.4),
-                     ylim=(0.4, 8.2))
+                     "每个位置对应相乘再相加", h=4.5, xlim=(0, 12.0),
+                     ylim=(0.5, 8.2))
     cw = .64
     ix, iy = .45, 6.85            # 输入 5×5
     lbl = [[f"${v:g}$" for v in row] for row in X5]
@@ -375,10 +375,9 @@ def figure_sliding_window():
     _mcells(ax, ix, iy, lbl, cw, cw, hi=hi)
     box(ax, ix + cw, iy - 3 * cw, 3 * cw - .02, 3 * cw - .02,
         fc="none", ec="#c98a00", lw=1.8, r=.01)
-    text(ax, ix + 2.5 * cw, iy + .35, "输入 $x$（$5\\times5$）",
+    text(ax, ix + 2.5 * cw, iy + .35, "输入 $x$（$5\\times5$，"
+         "橙框 = 核当前盖住的 $3\\times3$）",
          ha="center", fontsize=9, color="#333333")
-    text(ax, ix + 2.5 * cw, iy - 5 * cw - .3, "橙框：核当前盖住的 $3\\times3$",
-         ha="center", fontsize=8, color="#666666")
     kx, ky = 5.15, 6.85         # kernel 3×3
     klbl = [[f"${v:g}$" for v in row] for row in K_EDGE]
     _mcells(ax, kx, ky, klbl, cw, cw, fc="#eef6ff", ec="#1f6fb2")
@@ -389,8 +388,10 @@ def figure_sliding_window():
     _mcells(ax, ox, oy, olbl, cw, cw, hi={(0, 1)})
     text(ax, ox + 1.5 * cw, oy + .35, "输出 $y$（$3\\times3$）",
          ha="center", fontsize=9, color="#333333")
-    arrow(ax, (ix + 5 * cw + .1, 5.8), (kx - .12, 5.8))
-    arrow(ax, (kx + 3 * cw + .1, 5.8), (ox - .12, 5.8))
+    text(ax, (ix + 5 * cw + kx) / 2, 5.8, "$\\ast$", ha="center",
+         va="center", fontsize=16, color="#333333")
+    text(ax, (kx + 3 * cw + ox) / 2, 5.8, "$=$", ha="center",
+         va="center", fontsize=16, color="#333333")
     # 下行：窗口内逐元素乘积 → 求和 → 写进输出 (0,1)
     win = X5[0:3, 1:4]
     plbl = [[f"${win[i,j]:g}\\cdot{K_EDGE[i,j]:g}$" if K_EDGE[i, j] >= 0
@@ -398,9 +399,10 @@ def figure_sliding_window():
              for j in range(3)] for i in range(3)]
     px, py, pw, ph = 4.35, 3.35, .95, .5
     _mcells(ax, px, py, plbl, pw, ph, fc="#f7f7f7")
-    text(ax, px + 1.5 * pw, py + .3, "窗口内逐元素相乘（$x\\odot k$）",
+    text(ax, px + 1.5 * pw, py - 3 * ph - .28, "窗口内逐元素相乘（$x\\odot k$）",
          ha="center", fontsize=8.5, color="#333333")
-    arrow(ax, (kx + 1.5 * cw, ky - 3 * cw - .1), (px + 1.5 * pw, py + .55))
+    arrow(ax, (ix + 2.5 * cw, iy - 5 * cw - .08), (px + .55 * pw, py + .06))
+    arrow(ax, (kx + 1.5 * cw, ky - 3 * cw - .1), (px + 2.0 * pw, py + .06))
     text(ax, px + 3 * pw + .75, 2.55, "求和", ha="center", fontsize=8.5,
          color="#555555")
     arrow(ax, (px + 3 * pw + .1, 2.35), (px + 3 * pw + 1.4, 2.35), lw=1.0)

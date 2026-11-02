@@ -111,14 +111,14 @@ def f3_four_states():
         ax.plot([xlo, xlo], [yb, yb + 0.08], color="#555555", linewidth=1.0)
         ax.plot([xhi, xhi], [yb, yb + 0.08], color="#555555", linewidth=1.0)
     steps = [
-        (0.42, "① 前向", "读参数\n逐层留下激活"),
-        (2.17, "② 反向", "读参数 + 激活\n产梯度、释放激活"),
+        (0.42, "① 前向", "读参数\n逐层留下激活\n末端算 loss"),
+        (2.17, "② 反向", "从 loss 往回算\n读参数 + 激活\n产梯度、释放激活"),
         (3.92, "③ 更新", "读梯度\n更新 m、v、主参数"),
         (5.67, "④ cast 回 bf16", "主参数\n→ 计算参数"),
     ]
     for x, title, detail in steps:
-        p = box(ax, x, 0.93, 1.48, 0.95, "", fc="#f7f8fa", ec="#777777")
-        box_title(ax, x + 0.74, 1.63, title, p)
+        p = box(ax, x, 0.78, 1.48, 1.22, "", fc="#f7f8fa", ec="#777777")
+        box_title(ax, x + 0.74, 1.74, title, p)
         text(ax, x + 0.74, 1.22, detail, in_box=p, ha="center", va="center", fontsize=9.5)
     for x in [1.90, 3.65, 5.40]:
         _arrow(ax, (x + 0.02, 1.40), (x + 0.25, 1.40), lw=1.4)
@@ -379,6 +379,176 @@ def f10_mfu_hfu():
     save(fig, "training-state-mfu-vs-hfu")
 
 
+
+
+def f11_activation_who_uses():
+    """反向要用前向的哪些量：三层（前向流、保存、反向消耗）。"""
+    fig, ax = plt.subplots(figsize=(7.6, 5.2))
+    ax.set_xlim(0, 12); ax.set_ylim(0, 8.6); ax.axis("off")
+    ax.set_title("反向要用前向的哪些量：保存的只有三个，参数单独算")
+
+    def chip(xc, y, w, h, s, fc, ec="#555555", fs=10, dash=False):
+        return box(ax, xc - w / 2, y, w, h, s, fc=fc, ec=ec, lw=0.9, fs=fs,
+                   linestyle="--" if dash else "-")
+
+    cols = [1.95, 4.05, 6.15, 8.25, 10.35]
+    def dashed(a, b, color):
+        ax.annotate("", xy=b, xytext=a,
+                    arrowprops=dict(arrowstyle="->", color=color, lw=1.0,
+                                    linestyle=(0, (4, 3)), mutation_scale=9))
+
+    # ---- 前向行 ----
+    yf, fw, fh = 7.3, 1.35, 0.8
+    for xc, name in zip(cols, ["x", "H", "A", "Z", "loss"]):
+        chip(xc, yf, fw, fh, name, "#dce9f7", C["blue"], 10.5)
+    ops = ["Linear W1", "ReLU", "Linear W2", "CE"]
+    for i, op in enumerate(ops):
+        x1 = cols[i] + fw / 2; x2 = cols[i + 1] - fw / 2
+        _arrow(ax, (x1 + 0.04, yf + fh / 2), (x2 - 0.04, yf + fh / 2), lw=1.2)
+        text(ax, (x1 + x2) / 2, yf + fh + 0.22, op, ha="center", va="center",
+             fontsize=9)
+    text(ax, 0.12, yf + fh / 2, "前向", ha="left", va="center",
+         fontsize=10.5, color=C["blue"])
+
+    # ---- 保存行 ----
+    ys = 5.35
+    chip(cols[0], ys, 1.35, 0.66, "存 x", "#fae6d6", C["orange"], 9.5)
+    chip(cols[1], ys, 2.55, 0.66, "存 H 的符号", "#fae6d6", C["orange"], 9.5)
+    chip(cols[2], ys, 1.35, 0.66, "存 A", "#fae6d6", C["orange"], 9.5)
+    chip((cols[0] + cols[1]) / 2 - 0.55, ys - 0.95, 2.0, 0.62, "W1（参数）",
+         "#eeeeee", "#888888", 9, dash=True)
+    chip((cols[2] + cols[3]) / 2 + 0.55, ys - 0.95, 2.0, 0.62, "W2（参数）",
+         "#eeeeee", "#888888", 9, dash=True)
+    text(ax, 0.12, ys + 0.33, "保存", ha="left", va="center",
+         fontsize=10.5, color=C["orange"])
+    text(ax, 10.55, ys - 0.64, "灰色虚线框 = 常驻参数",
+         ha="left", va="center", fontsize=9, color="#555555")
+
+    # ---- 反向行（右→左）----
+    yb, bw, bh = 2.8, 1.95, 1.0
+    blabels = ["dW1\nx^T·G_H", "G_H\nG_A ⊙ mask", "G_A\nG_Z·W2^T",
+               "dW2\nA^T·G_Z", "G_Z\n(P-Y)/m"]
+    for xc, label in zip(cols, blabels):
+        chip(xc, yb, bw, bh, label, "#fff3e0", C["orange"], 8.5)
+    for i in range(4):
+        _arrow(ax, (cols[4 - i] - bw / 2 - 0.04, yb + bh / 2),
+               (cols[3 - i] + bw / 2 + 0.04, yb + bh / 2), lw=1.2)
+    text(ax, 0.12, yb + bh / 2, "反向", ha="left", va="center",
+         fontsize=10.5, color=C["orange"])
+
+    # ---- 保存 → 消耗（橙色虚线）----
+    dashed((cols[0], ys), (cols[0], yb + bh), C["orange"])      # x → dW1
+    dashed((cols[1], ys), (cols[1], yb + bh), C["orange"])      # mask → G_H
+    dashed((cols[2], ys), (cols[3], yb + bh), C["orange"])      # A → dW2
+    # 参数 → 读的反向盒（灰色虚线）：W2 被 dgrad 读
+    dashed(((cols[2] + cols[3]) / 2 + 0.55, ys - 0.95),
+           (cols[2] + 0.3, yb + bh), "#888888")                 # W2 → G_A
+    text(ax, 6.0, 1.72,
+         "反向走到哪一步，就用掉并释放对应的保存量："
+         "G_H 用掉 mask，dW2 用掉 A，dW1 用掉 x",
+         ha="center", va="center", fontsize=9.5)
+    text(ax, 6.0, 1.28,
+         "dX = G_H·W1^T 在数学上存在，但 x 是数据不求导，框架跳过"
+         "（W1 仍被那一步读，图中未画）",
+         ha="center", va="center", fontsize=9, color="#555555")
+    save(fig, "training-state-activation-who-uses")
+
+
+def f12_activation_three_meanings():
+    """「激活」的三个意思；第三幅用 01 toy 的真实逐层字节画比例条。"""
+    import re
+    exp = os.path.join(HERE, "expected", "01_state_toys.txt")
+    rows = {}
+    for line in open(exp):
+        m = re.match(r"\s+(\S+)\s+保存 \d+ 个\s+激活\s+([\d.]+) KB", line)
+        if m:
+            rows[m.group(1)] = float(m.group(2))
+    total = sum(rows.values())
+    groups = [
+        ("a = f(z)：狭义激活值", ["fc2"], C["orange"] + "88"),
+        ("z：f 的输入", ["gelu"], "#f0d98a"),
+        ("线性层输入", ["qkv", "out_proj", "fc1"], C["blue"] + "66"),
+        ("注意力中间量", ["qk^t", "pv"], C["purple"] + "55"),
+        ("softmax 输出", ["softmax"], C["green"] + "55"),
+        ("dropout mask", ["attn_dropout", "out_dropout", "mlp_dropout"],
+         "#d0d0d0"),
+        ("LN 输入与统计量", ["ln1", "ln2"], C["red"] + "44"),
+    ]
+    narrow = rows["fc2"] / total * 100
+
+    fig, ax = plt.subplots(figsize=(7.6, 5.6))
+    ax.set_xlim(0, 12); ax.set_ylim(0, 9.3); ax.axis("off")
+    ax.set_title("「激活」的三个意思：函数、函数值、训练显存里的保存量")
+
+    # ① 激活函数：一个函数
+    p1 = box(ax, 0.3, 6.75, 3.6, 1.85, "", fc="#f5f8fc", ec=C["blue"], lw=1.0)
+    box_title(ax, 2.1, 8.25, "① 函数 f", p1, color=C["blue"])
+    xs = np.linspace(-1, 1, 60)
+    ax.plot(0.55 + xs * 0.95, 7.5 + np.maximum(xs, 0) * 0.45, color=C["blue"],
+            lw=1.6)
+    text(ax, 2.1, 7.05, "一个函数", in_box=p1, ha="center",
+         va="center", fontsize=9.5)
+
+    # ② 激活值 a = f(z)
+    p2 = box(ax, 4.2, 6.75, 3.6, 1.85, "", fc="#f7f6ec", ec="#a08c1f", lw=1.0)
+    box_title(ax, 6.0, 8.25, "② 值 a = f(z)", p2, color="#a08c1f")
+    text(ax, 6.0, 7.4, "某层过 f 的输出\n也是下一层输入", in_box=p2,
+         ha="center", va="center", fontsize=9.5)
+
+    # ③ 训练显存里的「激活」
+    p3 = box(ax, 8.1, 6.75, 3.6, 1.85, "", fc="#fff8f0", ec=C["orange"], lw=1.0)
+    box_title(ax, 9.9, 8.25, "③ 显存激活", p3, color=C["orange"])
+    text(ax, 9.9, 7.4, "为反向保存的\n全部张量", in_box=p3,
+         ha="center", va="center", fontsize=9.5)
+
+    # 比例条：每段一个张量，宽 ∝ KB
+    y0, bh = 4.35, 0.95
+    x0, wmax = 0.45, 11.1
+    cursor = x0
+    seg_label = []
+    for gname, keys, color in groups:
+        for k in keys:
+            kw_ = rows[k]
+            w = wmax * kw_ / total
+            ax.add_patch(Rectangle((cursor, y0), w, bh, facecolor=color,
+                                   edgecolor="#ffffff", linewidth=0.8))
+            seg_label.append((cursor + w / 2, k, kw_, w, gname))
+            cursor += w
+    # 段内标签：宽 ≥0.55 的画原名，窄的画到上方交替两行
+    legend_y = 5.75
+    level2 = []
+    for xc, k, kb, w, gname in seg_label:
+        if w >= 1.3:
+            text(ax, xc, y0 + bh / 2, k, ha="center", va="center", fontsize=8.5)
+    # 颜色分组：每格一个小色块 + 组名 + KB，短行排列
+    ginfo = []
+    for gname, keys, color in groups:
+        kb = sum(rows[k] for k in keys)
+        ginfo.append((gname, keys, color,
+                      f"{kb/1024:.2f}MB" if kb >= 1024 else f"{kb:.0f}KB"))
+    # 两行：3 + 4 个 swatch
+    sw_rows = [(ginfo[:3], 4.0), (ginfo[3:], 3.55)]
+    for glist, gy in sw_rows:
+        n = len(glist)
+        span = 11.2 / n
+        for gi, (gname, keys, color, kb) in enumerate(glist):
+            gx = 0.4 + gi * span
+            ax.add_patch(Rectangle((gx, gy), 0.22, 0.2, facecolor=color,
+                                   edgecolor="#888888", lw=0.5))
+            text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
+                 ha="left", va="center", fontsize=8)
+    text(ax, 6.0, 2.85,
+         f"实测一层共 {total/1024:.2f} MB（s=64 b=2 h=256 f=1024，bf16）；"
+         f"狭义的 a = f(z) 只占 {narrow:.0f}%",
+         ha="center", va="center", fontsize=10)
+    text(ax, 6.0, 2.42, "本系列说的「激活」是第 ③ 种：把所有段一起算",
+         ha="center", va="center", fontsize=10)
+    text(ax, 6.0, 2.02, "「激活 = a = f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
+         ha="center", va="center", fontsize=10)
+    save(fig, "training-state-activation-three-meanings")
+
+
 if __name__ == "__main__":
     f1_budget(); f2_ledgers(); f3_four_states(); f4_lifecycle(); f5_timeline()
+    f11_activation_who_uses(); f12_activation_three_meanings()
     f6_bytes(); f7_activations(); f8_memory_nesting(); f9_flops(); f10_mfu_hfu()

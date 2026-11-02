@@ -8,6 +8,7 @@
 | `case_02_loss_functions.py` | [深度学习基础（02）：损失函数——怎样把「好」写成一个可求导的数](https://arganzheng.life/loss-functions-from-mse-to-dpo.html) | NumPy | 2 min |
 | `01_backprop.py` | [深度学习基础（03）：反向传播——手推一个两层网络](https://arganzheng.life/backpropagation-by-hand.html) | NumPy（`torch` 子实验可选） | 5 s |
 | `case_activation_functions.py` | [深度学习基础（04）：激活函数——从 sigmoid 到 SwiGLU](https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html) | NumPy + PyTorch（CPU） | 3 min |
+| `case_03_activation_memory.py` | 03 / 04 补实验：autograd 保存清单、checkpoint 实测、三张配图 | PyTorch（CPU） | 30 s |
 | `02_init_norm_residual.py` | [深度学习基础（05）：训练为什么不稳定——初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |
 | `03_optimizers.py` | [深度学习基础（06）：优化器——从 SGD 到 AdamW 与学习率调度](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
 | `04_regularization.py` | [深度学习基础（07）：正则化与泛化——为什么参数比样本多却不过拟合](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |

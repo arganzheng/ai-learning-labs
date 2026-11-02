@@ -382,23 +382,50 @@ def f10_mfu_hfu():
 
 
 def f11_activation_who_uses():
-    """反向要用前向的哪些量：三层（前向流、保存、反向消耗）。"""
-    fig, ax = plt.subplots(figsize=(7.6, 5.2))
-    ax.set_xlim(0, 12); ax.set_ylim(0, 8.6); ax.axis("off")
-    ax.set_title("反向要用前向的哪些量：保存的只有三个，参数单独算")
+    """反向要用前向的哪些量：前向流 / 保存 / 链式梯度 / 参数梯度 四层。"""
+    fig, ax = plt.subplots(figsize=(7.6, 5.4))
+    ax.set_xlim(0, 12); ax.set_ylim(0, 9.0); ax.axis("off")
+    ax.set_title("反向要用前向的哪些量：保存的只有三个，参数单独算",
+                 fontweight=600, color="#111111")
+
+    rects = []          # (x0, y0, x1, y1)，用来断言虚线不穿盒
 
     def chip(xc, y, w, h, s, fc, ec="#555555", fs=10, dash=False):
+        rects.append((xc - w / 2, y, xc + w / 2, y + h))
         return box(ax, xc - w / 2, y, w, h, s, fc=fc, ec=ec, lw=0.9, fs=fs,
                    linestyle="--" if dash else "-")
 
     cols = [1.95, 4.05, 6.15, 8.25, 10.35]
-    def dashed(a, b, color):
-        ax.annotate("", xy=b, xytext=a,
+
+    def dashed_poly(pts, color):
+        """折线虚线箭头：前面是直线段，最后一段带箭头。"""
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            ax.plot([x1, x2], [y1, y2], color=color, lw=1.0,
+                    linestyle=(0, (4, 3)), zorder=2)
+        (x1, y1), (x2, y2) = pts[-2], pts[-1]
+        ax.annotate("", xy=(x2, y2), xytext=(x1, y1), zorder=2,
                     arrowprops=dict(arrowstyle="->", color=color, lw=1.0,
                                     linestyle=(0, (4, 3)), mutation_scale=9))
 
+    def seg_free(pts, skip=()):
+        """断言折线不穿任何盒（源盒、目标盒除外）。"""
+        src, dst = pts[0], pts[-1]
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            for t in np.linspace(0.08, 0.92, 40):
+                px, py = x1 + t * (x2 - x1), y1 + t * (y2 - y1)
+                for (rx0, ry0, rx1, ry1) in rects:
+                    if (rx0 - 0.02 < px < rx1 + 0.02
+                            and ry0 - 0.02 < py < ry1 + 0.02):
+                        inside_src = (abs(px - src[0]) < 0.3
+                                      and abs(py - src[1]) < 0.3)
+                        inside_dst = (abs(px - dst[0]) < 0.3
+                                      and abs(py - dst[1]) < 0.3)
+                        assert inside_src or inside_dst, (
+                            f"虚线穿过盒：段 {pts} 在 ({px:.2f},{py:.2f})"
+                            f" 撞上 ({rx0:.2f},{ry0:.2f})-({rx1:.2f},{ry1:.2f})")
+
     # ---- 前向行 ----
-    yf, fw, fh = 7.3, 1.35, 0.8
+    yf, fw, fh = 7.9, 1.35, 0.8
     for xc, name in zip(cols, ["x", "H", "A", "Z", "loss"]):
         chip(xc, yf, fw, fh, name, "#dce9f7", C["blue"], 10.5)
     ops = ["Linear W1", "ReLU", "Linear W2", "CE"]
@@ -411,45 +438,70 @@ def f11_activation_who_uses():
          fontsize=10.5, color=C["blue"])
 
     # ---- 保存行 ----
-    ys = 5.35
+    ys = 6.0
     chip(cols[0], ys, 1.35, 0.66, "存 x", "#fae6d6", C["orange"], 9.5)
     chip(cols[1], ys, 2.55, 0.66, "存 H 的符号", "#fae6d6", C["orange"], 9.5)
     chip(cols[2], ys, 1.35, 0.66, "存 A", "#fae6d6", C["orange"], 9.5)
-    chip((cols[0] + cols[1]) / 2 - 0.55, ys - 0.95, 2.0, 0.62, "W1（参数）",
-         "#eeeeee", "#888888", 9, dash=True)
-    chip((cols[2] + cols[3]) / 2 + 0.55, ys - 0.95, 2.0, 0.62, "W2（参数）",
-         "#eeeeee", "#888888", 9, dash=True)
     text(ax, 0.12, ys + 0.33, "保存", ha="left", va="center",
          fontsize=10.5, color=C["orange"])
-    text(ax, 10.55, ys - 0.64, "灰色虚线框 = 常驻参数",
-         ha="left", va="center", fontsize=9, color="#555555")
 
-    # ---- 反向行（右→左）----
-    yb, bw, bh = 2.8, 1.95, 1.0
-    blabels = ["dW1\nx^T·G_H", "G_H\nG_A ⊙ mask", "G_A\nG_Z·W2^T",
-               "dW2\nA^T·G_Z", "G_Z\n(P-Y)/m"]
-    for xc, label in zip(cols, blabels):
-        chip(xc, yb, bw, bh, label, "#fff3e0", C["orange"], 8.5)
-    for i in range(4):
-        _arrow(ax, (cols[4 - i] - bw / 2 - 0.04, yb + bh / 2),
-               (cols[3 - i] + bw / 2 + 0.04, yb + bh / 2), lw=1.2)
-    text(ax, 0.12, yb + bh / 2, "反向", ha="left", va="center",
+    # W2：常驻参数，放在 col3 的空列，箭头到 G_A 不穿任何盒
+    chip(8.6, 4.95, 2.5, 0.62, "W2（参数，常驻）", "#eeeeee", "#888888", 9,
+         dash=True)
+    text(ax, 10.7, 4.95 + 0.31, "灰色虚线框 = 常驻参数",
+         ha="left", va="center", fontsize=8.5, color="#555555")
+
+    # ---- 链式梯度行（右→左，每个梯度排在它求导的张量正下方）----
+    yc, cw, ch = 3.6, 1.7, 1.0
+    for xc, label in [(cols[1], "G_H\nG_A ⊙ mask"),
+                      (cols[2], "G_A\nG_Z·W2^T"),
+                      (cols[3], "G_Z\n(P-Y)/m")]:
+        chip(xc, yc, cw, ch, label, "#fff3e0", C["orange"], 8.5)
+    _arrow(ax, (cols[3] - cw / 2 - 0.04, yc + ch / 2),
+           (cols[2] + cw / 2 + 0.04, yc + ch / 2), lw=1.2)
+    _arrow(ax, (cols[2] - cw / 2 - 0.04, yc + ch / 2),
+           (cols[1] + cw / 2 + 0.04, yc + ch / 2), lw=1.2)
+    text(ax, 0.12, yc + ch / 2, "反向", ha="left", va="center",
          fontsize=10.5, color=C["orange"])
 
-    # ---- 保存 → 消耗（橙色虚线）----
-    dashed((cols[0], ys), (cols[0], yb + bh), C["orange"])      # x → dW1
-    dashed((cols[1], ys), (cols[1], yb + bh), C["orange"])      # mask → G_H
-    dashed((cols[2], ys), (cols[3], yb + bh), C["orange"])      # A → dW2
-    # 参数 → 读的反向盒（灰色虚线）：W2 被 dgrad 读
-    dashed(((cols[2] + cols[3]) / 2 + 0.55, ys - 0.95),
-           (cols[2] + 0.3, yb + bh), "#888888")                 # W2 → G_A
-    text(ax, 6.0, 1.72,
+    # ---- 参数梯度行：从链上分叉 ----
+    yp, pw, ph = 1.8, 2.0, 0.95
+    chip(cols[3], yp, pw, ph, "dW2\nA^T·G_Z", "#fff3e0", C["orange"], 8.5)
+    chip(cols[1], yp, pw, ph, "dW1\nx^T·G_H", "#fff3e0", C["orange"], 8.5)
+    _arrow(ax, (cols[3], yc - 0.04), (cols[3], yp + ph + 0.04), lw=1.2)
+    _arrow(ax, (cols[1], yc - 0.04), (cols[1], yp + ph + 0.04), lw=1.2)
+    text(ax, 0.12, yp + ph / 2, "参数\n梯度", ha="left", va="center",
+         fontsize=10, color=C["orange"])
+
+    # ---- 保存 → 消耗（橙色虚线，走空当）----
+    # 存 x → dW1：先直下，再右拐进 dW1 左缘
+    dashed_poly([(cols[0], ys), (cols[0], yp + ph / 2),
+                 (cols[1] - pw / 2 - 0.03, yp + ph / 2)], C["orange"])
+    # 存 H 的符号 → G_H：正下方直线
+    dashed_poly([(cols[1], ys), (cols[1], yc + ch + 0.03)], C["orange"])
+    # 存 A → dW2：右拐出 存A，穿过 G_A/G_Z 间的缝，直下进 dW2 顶缘
+    dashed_poly([(cols[2] + 1.35 / 2, ys + 0.33), (7.22, ys + 0.33),
+                 (7.22, yp + ph + 0.03)], C["orange"])
+    # W2 → G_A（灰色虚线）
+    dashed_poly([(7.35, 4.95 + 0.31), (cols[2] + cw / 2 - 0.05, yc + ch - 0.05)],
+                "#888888")
+
+    for pts in [[(cols[0], ys), (cols[0], yp + ph / 2),
+                 (cols[1] - pw / 2 - 0.03, yp + ph / 2)],
+                [(cols[1], ys), (cols[1], yc + ch + 0.03)],
+                [(cols[2] + 1.35 / 2, ys + 0.33), (7.22, ys + 0.33),
+                 (7.22, yp + ph + 0.03)],
+                [(7.35, 4.95 + 0.31),
+                 (cols[2] + cw / 2 - 0.05, yc + ch - 0.05)]]:
+        seg_free(pts)
+
+    text(ax, 6.0, 0.95,
          "反向走到哪一步，就用掉并释放对应的保存量："
          "G_H 用掉 mask，dW2 用掉 A，dW1 用掉 x",
          ha="center", va="center", fontsize=9.5)
-    text(ax, 6.0, 1.28,
+    text(ax, 6.0, 0.52,
          "dX = G_H·W1^T 在数学上存在，但 x 是数据不求导，框架跳过"
-         "（W1 仍被那一步读，图中未画）",
+         "（W1 被那一步读，图中未画）",
          ha="center", va="center", fontsize=9, color="#555555")
     save(fig, "training-state-activation-who-uses")
 
@@ -478,13 +530,14 @@ def f12_activation_three_meanings():
 
     fig, ax = plt.subplots(figsize=(7.6, 5.6))
     ax.set_xlim(0, 12); ax.set_ylim(0, 9.3); ax.axis("off")
-    ax.set_title("「激活」的三个意思：函数、函数值、训练显存里的保存量")
+    ax.set_title("「激活」的三个意思：函数、函数值、训练显存里的保存量",
+                 fontweight=600, color="#111111")
 
     # ① 激活函数：一个函数
     p1 = box(ax, 0.3, 6.75, 3.6, 1.85, "", fc="#f5f8fc", ec=C["blue"], lw=1.0)
     box_title(ax, 2.1, 8.25, "① 函数 f", p1, color=C["blue"])
     xs = np.linspace(-1, 1, 60)
-    ax.plot(0.55 + xs * 0.95, 7.5 + np.maximum(xs, 0) * 0.45, color=C["blue"],
+    ax.plot(1.55 + xs * 0.75, 7.15 + np.maximum(xs, 0) * 0.5, color=C["blue"],
             lw=1.6)
     text(ax, 2.1, 7.05, "一个函数", in_box=p1, ha="center",
          va="center", fontsize=9.5)
@@ -501,8 +554,13 @@ def f12_activation_three_meanings():
     text(ax, 9.9, 7.4, "为反向保存的\n全部张量", in_box=p3,
          ha="center", va="center", fontsize=9.5)
 
+    # ③ → 比例条的连接箭头 + 标签
+    _arrow(ax, (9.9, 6.68), (9.9, 5.85), lw=1.2, color=C["orange"])
+    text(ax, 9.72, 6.28, "③ 拆开看：一层 Transformer 的保存清单",
+         ha="right", va="center", fontsize=9, color=C["orange"])
+
     # 比例条：每段一个张量，宽 ∝ KB
-    y0, bh = 4.35, 0.95
+    y0, bh = 4.75, 0.95
     x0, wmax = 0.45, 11.1
     cursor = x0
     seg_label = []
@@ -527,7 +585,7 @@ def f12_activation_three_meanings():
         ginfo.append((gname, keys, color,
                       f"{kb/1024:.2f}MB" if kb >= 1024 else f"{kb:.0f}KB"))
     # 两行：3 + 4 个 swatch
-    sw_rows = [(ginfo[:3], 4.0), (ginfo[3:], 3.55)]
+    sw_rows = [(ginfo[:3], 4.05), (ginfo[3:], 3.6)]
     for glist, gy in sw_rows:
         n = len(glist)
         span = 11.2 / n
@@ -537,13 +595,13 @@ def f12_activation_three_meanings():
                                    edgecolor="#888888", lw=0.5))
             text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
                  ha="left", va="center", fontsize=8)
-    text(ax, 6.0, 2.85,
+    text(ax, 6.0, 2.75,
          f"实测一层共 {total/1024:.2f} MB（s=64 b=2 h=256 f=1024，bf16）；"
          f"狭义的 a = f(z) 只占 {narrow:.0f}%",
          ha="center", va="center", fontsize=10)
-    text(ax, 6.0, 2.42, "本系列说的「激活」是第 ③ 种：把所有段一起算",
+    text(ax, 6.0, 2.32, "本系列说的「激活」是第 ③ 种：把所有段一起算",
          ha="center", va="center", fontsize=10)
-    text(ax, 6.0, 2.02, "「激活 = a = f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
+    text(ax, 6.0, 1.92, "「激活 = a = f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
          ha="center", va="center", fontsize=10)
     save(fig, "training-state-activation-three-meanings")
 

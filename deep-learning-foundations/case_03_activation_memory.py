@@ -123,19 +123,27 @@ def cmd_saved():
 
     print(f"== saved：MLP {k1}->{k2}(ReLU)->{ncls}，CE，batch {m}，fp32")
     print(f"{'#':>2} {'算子节点':<28} {'shape':<14} {'dtype':<8} {'字节':>8}  归类")
+    seen_ptr = {}
     act = param = 0
     for i, t in enumerate(saved):
+        ptr = t.untyped_storage().data_ptr()
         nb = t.untyped_storage().nbytes()
         owner = owners.get(i, "?")
         cls = klass(t)
-        if cls.startswith("参数"):
-            param += nb
+        dup = ptr in seen_ptr
+        if dup:
+            cls = cls + "（同一块内存，不重复计）"
         else:
-            act += nb
+            seen_ptr[ptr] = i
+            if cls.startswith("参数"):
+                param += nb
+            else:
+                act += nb
         print(f"{i:>2} {owner:<28} {str(tuple(t.shape)):<14} "
               f"{str(t.dtype).replace('torch.', ''):<8} {nb:>8}  {cls}")
-    print(f"\n激活合计 {act / 1024:.0f} KiB（X + ReLU 保存 + softmax 侧）"
-          f"；参数合计 {param / 1024:.0f} KiB（autograd 为 dW/dX 保存，是参数不是激活）")
+    print(f"\n按 storage 去重后：激活合计 {act / 1024:.0f} KiB"
+          f"（X + ReLU 保存 + softmax 侧）；参数合计 {param / 1024:.0f} KiB"
+          "（autograd 为 dW/dX 保存，是参数不是激活）")
     print("对照正文 §六.1 表：X 392 KiB + H 掩码 32 KiB + A 128 KiB = 552 KiB。"
           "PyTorch 的 ReLU 保存的是 A（输出 128 KiB）而不是 H 的 mask——"
           "反向时用 A > 0 判断符号，等价但多 96 KiB。")
@@ -210,9 +218,10 @@ def cmd_ckpt():
     print(f"{'方案':<22} {'总保存':>10} {'峰值':>10} {'每 Linear 前向次数':<22}")
     print(f"{'全部保存':<22} {t1/1024/1024:>8.2f} MB {p1/1024/1024:>8.2f} MB  {f1}")
     print(f"{'每 4 层 checkpoint':<22} {t2/1024/1024:>8.2f} MB {p2/1024/1024:>8.2f} MB  {f2}")
-    print(f"梯度 max|diff| = {diff:.3e}（两次前向的浮点和顺序不同，差在 1e-6 内即等价）")
-    print(f"保存降到 {t2/t1:.0%}，每块多一次前向（层 0–3 各算 2 次）= "
-          f"重计算代价 ≈ 一次完整前向的一半（{sum(f2) - sum(f1)} 次 Linear）")
+    print(f"梯度 max|diff| = {diff:.3e}（本玩具两次前向浮点顺序相同，逐位一致）")
+    print(f"保存降到 {t2/t1:.0%}，8 个 Linear 各前向 2 次 = "
+          f"恰好一次额外前向（{sum(f2) - sum(f1)} 次 Linear），与全量重算同量；"
+          "分块大小只改存什么")
 
 
 # ------------------------------------------------------------- figures
@@ -225,11 +234,12 @@ def fig_one_iteration():
     """一次迭代：loss 和梯度什么时候算；两条细泳道画保存量与梯度量。"""
     fig, ax = plt.subplots(figsize=(7.6, 4.4))
     ax.set_xlim(0, 12); ax.set_ylim(0, 7.3); ax.axis("off")
-    ax.set_title("一次迭代：loss 和梯度什么时候算，激活什么时候释放")
+    ax.set_title("一次迭代：loss 和梯度什么时候算，激活什么时候释放",
+                 fontweight=600, color="#111111")
 
     phases = [
         ("前向", "逐层算 z、a\n并保存激活", "#dce9f7", C["blue"]),
-        ("算 loss", "末端一个标量", "#e5e5d7", "#8a8a4a"),
+        ("算 loss", "一个标量", "#e5e5d7", "#8a8a4a"),
         ("反向", "从 loss 往回\n用掉并释放激活", "#fae6d6", C["orange"]),
         ("step", "W ← W - η·dW", "#eee1f3", C["purple"]),
         ("zero", "梯度清零", "#e8e8e8", "#777777"),
@@ -244,10 +254,10 @@ def fig_one_iteration():
              va="center", fontsize=8.5)
         pos.append((x, x + w))
         if w is not ws[-1]:
-            ax.add_patch(FancyArrowPatch((x + w + 0.05, y + h / 2),
+            ax.add_patch(FancyArrowPatch((x + w + 0.03, y + h / 2),
                                          (x + w + 0.22, y + h / 2),
-                                         arrowstyle="-|>", mutation_scale=11,
-                                         color="#555555", lw=1.1))
+                                         arrowstyle="-|>", mutation_scale=16,
+                                         color="#555555", lw=1.4))
         x += w + 0.25
 
     # 泳道 1：保存的激活量：前向线性升到峰，反向线性降回 0
@@ -263,7 +273,7 @@ def fig_one_iteration():
                     color=C["green"], alpha=0.18)
     text(ax, (xf1 + xs1) / 2, y1 + 0.98, "逐层堆高", ha="center",
          va="bottom", fontsize=8.5, color=C["green"])
-    text(ax, (xs1 + xb2) / 2, y1 + 0.62, "逐层释放", ha="center",
+    text(ax, xb2 + 0.15, y1 + 0.5, "逐层释放", ha="left",
          va="center", fontsize=8.5, color=C["green"])
 
     # 泳道 2：梯度量：反向逐步升到满，step 后清零
@@ -274,14 +284,12 @@ def fig_one_iteration():
     ax.fill_between([xb1, xb2], y2, [y2, y2 + 0.8], color=C["purple"],
                     alpha=0.18)
     ax.plot([xb1, xb2], [y2, y2 + 0.8], color=C["purple"], lw=1.5)
-    ax.fill_between([xb2, xo2], y2 + 0.8, [y2 + 0.8, y2 + 0.8],
-                    color="#ffffff", alpha=0)
     ax.plot([xb2, xz1], [y2 + 0.8, y2 + 0.8], color=C["purple"], lw=1.5)
-    ax.plot([xz1], [y2 + 0.8], marker="v", color=C["purple"], ms=7)
-    ax.plot([xz1 + 0.05, xz2], [y2, y2], color=C["purple"], lw=1.5)
+    ax.plot([xz1, xz1], [y2 + 0.8, y2], color=C["purple"], lw=1.5)
+    ax.plot([xz1, xz2], [y2, y2], color=C["purple"], lw=1.5)
     text(ax, (xb1 + xb2) / 2, y2 + 0.9, "逐层到齐", ha="center",
          va="bottom", fontsize=8.5, color=C["purple"])
-    text(ax, (xz1 + xz2) / 2 + 0.4, y2 + 0.5, "清零", ha="center",
+    text(ax, xz2 + 0.15, y2 + 0.4, "清零", ha="left",
          va="center", fontsize=8.5, color=C["purple"])
 
     text(ax, 6.0, 0.35,
@@ -307,39 +315,89 @@ def fig_checkpointing():
 
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
     ax.set_xlim(0, 12); ax.set_ylim(0, 7.6); ax.axis("off")
-    ax.set_title("激活重算（checkpointing）：每 4 层只存一个输入，反向先重算")
+    ax.set_title("激活重算（checkpointing）：每 4 层只存一个输入，反向先重算",
+                 fontweight=600, color="#111111")
 
-    lw, gap = 1.18, 0.12
-    x0 = 0.5
-    ch, bh = 0.95, 0.68
-    rows = [("全存", 4.9, f"保存 {t1/1024/1024:.1f} MB，"
-                     f"峰值 {p1/1024/1024:.1f} MB"),
-            ("每 4 层 ckpt", 2.45,
-             f"保存 {t2/1024/1024:.1f} MB（{t2/t1:.0%}），"
-             f"每块多算一次前向")]
-    for row, (name, y, num) in enumerate(rows):
-        text(ax, 0.5, y + ch + 0.32, name, ha="left", va="center", fontsize=10)
-        text(ax, 4.0, y + ch + 0.32, num, ha="left", va="center",
-             fontsize=9.5)
-        for i in range(8):
-            x = x0 + i * (lw + gap)
-            if row == 0:
-                box(ax, x, y, lw, ch, f"L{i + 1}\n激活", fc="#fae6d6",
-                    ec=C["orange"], fs=8.5)
+    # 每个方案的格子序列：(层号, 阶段) —— 时间是横轴
+    cw_, cgap = 0.34, 0.02
+    chh = 0.62
+    x0 = 1.85
+
+    def lane(y, cells):
+        x = x0
+        for ln, phase in cells:
+            if phase == "fwd":
+                fc, ec, hatch = ("#fae6d6" if ln in (1, 5) else "#f5f5f5",
+                                 C["orange"] if ln in (1, 5) else "#aaaaaa",
+                                 None if ln in (1, 5) else None)
+            elif phase == "re":
+                fc, ec, hatch = "#f5f5f5", "#aaaaaa", "///"
             else:
-                inp = (i % 4 == 0)
-                p = box(ax, x, y, lw, ch, f"L{i + 1}" + ("\n存输入" if inp
-                                                          else "\n重算"),
-                        fc="#fae6d6" if inp else "#f5f5f5",
-                        ec=C["orange"] if inp else "#aaaaaa", fs=8.5)
-                if not inp:
-                    p.set_hatch("///")
-            box(ax, x, y - bh - 0.18, lw, bh, "反向", fc="#dce9f7",
-                ec=C["blue"], fs=8.5)
+                fc, ec, hatch = "#dce9f7", C["blue"], None
+            p = box(ax, x, y, cw_, chh, "", fc=fc, ec=ec, fs=7.5)
+            ax.text(x + cw_ / 2, y + chh / 2, str(ln), ha="center",
+                    va="center", fontsize=7.5)
+            if hatch:
+                p.set_hatch(hatch)
+            x += cw_ + cgap
+        return x
 
-    text(ax, 6.0, 0.95,
-         "灰斜线 = 不保存、反向走到时先重算一次前向；"
-         "每 4 层一块 = 全量重计算的 1/2 档（8 层 2 块）",
+    def seg_label(y, x_from, x_to, s, color):
+        text(ax, (x_from + x_to) / 2, y, s, ha="center", va="center",
+             fontsize=8, color=color)
+
+    # ---- 全存 ----
+    y1 = 4.35
+    text(ax, 0.15, y1 + chh / 2, "全存", ha="left", va="center",
+         fontsize=10)
+    cells1 = [(i + 1, "fwd") for i in range(8)] + \
+             [(8 - i, "bwd") for i in range(8)]
+    xe = lane(y1, cells1)
+    seg_label(y1 + chh + 0.5, x0, x0 + 8 * (cw_ + cgap), "前向 L1→L8",
+              C["orange"])
+    seg_label(y1 + chh + 0.5, x0 + 8 * (cw_ + cgap),
+              x0 + 16 * (cw_ + cgap), "反 L8→L1", C["blue"])
+
+    # ---- 每 4 层 ckpt ----
+    y2 = 2.2
+    text(ax, 0.15, y2 + chh / 2, "ckpt", ha="left", va="center",
+         fontsize=9.5)
+    cells2 = ([(i + 1, "fwd") for i in range(8)] +
+              [(i + 5, "re") for i in range(4)] +
+              [(8 - i, "bwd") for i in range(4)] +
+              [(i + 1, "re") for i in range(4)] +
+              [(4 - i, "bwd") for i in range(4)])
+    lane(y2, cells2)
+    u = cw_ + cgap
+    seg_label(y2 + chh + 0.5, x0, x0 + 8 * u, "前向 L1→L8",
+              C["orange"])
+    seg_label(y2 + chh + 0.5, x0 + 8 * u, x0 + 12 * u, "重 L5-8", "#888888")
+    seg_label(y2 + chh + 0.5, x0 + 12 * u, x0 + 16 * u, "反 L8-5",
+              C["blue"])
+    seg_label(y2 + chh + 0.5, x0 + 16 * u, x0 + 20 * u, "重 L1-4", "#888888")
+    seg_label(y2 + chh + 0.5, x0 + 20 * u, x0 + 24 * u, "反 L4-1",
+              C["blue"])
+
+    # ---- 右列：实测保存量的比例条 ----
+    bx, bw_max = 10.65, 1.2
+    mb1, mb2 = t1 / 1024 / 1024, t2 / 1024 / 1024
+    ax.add_patch(Rectangle((bx, y1 + 0.12), bw_max, 0.38,
+                           facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
+    text(ax, bx + bw_max / 2, y1 + 0.31, f"{mb1:.1f}MB", ha="center",
+         va="center", fontsize=8.5)
+    ax.add_patch(Rectangle((bx, y2 + 0.12), bw_max * mb2 / mb1, 0.38,
+                           facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
+    text(ax, bx + bw_max * mb2 / mb1 + 0.28, y2 + 0.31,
+         f"{mb2:.1f}MB", ha="left", va="center", fontsize=8.5)
+    text(ax, bx, y1 + chh + 0.5, "实测保存", ha="left", va="center",
+         fontsize=8.5, color="#555555")
+
+    text(ax, 6.0, 1.05,
+         "灰斜线 = 不保存、反向走到时先重算；8 层各被重算恰好一次",
+         ha="center", va="center", fontsize=9.5)
+    text(ax, 6.0, 0.6,
+         "= 一次额外前向（≈ +33% step FLOPs，与全量重算同量）；"
+         "分块大小只改变存什么",
          ha="center", va="center", fontsize=9.5)
     save(fig, "backprop-checkpointing")
 
@@ -356,18 +414,20 @@ def fig_one_layer():
 
     fig, ax = plt.subplots(figsize=(7.6, 3.4))
     ax.set_xlim(0, 12); ax.set_ylim(0, 5.6); ax.axis("off")
-    ax.set_title("一层 = 线性 + 激活：f 作用在 z 上，不直接作用在 x 上")
+    ax.set_title("一层 = 线性 + 激活：f 作用在 z 上，不直接作用在 x 上",
+                 fontweight=600, color="#111111")
 
     boxes = [
-        ("x", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.5),
-        ("z = Wx + b", "线性", "W = [[1, -1], [0.5, 0.5]]\nb = (0, -1)",
-         "#f5f8fc", "#555555", 2.9),
-        ("z", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.5),
-        ("f", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.6),
-        ("a", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.6),
+        ("x", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.45),
+        ("z = Wx + b", "线性", "W=[[1,-1],[0.5,0.5]]\nb = (0, -1)",
+         "#f5f8fc", "#555555", 2.7),
+        ("z", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.45),
+        ("f", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
+        ("a", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.5),
+        ("下一层", "它的 x", "", "#f5f5f5", "#888888", 1.35),
     ]
-    h, y, gap = 1.62, 2.7, 0.4
-    x = 0.35
+    h, y, gap = 1.62, 2.7, 0.3
+    x = 0.15
     for i, (name, sub, val, fc, ec, w) in enumerate(boxes):
         p = box(ax, x, y, w, h, "", fc=fc, ec=ec, lw=1.0)
         box_title(ax, x + w / 2, y + h - 0.34, name, p, color=ec)
@@ -381,13 +441,11 @@ def fig_one_layer():
                                          arrowstyle="-|>", mutation_scale=12,
                                          color="#555555", lw=1.2))
         x += w + gap
-    text(ax, 6.0, 1.7, "→ 下一层（下一层把 a 当它的 x）", ha="center",
-         va="center", fontsize=9.5)
-    text(ax, 6.0, 1.15,
+    text(ax, 6.0, 1.55,
          "z = (-1, 0.5)：线性这一步的输出还带着负数；"
          "ReLU 把它压成 a = (0, 0.5)",
          ha="center", va="center", fontsize=9.5)
-    text(ax, 6.0, 0.62,
+    text(ax, 6.0, 1.05,
          "术语对照：f 是「激活函数」（第①义），a 是「激活值」（第②义）；"
          "显存里的「激活」是第③义，见 01 篇的三个意思图",
          ha="center", va="center", fontsize=9)

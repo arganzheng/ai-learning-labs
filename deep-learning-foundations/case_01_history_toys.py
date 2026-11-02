@@ -31,13 +31,14 @@ lst_plot.OUT = BLOG_IMG
 plt.rcParams["axes.unicode_minus"] = False
 
 X = np.array([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])
-LABELS = {"AND": np.array([0, 0, 0, 1]),
-          "OR": np.array([0, 1, 1, 1]),
-          "XOR": np.array([0, 1, 1, 0])}
+LABELS = {"AND": np.array([-1, -1, -1, 1]),
+          "OR": np.array([-1, 1, 1, 1]),
+          "XOR": np.array([-1, 1, 1, -1])}
 
 
 def perceptron(name, epochs=100, lr=1.0):
-    """逐点更新的感知机规则；返回 (w, b, 首次零误分 epoch 或 None, 各 epoch 误分数)。"""
+    """Rosenblatt ±1 写法：y(w·x+b) ≤ 0 时 w += yx, b += y；
+    返回 (w, b, 首次零误分 epoch 或 None, 各 epoch 误分数)。"""
     y = LABELS[name]
     w = np.zeros(2)
     b = 0.0
@@ -46,11 +47,10 @@ def perceptron(name, epochs=100, lr=1.0):
     for ep in range(epochs):
         n_err = 0
         for xi, yi in zip(X, y):
-            yhat = 1 if w @ xi + b > 0 else 0
-            if yhat != yi:
+            if yi * (w @ xi + b) <= 0:
                 n_err += 1
-                w = w + lr * (yi - yhat) * xi
-                b = b + lr * (yi - yhat)
+                w = w + lr * yi * xi
+                b = b + lr * yi
         mistakes.append(n_err)
         if n_err == 0 and first_zero is None:
             first_zero = ep + 1
@@ -70,7 +70,7 @@ def hidden_space(name):
 
 
 def cmd_perceptron_xor():
-    print("== 感知机学习规则：w+= (y-ŷ)x, b+= (y-ŷ)，lr=1、固定顺序 ==")
+    print("== 感知机学习规则：y(w·x+b)≤0 时 w+=y·x, b+=y，lr=1、固定顺序 ==")
     for name in ("AND", "OR", "XOR"):
         w, b, first, mistakes = perceptron(name)
         if first:
@@ -100,9 +100,25 @@ def _panel(ax, title):
 def _points(ax, name):
     y = LABELS[name]
     for xi, yi in zip(X, y):
-        ax.plot(xi[0], xi[1], marker="o" if yi == 0 else "s", ms=6,
-                mfc="#eef4fb" if yi == 0 else "#fae6d6",
-                mec=C["blue"] if yi == 0 else C["orange"], mew=1.4)
+        ax.plot(xi[0], xi[1], marker="o" if yi < 0 else "s", ms=6,
+                mfc="#eef4fb" if yi < 0 else "#fae6d6",
+                mec=C["blue"] if yi < 0 else C["orange"], mew=1.4)
+
+
+def _coef(v, sym, first=False):
+    """3x_1 / +2x_2 / -x_2 的简写：系数 1 省略、first 处不写 +。"""
+    if v == 0:
+        return ""
+    s = "" if first else ("+" if v > 0 else "-")
+    if first and v < 0:
+        s = "-"
+    a = abs(v)
+    return s + (f"{a:g}" if a != 1 else "") + sym
+
+
+def _eq(w, b):
+    return "$" + _coef(w[0], "x_1", first=True) + _coef(w[1], "x_2") \
+        + (f"{b:+g}" if b != 0 else "") + "=0$"
 
 
 def _line(ax, w, b):
@@ -136,9 +152,17 @@ def figure_xor():
         _panel(axes[k], f"{name}：第 {first} 轮零误分")
         _points(axes[k], name)
         _line(axes[k], w, b)
-        axes[k].text(.5, -.10, rf"${w[0]:g}x_1{w[1]:+g}x_2{b:+g}=0$",
+        axes[k].text(.04 if name == "AND" else .42, .50 if name == "AND" else .93, _eq(w, b),
                      transform=axes[k].transAxes, fontsize=7.5,
-                     ha="center", va="top", color="#555555")
+                     ha="left", va="center", color="#555555")
+    handles = [Line2D([], [], marker="o", ls="none", ms=6,
+                      mfc="#eef4fb", mec=C["blue"], mew=1.4),
+               Line2D([], [], marker="s", ls="none", ms=6,
+                      mfc="#fae6d6", mec=C["orange"], mew=1.4)]
+    fig.legend(handles, ["输出 0", "输出 1"], loc="upper right",
+               bbox_to_anchor=(.995, 1.0), fontsize=7.5, frameon=False,
+               ncol=2, handlelength=1.2, columnspacing=1.0,
+               handletextpad=.4)
     _panel(axes[2], "XOR：不存在一条直线")
     _points(axes[2], "XOR")
     axes[2].plot([-.1, 1.1], [1.2, 0.], color="#c05050", lw=1.2,

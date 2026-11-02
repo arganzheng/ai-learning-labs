@@ -60,16 +60,70 @@ def assert_line_clear(ax, start, end):
             f"line crosses box: {start} to {end}"
 
 
+_SEGMENTS = []          # (ax, a, b) — arrow/dashed_line 画出的全部线段
+
+
 def dashed_line(ax, start, end, color=C["orange"], lw=.9):
     assert_line_clear(ax, start, end)
+    _SEGMENTS.append((ax, start, end))
     ax.plot([start[0], end[0]], [start[1], end[1]], color=color, lw=lw, ls="--")
 
 
 def arrow(ax, start, end, color="#555555", lw=1.2, style="-|>"):
     assert_line_clear(ax, start, end)
+    _SEGMENTS.append((ax, start, end))
     ax.add_patch(FancyArrowPatch(start, end, arrowstyle=style,
                                  mutation_scale=12, color=color, lw=lw,
                                  shrinkA=1, shrinkB=1))
+
+
+def check_text_lines(fig):
+    """文字框与已登记线段相交 = 失败。在 collide 的盒内检查之外补一层。"""
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    errs = []
+    for t, _, _ in lst_plot._TRACKED:
+        if t.get_figure() is not fig or not t.get_text().strip():
+            continue
+        e = t.get_window_extent(renderer=ren)
+        for ax, a, b in _SEGMENTS:
+            if ax.figure is not fig:
+                continue
+            pa, pb = ax.transData.transform(a), ax.transData.transform(b)
+            if _segment_hits_rect(pa, pb, (e.x0 + 1, e.y0 + 1, e.x1 - 1, e.y1 - 1)):
+                errs.append(f"线段穿过文字 {t.get_text()!r}：{a} → {b}")
+    if errs:
+        raise AssertionError(f"{len(errs)} 处文字-线段相交：\n" + "\n".join(errs))
+
+
+def finish(fig, name):
+    check_text_lines(fig)
+    save(fig, name)
+
+
+def grid(ax, x, y, vals, cw=.5, ch=.5, fs=7.5, fc="#dce9f7", ec="#7a7a7a",
+         zero_grey=True):
+    """数字矩阵格子；y 为顶边，返回底边 y。"""
+    for r, row in enumerate(vals):
+        for c, v in enumerate(row):
+            grey = zero_grey and v == 0
+            ax.add_patch(Rectangle((x + c * cw, y - r * ch - ch), cw - .02,
+                                   ch - .02, facecolor="#ececec" if grey else fc,
+                                   edgecolor=ec, lw=.5))
+            if not grey:
+                ax.text(x + c * cw + (cw - .02) / 2, y - r * ch - ch / 2,
+                        f"{v:g}", ha="center", va="center", fontsize=fs)
+    return y - len(vals) * ch
+
+
+def cell(ax, x, y, w, h, main, sub="", fc="#f5f8fc", ec="#777777", fs=9):
+    """带数字的小格：主值 + 可选小字（未登记，不参与盒内检查）。"""
+    ax.add_patch(Rectangle((x, y), w, h, facecolor=fc, edgecolor=ec, lw=.8))
+    ax.text(x + w / 2, y + h * .6 if sub else y + h / 2, main, ha="center",
+            va="center", fontsize=fs)
+    if sub:
+        ax.text(x + w / 2, y + h * .22, sub, ha="center", va="center",
+                fontsize=fs - 1.5, color=C["orange"])
 
 
 def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
@@ -160,7 +214,7 @@ def toy_softmax():
 
 
 def mini_values():
-    x=np.array([.6,-1.2]); W1=np.array([[.5,-.3],[.8,.4]]); b1=np.array([1.0,1.0])
+    x=np.array([.6,-1.2]); W1=np.array([[.5,-.3],[.8,.4]]); b1=np.array([1.0,0.0])
     W2=np.array([[.7,-.5],[.2,.6]]); b2=np.array([.05,-.1]); target=0
     h=x@W1+b1; a=np.maximum(h,0); z=a@W2+b2
     p=np.exp(z-z.max()); p/=p.sum(); loss=-np.log(p[target])
@@ -169,13 +223,8 @@ def mini_values():
     return locals()
 
 
-def toy_mini():
+def mini_rel_err():
     d=mini_values()
-    for key in ("x","W1","b1","h","a","W2","b2","z","p"):
-        print(f"{key}={np.array2string(d[key],precision=6)}")
-    print(f"target={d['target']}; loss={d['loss']:.9f}")
-    for key in ("gz","dw2","db2","ga","gh","dw1","db1"):
-        print(f"{key}={np.array2string(d[key],precision=6)}")
     def loss_for(w1,w2):
         h=d["x"]@w1+d["b1"]; a=np.maximum(h,0); z=a@w2+d["b2"]
         p=np.exp(z-z.max()); p/=p.sum()
@@ -186,7 +235,17 @@ def toy_mini():
         for ix in np.ndindex(a.shape):
             old=a[ix]; a[ix]=old+eps; lp=loss_for(d["W1"],d["W2"]); a[ix]=old-eps; lm=loss_for(d["W1"],d["W2"]); a[ix]=old
             num=(lp-lm)/(2*eps); errs.append(abs(num-g[ix])/(abs(num)+abs(g[ix])+1e-15))
-    print(f"中心差分 eps=1e-6：dW1、dW2 最大相对误差={max(errs):.3e}")
+    return max(errs)
+
+
+def toy_mini():
+    d=mini_values()
+    for key in ("x","W1","b1","h","a","W2","b2","z","p"):
+        print(f"{key}={np.array2string(d[key],precision=6)}")
+    print(f"target={d['target']}; loss={d['loss']:.9f}")
+    for key in ("gz","dw2","db2","ga","gh","dw1","db1"):
+        print(f"{key}={np.array2string(d[key],precision=6)}")
+    print(f"中心差分 eps=1e-6：dW1、dW2 最大相对误差={mini_rel_err():.3e}")
 
 
 def toy_eps():
@@ -216,6 +275,8 @@ def graph_nodes():
     x=torch.tensor([[.2,-.4,.7]])
     y=torch.tensor([1])
     loss=F.cross_entropy(model(x),y)
+    pname={p.data_ptr():f"层{i//2+1} {'W' if n.endswith('weight') else 'b'}"
+           for i,(n,p) in enumerate(model.named_parameters())}
     root=loss.grad_fn
     nodes=[]; index={}; q=deque([root])
     while q:
@@ -228,185 +289,291 @@ def graph_nodes():
     for node in nodes:
         for nxt,_ in node.next_functions:
             if nxt is not None: edges.append((index[node],index[nxt]))
-    return loss.item(),[node.name() for node in nodes],edges
+    leaves=[pname.get(getattr(n,'variable',None).data_ptr()
+                      if getattr(n,'variable',None) is not None else None)
+            for n in nodes]
+    return loss.item(),[node.name() for node in nodes],edges,leaves
 
 
 def toy_graph():
-    loss,order,edges=graph_nodes()
+    loss,order,edges,leaves=graph_nodes()
     print(f"loss={loss:.9f}; BFS 遍历 loss.grad_fn.next_functions：")
-    for i,name in enumerate(order): print(f"{i:02d} {name}")
+    for i,name in enumerate(order):
+        print(f"{i:02d} {name}"+(f"   <- {leaves[i]}" if leaves[i] else ""))
     print("edges="+", ".join(f"{a}->{b}" for a,b in edges))
     print(f"unique autograd nodes={len(order)}")
 
 
 def figure_overview():
-    fig,ax=base_fig("反向传播做什么：前向算 loss，反向一次得到所有参数梯度",7.6,3.3,(0,12),(0,5.3))
-    labels=[("x","输入"),("H","Linear"),("A","ReLU"),("Z","Linear"),("L","loss")]
-    xs=[.65,3.0,5.35,7.7,10.05]; y=3.0
-    for (name,sub),x in zip(labels,xs):
-        p=box(ax,x,y,1.35,1.0,"",fc="#dce9f7",ec=C["blue"])
-        box_title(ax,x+.675,y+.68,name,p,color="#111111")
-        text(ax,x+.675,y+.25,sub,in_box=p,ha="center",va="center",fontsize=8.5)
-    for i in range(4): arrow(ax,(xs[i]+1.4,y+.5),(xs[i+1]-.08,y+.5),color=C["blue"])
-    text(ax,6,2.25,"前向：逐层计算",ha="center",va="center",fontsize=10,color=C["blue"])
-    gx=[("dW1","对 W1 的导数"),("dW2","对 W2 的导数")]
-    for x,(name,sub) in zip((3.0,7.7),gx):
-        p=box(ax,x,.45,1.8,.9,"",fc="#fff3e0",ec=C["orange"])
-        box_title(ax,x+.9,.98,name,p,color="#111111")
-        text(ax,x+.9,.7,sub,in_box=p,ha="center",va="center",fontsize=7.5)
-    arrow(ax,(10.72,2.95),(8.65,1.45),color=C["orange"])
-    arrow(ax,(10.65,2.9),(4.4,1.45),color=C["orange"])
-    text(ax,6,.12,"反向：沿计算图把 loss 对参数的导数送回每一层",ha="center",va="center",fontsize=9.5)
-    save(fig,"backprop-overview")
+    fig,ax=base_fig("前向算 loss，反向沿原路把梯度送回每个参数",7.6,4.1,(0,12),(0.4,7.0))
+    xs=[.35,2.55,4.75,6.95,9.15]; y=4.7; w=1.6
+    fw=[("X","输入"),("H","Linear"),("A","ReLU"),("Z","Linear"),("L","loss")]
+    for x,(a,b) in zip(xs,fw):
+        p=box(ax,x,y,w,1.0,"",fc="#dce9f7",ec=C["blue"])
+        box_title(ax,x+w/2,y+.68,a,p); text(ax,x+w/2,y+.27,b,in_box=p,ha="center",va="center",fontsize=8.5)
+    for i in range(4): arrow(ax,(xs[i]+w+.05,y+.5),(xs[i+1]-.08,y+.5),color=C["blue"])
+    text(ax,.4,6.15,"前向：逐层计算",ha="left",va="center",fontsize=9.5,color=C["blue"])
+    for x,lab in ((2.75,"W1 参数"),(7.15,"W2 参数")):
+        p=box(ax,x,6.0,1.2,.65,"",fc="#f0f0f0",ec="#888888")
+        text(ax,x+.6,6.32,lab,in_box=p,ha="center",va="center",fontsize=8)
+        arrow(ax,(x+.6,5.97),(x+.6,5.75),color="#888888",lw=.8)
+    band=3.55
+    text(ax,10.85,band,"反向：逐节点回走",ha="left",va="center",fontsize=9.5,color=C["orange"])
+    cxs=[x+w/2 for x in xs]
+    for i in (4,3,2,1):
+        arrow(ax,(cxs[i],y-.05),(cxs[i],band+.05),color=C["orange"],lw=.9)
+        arrow(ax,(cxs[i]-.15,band),(cxs[i-1]+.15,band),color=C["orange"])
+    labs=["G_X（不算）","×mask = G_H","×W2^T = G_A","G_Z=(P-Y)/m"]
+    for i,(a,b) in enumerate(((0,1),(1,2),(2,3),(3,4))):
+        mid=(cxs[a]+cxs[b])/2
+        text(ax,mid,band-.45,labs[i],ha="center",va="center",fontsize=7.5,color=C["orange"])
+    for cx,lab in ((cxs[1],"dW1 = X^T G_H"),(cxs[3],"dW2 = A^T G_Z")):
+        p=box(ax,cx-1.3,1.55,2.6,.85,"",fc="#fff3e0",ec=C["orange"])
+        box_title(ax,cx,1.98,lab,p,color="#111111")
+        arrow(ax,(cx,band-.05),(cx,2.45),color=C["orange"])
+    finish(fig,"backprop-overview")
 
 
 def figure_scalar():
-    fig,ax=base_fig("一个标量：每条边传回上游梯度乘局部导数",7.6,3.6,(0,12),(0,6))
-    names=[("x","2"),("z=w*x+b","5"),("e=z-y","1"),("L=e^2","1")]
-    xs=[.5,3.3,6.2,9.1]; y=3.4
-    for i,((n,v),x) in enumerate(zip(names,xs)):
-        node(ax,x,y,n,v,("dL/dx=6" if i==0 else "dL/dz=2" if i==1 else "dL/de=2" if i==2 else ""),w=2.0,h=1.55)
-    local=["w=3","1","2e=2"]
-    for i,l in enumerate(local):
-        arrow(ax,(xs[i]+2.05,y+.75),(xs[i+1]-.05,y+.75),color=C["blue"])
-        text(ax,(xs[i]+xs[i+1]+2)/2,y+1.9,l,ha="center",va="center",fontsize=8.5,color=C["green"])
-    text(ax,6,1.35,"x=2, w=3, b=-1, y=4；绿色=前向值，橙色=反向梯度。",ha="center",va="center",fontsize=9)
-    text(ax,6,.85,"参数与输入的梯度同样存在：dL/dw=4, dL/db=2, dL/dx=6；w+0.001 时 L=1.004004，有限差分验证 dL/dw≈4。",ha="center",va="center",fontsize=9)
-    save(fig,"backprop-scalar-graph")
+    fig,ax=base_fig("标量计算图：每条边反向下传「上游梯度 × 局部导数」",7.6,3.8,(0,12),(0.9,6.6))
+    top=4.9
+    node(ax,.7,top,"x","2",w=1.4,h=1.1)
+    node(ax,3.7,top,"z=w*x+b","5",w=2.4,h=1.1)
+    node(ax,7.1,top,"e=z-y","1",w=2.0,h=1.1)
+    node(ax,10.1,top,"L=e^2","1",w=1.5,h=1.1)
+    node(ax,2.6,1.3,"w","3",w=1.5,h=1.05)
+    node(ax,5.1,1.3,"b","-1",w=1.5,h=1.05)
+    node(ax,8.2,1.3,"y","4",w=1.5,h=1.05)
+    arrow(ax,(2.15,5.45),(3.65,5.45),color=C["blue"])
+    arrow(ax,(6.15,5.45),(7.05,5.45),color=C["blue"])
+    arrow(ax,(9.15,5.45),(10.05,5.45),color=C["blue"])
+    arrow(ax,(3.35,2.4),(4.5,4.85),color=C["blue"])
+    arrow(ax,(5.85,2.4),(5.3,4.85),color=C["blue"])
+    arrow(ax,(8.95,2.4),(8.35,4.85),color=C["blue"])
+    arrow(ax,(3.6,5.1),(2.2,5.1),color=C["orange"],lw=.9)
+    arrow(ax,(7.0,5.1),(6.2,5.1),color=C["orange"],lw=.9)
+    arrow(ax,(10.0,5.1),(9.2,5.1),color=C["orange"],lw=.9)
+    arrow(ax,(4.55,4.8),(3.5,2.45),color=C["orange"],lw=.9)
+    arrow(ax,(5.15,4.8),(5.7,2.45),color=C["orange"],lw=.9)
+    arrow(ax,(8.45,4.8),(9.05,2.45),color=C["orange"],lw=.9)
+    lab=[((2.9,4.5),"×w=3\ndL/dx=6"),((6.6,4.5),"×1\ndL/dz=2"),
+         ((9.6,4.5),"×2e=2\ndL/de=2"),((2.5,3.55),"×x=2\ndL/dw=4"),
+         ((6.2,3.55),"×1\ndL/db=2"),((9.35,3.55),"×-1\ndL/dy=-2")]
+    for (x,y),s in lab:
+        ha="center" if y>4 else ("right" if x<4 else "left")
+        text(ax,x,y,s,ha=ha,va="center",fontsize=7.5,color=C["orange"])
+    finish(fig,"backprop-scalar-graph")
 
 
 def figure_gate():
-    fig,ax=base_fig("反向节点只做一件事：上游梯度乘局部导数",7.6,3.0,(0,12),(0,5))
-    p=box(ax,4.2,2.05,3.6,1.25,"",fc="#f5f8fc",ec=C["blue"])
-    box_title(ax,6,2.92,"一个计算节点",p,color="#111111")
-    text(ax,6,2.52,"局部导数 f'(x)=3",in_box=p,ha="center",va="center",fontsize=9)
-    arrow(ax,(1.5,2.65),(4.1,2.65),color=C["orange"]); text(ax,2.8,2.0,"上游梯度 2",ha="center",fontsize=9)
-    arrow(ax,(7.9,2.65),(10.5,2.65),color=C["orange"]); text(ax,9.2,2.0,"下游梯度 6",ha="center",fontsize=9)
-    text(ax,6,.9,"例：2+3，上游 4，输出梯度 (4,4)；2×3，上游 4，输出 (12,8)；max(2,3)，输出 (0,4)。",ha="center",va="center",fontsize=8.5)
-    text(ax,6,.48,"加法原样分发；乘法乘另一个输入；max / ReLU 只送到被选中的一路。",ha="center",va="center",fontsize=8.5)
-    save(fig,"backprop-local-vjp")
+    fig,ax=base_fig("反向节点只做一件事：上游梯度 × 局部导数",7.6,3.9,(0,12),(0.8,6.7))
+    p=box(ax,3.5,5.3,5.0,1.0,"",fc="#f5f8fc",ec=C["blue"])
+    text(ax,6.0,5.8,"下游梯度 = 上游梯度 g × 局部导数 f'",in_box=p,ha="center",va="center",fontsize=9.5)
+    arrow(ax,(1.6,5.8),(3.45,5.8),color=C["orange"]); text(ax,2.5,5.35,"上游 g",ha="center",fontsize=8.5,color=C["orange"])
+    arrow(ax,(8.55,5.8),(10.4,5.8),color=C["orange"]); text(ax,9.5,5.35,"下游",ha="center",fontsize=8.5,color=C["orange"])
+    gates=[("加法","2","3","5","4","4","原样分发"),
+           ("乘法","2","3","6","12","8","乘另一个输入"),
+           ("max","2","3","3","0","4","只给被选中的一路")]
+    for cx,(op,i1,i2,o,g1,g2,rule) in zip((.3,4.25,8.2),gates):
+        cell(ax,cx,3.15,.85,.72,i1,"g="+g1,fc="#dce9f7",ec=C["blue"])
+        cell(ax,cx,2.15,.85,.72,i2,"g="+g2,fc="#dce9f7",ec=C["blue"])
+        p=box(ax,cx+1.35,2.5,1.15,1.0,"",fc="#f5f8fc",ec="#777777")
+        box_title(ax,cx+1.925,3.1,op,p); text(ax,cx+1.925,2.72,"gate",in_box=p,ha="center",va="center",fontsize=7)
+        cell(ax,cx+2.95,2.65,.85,.75,o)
+        arrow(ax,(cx+.9,3.55),(cx+1.3,3.15),color=C["blue"],lw=.9)
+        arrow(ax,(cx+.9,2.5),(cx+1.3,2.85),color=C["blue"],lw=.9)
+        arrow(ax,(cx+2.55,3.0),(cx+2.9,3.0),color=C["blue"],lw=.9)
+        arrow(ax,(cx+1.3,3.05),(cx+.92,3.45),color=C["orange"],lw=.8)
+        arrow(ax,(cx+1.3,2.72),(cx+.92,2.4),color=C["orange"],lw=.8)
+        arrow(ax,(cx+2.9,2.8),(cx+2.55,2.8),color=C["orange"],lw=.8)
+        text(ax,cx+1.925,1.9,rule,ha="center",va="center",fontsize=8)
+    text(ax,6,1.35,"三条边的上游梯度都是 g=4；局部导数决定它怎么分。",ha="center",fontsize=8.5)
+    finish(fig,"backprop-local-vjp")
 
 
 def figure_fanout():
-    fig,ax=base_fig("一个量走了两条路：两路梯度在 x 处相加",7.6,3.2,(0,12),(0,5))
-    p=box(ax,.6,2.0,1.5,1.0,"",fc="#dce9f7",ec=C["blue"]); box_title(ax,1.35,2.66,"x=2",p)
-    p1=box(ax,4.2,3.25,2.1,.85,"",fc="#f5f8fc",ec="#777777"); box_title(ax,5.25,3.8,"x*y",p1)
-    p2=box(ax,4.2,1.0,2.1,.85,"",fc="#f5f8fc",ec="#777777"); box_title(ax,5.25,1.55,"+x",p2)
-    p3=box(ax,9.3,2.0,1.7,1.0,"",fc="#fff3e0",ec=C["orange"]); box_title(ax,10.15,2.66,"f=8",p3)
-    arrow(ax,(2.15,2.7),(4.1,3.55)); arrow(ax,(2.15,2.3),(4.1,1.45)); arrow(ax,(6.35,3.55),(9.2,2.75)); arrow(ax,(6.35,1.45),(9.2,2.25))
-    text(ax,7.75,3.65,"沿 x*y：贡献 3",ha="center",fontsize=8.5,color=C["orange"])
-    text(ax,7.75,1.25,"沿 +x：贡献 1",ha="center",fontsize=8.5,color=C["orange"])
-    text(ax,6,.35,"df/dx = 3 + 1 = 4",ha="center",fontsize=10,color=C["orange"])
-    save(fig,"backprop-fanout")
+    fig,ax=base_fig("一个量走了两条路：两路梯度在 x 处相加",7.6,3.7,(0,12),(0.4,6.4))
+    node(ax,.5,3.85,"x","2",w=1.3,h=1.05)
+    node(ax,.5,1.3,"y","3",w=1.3,h=1.05)
+    node(ax,3.4,3.8,"x*y","6",w=1.8,h=1.05)
+    node(ax,6.6,2.45,"+","f=8",w=1.6,h=1.05)
+    arrow(ax,(1.85,4.3),(3.35,4.3),color=C["blue"])
+    arrow(ax,(1.85,1.9),(3.35,3.8),color=C["blue"])
+    arrow(ax,(1.15,3.85),(1.15,2.7),color=C["blue"])
+    arrow(ax,(1.15,2.7),(6.5,2.7),color=C["blue"])
+    arrow(ax,(5.25,3.9),(6.55,3.2),color=C["blue"])
+    arrow(ax,(9.3,3.0),(8.35,3.0),color=C["orange"]); text(ax,9.45,3.35,"上游 g=1",ha="left",fontsize=8,color=C["orange"])
+    arrow(ax,(6.5,3.35),(5.35,4.15),color=C["orange"],lw=.9)
+    text(ax,6.4,3.7,"1",ha="center",fontsize=8,color=C["orange"])
+    arrow(ax,(6.5,2.5),(1.45,2.5),color=C["orange"],lw=.9)
+    arrow(ax,(1.25,2.55),(1.25,3.85),color=C["orange"],lw=.9)
+    text(ax,4.0,2.15,"1",ha="center",fontsize=8,color=C["orange"])
+    arrow(ax,(3.3,4.55),(1.9,4.55),color=C["orange"],lw=.9)
+    text(ax,2.6,4.9,"×y=3, g=3",ha="center",fontsize=8,color=C["orange"])
+    arrow(ax,(3.3,3.6),(1.95,1.6),color=C["orange"],lw=.9)
+    text(ax,3.15,2.85,"×x=2, g=2",ha="left",fontsize=8,color=C["orange"])
+    text(ax,0.3,3.45,"+",ha="center",va="center",fontsize=13,color=C["orange"])
+    text(ax,2.0,3.45,"3 + 1 = 4",ha="left",va="center",fontsize=9.5,color=C["orange"])
+    text(ax,6,0.85,"加法分叉两路各得 1；乘法门把 1 乘上对方的值；同一输入的两路梯度相加。",ha="center",fontsize=9)
+    finish(fig,"backprop-fanout")
 
 
 def figure_shapes():
-    fig,ax=base_fig("梯度与被求导的量同形；向量对向量才得到 Jacobian",7.6,3.6,(0,12),(0,6))
-    cards=[(.35,"标量 L 对向量 x","x=(1,2,3)\nL=sum(x_i^2)","dL/dx=(2,4,6)\n形状 3；与 x 同形",C["blue"]),
-           (4.25,"标量 L 对矩阵 W","W=[[1,2],[3,4]]\nL=sum(W_ij^2)","dL/dW=[[2,4],[6,8]]\n2x2；与 W 同形",C["orange"]),
-           (8.15,"向量 y 对向量 x","x 为 3 维\ny 为 2 维","J 为 2x3\n第 i 行是 y_i 的梯度",C["green"])]
-    for x,title,ex,out,c in cards:
-        p=box(ax,x,2.0,3.45,2.55,"",fc="#f7f7f7",ec=c)
-        box_title(ax,x+1.725,4.15,title,p,color="#111111")
-        text(ax,x+1.725,3.55,ex,in_box=p,ha="center",va="center",fontsize=8.7)
-        text(ax,x+1.725,2.62,out,in_box=p,ha="center",va="center",fontsize=8.4,color=c)
-    text(ax,6,.95,"每格 g_ij 表示：W_ij 增加 epsilon，L 约增加 g_ij*epsilon。",ha="center",fontsize=8.5)
-    text(ax,6,.55,"W -= lr*dW 要逐元素对应，所以参数梯度必须和 W 一样大。",ha="center",fontsize=8.5)
-    save(fig,"backprop-gradient-shapes")
+    fig,ax=base_fig("梯度与被求导的量同形；向量对向量才得到 Jacobian",7.6,3.6,(0,12),(0.6,6.9))
+    text(ax,2.2,5.55,"标量 L 对向量 x",ha="center",fontsize=9.5)
+    grid(ax,.6,4.95,[[1,2,3]],cw=.5,zero_grey=False)
+    arrow(ax,(2.25,4.4),(2.75,4.4),color=C["blue"])
+    grid(ax,2.85,4.95,[[2,4,6]],cw=.5,fc="#fae6d6",zero_grey=False)
+    text(ax,2.35,3.45,"L = sum x_i^2\ndL/dx 与 x 同形",ha="center",va="center",fontsize=8)
+    text(ax,5.95,5.55,"标量 L 对矩阵 W",ha="center",fontsize=9.5)
+    grid(ax,4.35,4.95,[[1,2],[3,4]],cw=.5,zero_grey=False)
+    arrow(ax,(5.5,4.4),(6.0,4.4),color=C["blue"])
+    grid(ax,6.1,4.95,[[2,4],[6,8]],cw=.5,fc="#fae6d6",zero_grey=False)
+    text(ax,5.95,3.45,"L = sum W_ij^2\ndW 与 W 同形",ha="center",va="center",fontsize=8)
+    text(ax,9.5,5.55,"向量 y 对向量 x：Jacobian",ha="center",fontsize=9.5)
+    grid(ax,8.1,4.95,[[1,1,0],[0,3,2]],cw=.5,zero_grey=False)
+    text(ax,9.85,4.42,"y1 的梯度",ha="left",va="center",fontsize=7.5)
+    text(ax,9.85,3.92,"y2 的梯度",ha="left",va="center",fontsize=7.5)
+    text(ax,9.6,3.45,"y=(x1+x2, x2*x3)\nx=(1,2,3)，J 为 2×3",ha="center",va="center",fontsize=8)
+    text(ax,6,2.35,"每格 g_ij：W_ij 增 eps，L 约增 g_ij*eps。W-=lr*dW 逐元素对应，",ha="center",fontsize=8.5)
+    text(ax,6,1.9,"所以标量对参数的梯度必须与参数同形；只有向量对向量才产生 Jacobian。",ha="center",fontsize=8.5)
+    finish(fig,"backprop-gradient-shapes")
 
 
 def figure_relu_jacobian():
-    fig,ax=base_fig("ReLU 的 Jacobian 是对角掩码：VJP 等于逐元素乘",7.6,3.1,(0,12),(0,5))
-    text(ax,2.0,3.15,"J = diag(0,1,1)",ha="center",fontsize=11,color=C["blue"])
-    mat=[[0,0,0],[0,1,0],[0,0,1]]
-    for r in range(3):
-        for c in range(3):
-            fc="#eeeeee" if mat[r][c]==0 else "#dce9f7"
-            ax.add_patch(Rectangle((.8+c*.72,2.1-r*.65),.62,.55,facecolor=fc,edgecolor="#999999"))
-            text(ax,1.11+c*.72,2.37-r*.65,str(mat[r][c]),ha="center",va="center",fontsize=9)
-    text(ax,5.2,2.5,"g_y=(0.3, -0.2, 0.5)",ha="center",fontsize=10)
-    arrow(ax,(3.35,2.45),(4.2,2.45))
-    arrow(ax,(6.3,2.45),(7.1,2.45))
-    text(ax,9.1,2.5,"g_x=J^T g_y\n(0, -0.2, 0.5)",ha="center",va="center",fontsize=10,color=C["orange"])
-    text(ax,6,.55,"同一计算可写成：g_x = g_y 逐元素乘 (0,1,1)，不必存完整矩阵。",ha="center",fontsize=9)
-    save(fig,"backprop-relu-jacobian")
+    fig,ax=base_fig("ReLU 的 Jacobian 是对角掩码：VJP 等于逐元素乘",7.6,3.3,(0,12),(0.5,6.6))
+    text(ax,.5,6.0,"x = (-1, 2, 0.5)；mask_i = 1 当 x_i>0，否则 0",ha="left",fontsize=9)
+    text(ax,1.25,5.15,"J",ha="center",fontsize=8.5)
+    grid(ax,.5,4.95,[[0,0,0],[0,1,0],[0,0,1]],cw=.5)
+    text(ax,3.0,5.15,"g_y",ha="center",fontsize=8.5)
+    grid(ax,2.75,4.95,[[.3],[-.2],[.5]],cw=.5,zero_grey=False)
+    text(ax,4.45,5.15,"g_x",ha="center",fontsize=8.5)
+    grid(ax,4.2,4.95,[[0],[-.2],[.5]],cw=.5,fc="#fae6d6",zero_grey=False)
+    text(ax,2.35,4.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,3.85,4.15,"=",ha="center",va="center",fontsize=11)
+    text(ax,5.7,4.15,"g_x = J^T g_y；负元素的梯度被挡住",ha="left",va="center",fontsize=8.5)
+    text(ax,1.25,2.75,"mask",ha="center",fontsize=8.5)
+    grid(ax,.5,2.55,[[0,1,1]],cw=.5,zero_grey=False)
+    text(ax,3.5,2.75,"g_y",ha="center",fontsize=8.5)
+    grid(ax,2.9,2.55,[[.3,-.2,.5]],cw=.5,zero_grey=False)
+    text(ax,5.45,2.75,"g_x",ha="center",fontsize=8.5)
+    grid(ax,4.85,2.55,[[0,-.2,.5]],cw=.5,fc="#fae6d6",zero_grey=False)
+    text(ax,2.2,2.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,4.6,2.15,"=",ha="center",va="center",fontsize=11)
+    text(ax,6.85,2.15,"逐元素乘：同一结果，不建 3×3",ha="left",va="center",fontsize=8.5)
+    finish(fig,"backprop-relu-jacobian")
 
 
 def figure_batched_jacobian():
-    fig,ax=base_fig("batch Linear 的 Jacobian：分块对角，VJP 直接成为矩阵乘",7.6,3.5,(0,12),(0,6))
-    text(ax,2.8,4.8,"m=3 个样本；每个输入、输出 2 维",ha="center",fontsize=9)
-    # 6x6 block grid, two-wide blocks
-    x0,y0,cell=.6,1.15,.38
+    J=np.array([[1.,-1.,0,0,0,0],[2.,.5,0,0,0,0],
+                [0,0,1.,-1.,0,0],[0,0,2.,.5,0,0],
+                [0,0,0,0,1.,-1.],[0,0,0,0,2.,.5]])
+    W=np.array([[1.,2.],[-1.,.5]]); G=np.array([[.2,-.3],[1.,.5],[.7,-.1]])
+    dX=G@W.T
+    assert np.allclose(dX.reshape(-1),J.T@G.reshape(-1))
+    fig,ax=base_fig("batch Linear 的 Jacobian 分块对角：VJP 就是矩阵乘",7.6,4.0,(0,12),(0.5,7.4))
+    text(ax,1.5,5.75,"6×6 Jacobian（toy 实测）",ha="center",fontsize=8.5)
+    cell=.37; x0,y0=.4,5.3
     for r in range(6):
         for c in range(6):
-            block=r//2==c//2
-            fc="#dce9f7" if block else "#eeeeee"
-            ax.add_patch(Rectangle((x0+c*cell,y0+(5-r)*cell),cell-.02,cell-.02,facecolor=fc,edgecolor="white",lw=.4))
-            if block: text(ax,x0+c*cell+(cell-.02)/2,y0+(5-r)*cell+(cell-.02)/2,"Wt",ha="center",va="center",fontsize=5.5)
-    text(ax,2.0,.55,"6x6 Jacobian：对角块 W^T，其余为 0",ha="center",fontsize=8.5)
-    arrow(ax,(3.5,2.3),(4.6,2.3))
-    p=box(ax,4.8,1.7,2.45,1.5,"",fc="#f5f8fc",ec=C["blue"]); box_title(ax,6.025,2.72,"G W^T",p)
-    text(ax,6.025,2.15,"直接做 batched VJP",in_box=p,ha="center",va="center",fontsize=8.5)
-    text(ax,9.4,3.5,"本文第一层 batch 128",ha="center",fontsize=9)
-    vals=[("Jacobian",2.2,"13 GB",C["red"]),("dX",.65,"392 KiB",C["blue"]),("W1",.72,"784 KiB",C["green"])]
-    for i,(lab,width,value,c) in enumerate(vals):
-        yy=2.9-i*.6
-        text(ax,8.4,yy,lab,ha="right",va="center",fontsize=8)
-        ax.add_patch(Rectangle((8.6,yy-.12),width,.22,facecolor=c,edgecolor="none"))
-        text(ax,11.7,yy,value,ha="right",va="center",fontsize=8)
-    text(ax,9.7,.55,"长度按对数缩放：13 GB、392 KiB、784 KiB",ha="center",fontsize=8.5)
-    save(fig,"backprop-no-full-jacobian")
+            v=J[r,c]; grey=v==0
+            ax.add_patch(Rectangle((x0+c*cell,y0-(r+1)*cell),cell-.015,cell-.015,
+                                   facecolor="#ececec" if grey else "#dce9f7",
+                                   edgecolor="#888888",lw=.4))
+            if not grey:
+                ax.text(x0+c*cell+cell/2,y0-(r+.5)*cell,f"{v:g}",ha="center",va="center",fontsize=6)
+    for bx,by in ((x0,y0),(x0+2*cell,y0-2*cell),(x0+4*cell,y0-4*cell)):
+        ax.add_patch(Rectangle((bx,by-2*cell),2*cell,2*cell,fill=False,edgecolor="#111111",lw=1.4))
+    text(ax,1.5,2.75,"对角块都是 W^T，其余全 0\n（样本互不依赖）",ha="center",va="center",fontsize=8)
+    text(ax,5.2,5.15,"G (3×2)",ha="center",fontsize=8)
+    grid(ax,4.7,4.9,G.tolist(),cw=.5,zero_grey=False,fs=7)
+    text(ax,6.65,4.15,"*",ha="center",va="center",fontsize=12)
+    text(ax,7.75,5.15,"W^T",ha="center",fontsize=8)
+    grid(ax,7.35,4.9,W.T.tolist(),cw=.5,zero_grey=False,fs=7)
+    text(ax,8.7,4.15,"=",ha="center",va="center",fontsize=11)
+    text(ax,10.0,5.15,"dX (3×2)",ha="center",fontsize=8)
+    grid(ax,9.4,4.9,dX.tolist(),cw=.5,fc="#fae6d6",zero_grey=False,fs=7)
+    text(ax,7.7,3.1,"乘大矩阵 = 直接 G·W^T，结果一致",ha="center",va="center",fontsize=8)
+    text(ax,4.2,2.0,"本文第一层 batch 128：",ha="left",fontsize=8.5)
+    text(ax,4.2,1.6,"(128*784) × (128*256) × 4B",ha="left",fontsize=8)
+    vals=[("Jacobian",2.3,"13 GB",C["red"]),("dX",.55,"392 KiB",C["blue"]),("W1",.7,"784 KiB",C["green"])]
+    for i,(lab,wdt,value,c) in enumerate(vals):
+        yy=2.15-i*.45
+        text(ax,8.35,yy,lab,ha="right",va="center",fontsize=7.5)
+        ax.add_patch(Rectangle((8.55,yy-.11),wdt,.2,facecolor=c,edgecolor="none"))
+        text(ax,11.9,yy,value,ha="right",va="center",fontsize=7.5)
+    finish(fig,"backprop-no-full-jacobian")
 
 
 def figure_linear_outer():
-    fig,ax=base_fig("Linear 的权重梯度：两个样本外积相加",7.6,3.2,(0,12),(0,5))
-    blocks=[(.55,2.65,"样本 1：x1^T g1","(1,2,-1)^T (.2,-.3)"),
-            (.55,1.0,"样本 2：x2^T g2","(.5,-1,2)^T (1,.5)"),
-            (8.2,1.85,"逐元素相加","dW = X^T G")]
-    for x,y,title,sub in blocks:
-        p=box(ax,x,y,3.0,1.2,"",fc="#f7f7f7",ec=C["blue"] if y>2 else C["green"],lw=1.0)
-        box_title(ax,x+1.5,y+.82,title,p,color="#111111")
-        text(ax,x+1.5,y+.36,sub,in_box=p,ha="center",va="center",fontsize=7.8)
-    arrow(ax,(3.6,3.25),(8.05,2.65),color=C["blue"])
-    arrow(ax,(3.6,1.55),(8.05,2.15),color=C["green"])
-    text(ax,6,.45,"每个样本都用过 W，因此每个样本贡献一份外积；batch 维度沿样本求和。",ha="center",fontsize=8.5)
-    save(fig,"backprop-linear-outer-products")
+    X=np.array([[1.,2.,-1.],[.5,-1.,2.]]); G=np.array([[.2,-.3],[1.,.5]])
+    O1=np.outer(X[0],G[0]); O2=np.outer(X[1],G[1]); dW=X.T@G
+    fig,ax=base_fig("Linear 权重梯度：每个样本贡献一个外积",7.6,3.3,(0,12),(0.8,6.5))
+    text(ax,1.2,5.45,"样本1 外积 x1^T g1",ha="center",fontsize=8)
+    grid(ax,.5,5.0,O1.tolist(),cw=.62,fs=7)
+    text(ax,1.95,4.2,"+",ha="center",va="center",fontsize=12)
+    text(ax,3.2,5.45,"样本2 外积 x2^T g2",ha="center",fontsize=8)
+    grid(ax,2.5,5.0,O2.tolist(),cw=.62,fs=7)
+    text(ax,3.95,4.2,"=",ha="center",va="center",fontsize=11)
+    text(ax,4.95,5.45,"dW",ha="center",fontsize=8)
+    grid(ax,4.35,5.0,dW.tolist(),cw=.62,fc="#fae6d6",fs=7)
+    text(ax,6.3,4.2,"与 W 同形",ha="left",va="center",fontsize=8.5)
+    text(ax,.5,3.1,"矩阵乘 X^T G 一次算出的正是这份和：",ha="left",fontsize=9)
+    text(ax,.5,2.6,"dW[r,j] = sum_i x_i[r]*g_i[j] —— 每个样本 i 的外积取 (r,j) 项相加。",ha="left",fontsize=9)
+    text(ax,.5,2.0,"batch 维求和 = 二.3 的分叉相加：同一 W 被每个样本各用一次。",ha="left",fontsize=9)
+    finish(fig,"backprop-linear-outer-products")
 
 
 def figure_softmax():
     z=np.array([2.,1.,.1]); p=np.exp(z-z.max()); p/=p.sum(); grad=p-np.array([1.,0.,0.])
-    fig,ax=base_fig("softmax + 交叉熵：正确类上推，其余类按概率下压",7.6,3.2,(0,12),(0,5))
+    fig,ax=base_fig("softmax + 交叉熵：正确类上推，其余类按概率下压",7.6,3.0,(0,12),(0.4,4.9))
     xs=[3,6,9]
     for i,x in enumerate(xs):
         h=.5+abs(grad[i])*2.6; y=1.55
         c=C["green"] if i==0 else C["orange"]
         ax.add_patch(Rectangle((x-.52,y),1.04,h,facecolor=c,alpha=.28,edgecolor=c,lw=1.2))
-        text(ax,x,y+h+.28,f"类 {i}",ha="center",fontsize=9)
-        text(ax,x,y+.18,f"p={p[i]:.3f}\ng={grad[i]:+.3f}",ha="center",va="bottom",fontsize=8)
-    text(ax,6,.6,"dL/dz = p - onehot(y)；梯度下降会提高正确类 logit，降低其他类 logit。",ha="center",fontsize=9)
-    save(fig,"backprop-softmax-ce")
+        ax.text(x,y+h+.18,f"z={z[i]:g}",ha="center",va="bottom",fontsize=8)
+        ax.text(x,y+.15,f"p={p[i]:.3f}\ng={grad[i]:+.3f}",ha="center",va="bottom",fontsize=8)
+    text(ax,3,4.35,"正确类",ha="center",fontsize=8.5,color=C["green"])
+    text(ax,6,.85,"dL/dz = p - onehot(y)：正确类得到负梯度上推，其余按概率下压。",ha="center",fontsize=9)
+    finish(fig,"backprop-softmax-ce")
 
 
 def figure_mini():
-    d=mini_values()
-    fig,ax=base_fig("2-2-2 迷你网络：前向值在上，反向梯度在下",7.6,3.4,(0,12),(0,6))
-    labels=[("x",np.array2string(d['x'],precision=1)),("h",np.array2string(d['h'],precision=2)),("a",np.array2string(d['a'],precision=2)),("z",np.array2string(d['z'],precision=2)),("L",f"{d['loss']:.3f}")]
-    xs=[.3,2.7,5.1,7.5,9.9]
-    for i,((name,val),x) in enumerate(zip(labels,xs)):
-        p=box(ax,x,2.7,1.8,1.4,"",fc="#dce9f7",ec=C["blue"]); box_title(ax,x+.9,3.72,name,p)
-        text(ax,x+.9,3.1,val,in_box=p,ha="center",va="center",fontsize=8)
-        if i<4: arrow(ax,(x+1.84,3.4),(xs[i+1]-.05,3.4),color=C["blue"])
-    grads=[("dW1",np.array2string(d['dw1'],precision=2)),("dW2",np.array2string(d['dw2'],precision=2))]
-    for x,(name,val) in zip((2.7,7.5),grads):
-        p=box(ax,x,.5,2.4,1.6,"",fc="#fff3e0",ec=C["orange"]); box_title(ax,x+1.2,1.68,name,p)
-        text(ax,x+1.2,1.02,val,in_box=p,ha="center",va="center",fontsize=6)
-    arrow(ax,(10.75,2.65),(8.75,2.16),color=C["orange"]); arrow(ax,(10.65,2.6),(3.95,2.16),color=C["orange"])
-    text(ax,6,.2,"有限差分逐元素验证 dW1、dW2；最大相对误差由 toy 输出。",ha="center",fontsize=8.5)
-    save(fig,"backprop-mini-network")
+    d=mini_values(); err=mini_rel_err()
+    fig,ax=base_fig("2-2-2 迷你网络：前向值在上，反向梯度沿链逐节点回走",7.6,3.8,(0,12),(0.3,6.3))
+    xs=[.3,2.75,5.2,7.65,10.1]; w=1.8
+    vals=[("x","[ 0.6 -1.2]"),("h","[0.34 -0.66]"),("a","[0.34 0]"),
+          ("z","[0.29 -0.27]"),("L","0.453")]
+    for x,(a,b) in zip(xs,vals):
+        p=box(ax,x,4.5,w,1.05,"",fc="#dce9f7",ec=C["blue"])
+        box_title(ax,x+w/2,5.2,a,p); text(ax,x+w/2,4.78,b,in_box=p,ha="center",va="center",fontsize=7.5)
+    for i in range(4): arrow(ax,(xs[i]+w+.05,5.02),(xs[i+1]-.08,5.02),color=C["blue"])
+    text(ax,4.88,4.05,"ReLU 置 0",ha="center",va="center",fontsize=6.5)
+    bw=1.9
+    grads=[(2.7,"G_H","[-0.44 0]"),(5.15,"G_A","[-0.44 0.15]"),(7.6,"G_Z","[-0.36 0.36]")]
+    for x,a,b in grads:
+        p=box(ax,x,2.6,bw,1.0,"",fc="#fff3e0",ec=C["orange"])
+        box_title(ax,x+bw/2,3.28,a,p); text(ax,x+bw/2,2.86,b,in_box=p,ha="center",va="center",fontsize=7.5)
+    arrow(ax,(8.55,4.45),(8.55,3.65),color=C["orange"])
+    arrow(ax,(6.1,4.45),(6.1,3.65),color=C["orange"])
+    arrow(ax,(3.65,4.45),(3.65,3.65),color=C["orange"])
+    arrow(ax,(7.55,3.1),(7.15,3.1),color=C["orange"])
+    arrow(ax,(5.1,3.1),(4.7,3.1),color=C["orange"])
+    text(ax,10.35,3.4,"G_Z=(P-Y)",ha="left",va="center",fontsize=7.5,color=C["orange"])
+    for x,a,b in ((1.4,"dW1","[[-0.26 0]\n [ 0.52 0]]"),(6.7,"dW2","[[-0.12 0.12]\n [0 0]]")):
+        p=box(ax,x,.7,2.5,1.3,"",fc="#fff3e0",ec=C["orange"])
+        box_title(ax,x+1.25,1.68,a,p); text(ax,x+1.25,1.1,b,in_box=p,ha="center",va="center",fontsize=7.5)
+    arrow(ax,(3.7,2.55),(3.0,2.05),color=C["orange"],lw=.9)
+    arrow(ax,(8.4,2.55),(7.9,2.05),color=C["orange"],lw=.9)
+    text(ax,4.5,.3,f"有限差分最大相对误差 = {err:.1e}",ha="center",fontsize=9)
+    p=box(ax,9.0,.55,2.9,1.45,"",fc="#f5f5f5",ec="#888888")
+    text(ax,10.45,1.28,"参数 W1=[[.5,-.3],[.8,.4]] b1=[1,0]\nW2=[[.7,-.5],[.2,.6]] b2=[.05,-.1]",in_box=p,ha="center",va="center",fontsize=6.5)
+    finish(fig,"backprop-mini-network")
 
 
 def figure_mlp():
-    fig,ax=base_fig("784-256-10：前向、主梯度链、参数梯度分三排",7.6,4.2,(0,12),(0,7))
+    fig,ax=base_fig("784-256-10：前向、主梯度链、参数梯度分三排",7.6,4.2,(0,12),(0.6,7))
     xs=[.45,2.75,5.05,7.35,9.65]
     fw=[("X","[128,784]"),("H","[128,256]"),("A","[128,256]"),("Z","[128,10]"),("L","scalar")]
     for x,(a,b) in zip(xs,fw):
@@ -418,8 +585,8 @@ def figure_mlp():
         p=box(ax,x,4.42,1.55,.52,"",fc="#fae6d6",ec=C["orange"],lw=.8)
         text(ax,x+.775,4.68,label,in_box=p,ha="center",va="center",fontsize=8)
     for x in (.45,2.75,5.05):
-        arrow(ax,(x+.775,5.22),(x+.775,4.96),color=C["orange"],lw=.9,style="-|>")
-    grads=[("G_H","[128,256]"),("G_A","[128,256]"),("G_Z","[128,10]")]
+        arrow(ax,(x+.775,5.22),(x+.775,4.96),color=C["orange"],lw=.9)
+    grads=[("G_H","[128,256]"),("G_A","[128,256]"),("G_Z","(P-Y)/m")]
     gx=[2.3,5.2,8.1]
     for x,(a,b) in zip(gx,grads):
         p=box(ax,x,3.2,1.65,.9,"",fc="#fff3e0",ec=C["orange"]); box_title(ax,x+.825,3.82,a,p)
@@ -428,35 +595,32 @@ def figure_mlp():
     for x,label in ((1.2,"dW1 = X^T G_H"),(7.0,"dW2 = A^T G_Z")):
         p=box(ax,x,1.15,3.0,.85,"",fc="#f6eadf",ec=C["orange"]); box_title(ax,x+1.5,1.58,label,p,color="#111111")
     arrow(ax,(8.85,3.1),(8.55,2.05),color=C["orange"]); arrow(ax,(3.1,3.1),(3.2,2.05),color=C["orange"])
-    # Save-to-consumer elbows route through the open columns, never through gradient boxes.
-    arrow(ax,(1.22,4.40),(.28,4.32),color=C["orange"],lw=.9,style="-|>")
-    dashed_line(ax,(.28,4.32),(.28,1.58))
-    arrow(ax,(.28,1.58),(1.16,1.58),color=C["orange"],lw=.9,style="-|>")
-    arrow(ax,(4.32,4.38),(3.55,4.15),color=C["orange"],lw=.9,style="-|>")
-    arrow(ax,(6.6,4.38),(7.5,4.32),color=C["orange"],lw=.9,style="-|>")
-    dashed_line(ax,(7.5,4.32),(7.5,2.14))
-    arrow(ax,(7.5,2.14),(7.5,2.06),color=C["orange"],lw=.9,style="-|>")
+    dashed_line(ax,(1.2,4.4),(1.2,2.9)); arrow(ax,(1.2,2.9),(2.25,2.9),color=C["orange"],lw=.9)
+    arrow(ax,(2.25,2.9),(2.25,2.05),color=C["orange"],lw=.9)
+    arrow(ax,(3.55,4.4),(3.55,4.15),color=C["orange"],lw=.9)
+    dashed_line(ax,(5.1,4.4),(5.1,2.6)); arrow(ax,(5.1,2.6),(7.5,2.6),color=C["orange"],lw=.9)
+    arrow(ax,(7.5,2.6),(7.5,2.05),color=C["orange"],lw=.9)
     text(ax,10.5,4.7,"橙色虚线：保存边",ha="center",fontsize=7.5,color=C["orange"])
-    text(ax,6,.45,"参数梯度从主链分支；W1、W2 是常驻参数，不计入激活。",ha="center",fontsize=8.5)
-    save(fig,"backprop-mlp-flow")
+    text(ax,6,.75,"参数梯度从主链分支；W1、W2 是常驻参数，不计入激活。",ha="center",fontsize=8.5)
+    finish(fig,"backprop-mlp-flow")
 
 
 def figure_flops():
-    fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,3.1,(0,12),(0,5))
-    items=[(.5,"前向","X[m,k] × W[k,n]","2mkn",C["blue"]),(4.3,"反向 dW","X^T[k,m] × G[m,n]","2mkn",C["orange"]),(8.1,"反向 dX","G[m,n] × W^T[n,k]","2mkn",C["green"])]
+    fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,2.9,(0,12),(0.7,4.8))
+    items=[(.5,"前向","X[m,k] * W[k,n]","2mkn",C["blue"]),(4.3,"反向 dW","X^T[k,m] * G[m,n]","2mkn",C["orange"]),(8.1,"反向 dX","G[m,n] * W^T[n,k]","2mkn",C["green"])]
     for x,title,formula,cost,color in items:
-        p=box(ax,x,1.65,3.25,1.55,"",fc="#f7f7f7",ec=color); box_title(ax,x+1.625,2.75,title,p)
-        text(ax,x+1.625,2.25,formula,in_box=p,ha="center",va="center",fontsize=8)
-        text(ax,x+1.625,1.88,cost,in_box=p,ha="center",va="center",fontsize=8.5,color=color)
-    arrow(ax,(3.82,2.4),(4.25,2.4),color="#777777",lw=1.0)
-    arrow(ax,(7.62,2.4),(8.05,2.4),color="#777777",lw=1.0)
-    text(ax,6,.6,"forward 2mkn；backward 4mkn = 2 × forward。",ha="center",fontsize=9)
-    save(fig,"backprop-linear-flops")
+        p=box(ax,x,1.75,3.25,1.5,"",fc="#f7f7f7",ec=color); box_title(ax,x+1.625,2.82,title,p)
+        text(ax,x+1.625,2.3,formula,in_box=p,ha="center",va="center",fontsize=8)
+        text(ax,x+1.625,1.95,cost,in_box=p,ha="center",va="center",fontsize=8.5,color=color)
+    arrow(ax,(3.82,2.5),(4.25,2.5),color="#777777",lw=1.0)
+    arrow(ax,(7.62,2.5),(8.05,2.5),color="#777777",lw=1.0)
+    text(ax,6,1.05,"前向 2mkn；反向 2+2=4mkn = 2 × 前向。",ha="center",fontsize=9)
+    finish(fig,"backprop-linear-flops")
 
 
 def figure_eps():
     epses,results=toy_eps()
-    fig,ax=plt.subplots(figsize=(7.6,3.8))
+    fig,ax=plt.subplots(figsize=(7.6,3.4))
     ax.set_title("中心差分相对误差：大步长截断误差，小步长舍入误差",fontweight=600,color="#111111")
     ax.loglog(epses,results[np.float32],"o-",label="fp32",color=C["orange"],lw=1.6)
     ax.loglog(epses,results[np.float64],"o-",label="fp64",color=C["blue"],lw=1.6)
@@ -471,21 +635,26 @@ def figure_eps():
 
 
 def figure_autograd():
-    loss,names,edges=graph_nodes()
-    fig,ax=base_fig("Autograd 录下的反向图：从 loss.grad_fn 沿 next_functions 遍历",7.6,4.3,(0,12),(0,7.5))
-    positions=[(5.0,6.45),(5.0,5.45),(5.0,4.45),(1.0,3.45),(5.0,3.45),(9.0,3.45),
-               (5.0,2.45),(9.0,2.45),(3.0,1.45),(7.0,1.45),(7.0,.45)]
+    loss,names,edges,leaves=graph_nodes()
+    fig,ax=base_fig("Autograd 录下的反向图：从 loss.grad_fn 沿 next_functions 遍历",7.6,4.2,(0,12),(0,8.6))
+    positions=[(4.6,8.0),(4.6,6.9),(4.6,5.8),(.9,4.7),(4.6,4.7),(8.3,4.7),
+               (4.6,3.6),(8.3,3.6),(2.7,2.5),(6.6,2.5),(6.6,1.4)]
     assert len(names)==len(positions), f"unexpected autograd graph has {len(names)} nodes"
-    width,height=2.55,.62
+    wdt,hgt=2.7,.9
     for i,j in edges:
         x1,y1=positions[i]; x2,y2=positions[j]
-        arrow(ax,(x1+width/2,y1-height/2-.03),(x2+width/2,y2+height/2+.03),color="#777777",lw=.8)
-    for (x,y),name in zip(positions,names):
+        arrow(ax,(x1+wdt/2,y1-hgt/2-.03),(x2+wdt/2,y2+hgt/2+.03),color="#777777",lw=.8)
+    for (x,y),name,leaf in zip(positions,names,leaves):
         label=name.replace("torch::autograd::","").replace("Backward0","Backward")
-        p=box(ax,x,y-height/2,width,height,"",fc="#f5f8fc",ec=C["blue"],lw=.8)
-        text(ax,x+width/2,y,label,in_box=p,ha="center",va="center",fontsize=7)
-    text(ax,2.0,.15,f"loss={loss:.4f}；{len(names)} 个节点",ha="left",va="center",fontsize=8.5)
-    save(fig,"backprop-autograd-graph")
+        if name.startswith("TBackward"): label="TBackward (W 转置)"
+        p=box(ax,x,y-hgt/2,wdt,hgt,"",fc="#f5f8fc",ec=C["blue"],lw=.8)
+        if leaf:
+            text(ax,x+wdt/2,y+.14,label,in_box=p,ha="center",va="center",fontsize=7)
+            text(ax,x+wdt/2,y-.18,leaf,in_box=p,ha="center",va="center",fontsize=7,color=C["orange"])
+        else:
+            text(ax,x+wdt/2,y,label,in_box=p,ha="center",va="center",fontsize=7)
+    text(ax,6,.35,f"loss={loss:.4f}；{len(names)} 个节点；橙色小字 = 该叶子对应的参数",ha="center",fontsize=8.5)
+    finish(fig,"backprop-autograd-graph")
 
 
 def figures():

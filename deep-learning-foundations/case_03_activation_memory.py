@@ -355,12 +355,13 @@ def fig_checkpointing():
         text(ax, (x_from + x_to) / 2, y, s, ha="center", va="center",
              fontsize=8, color=color)
 
-    # ---- 图例（小色块 + 标签）----
+    # ---- 图例（小色块 + 标签；与格子的画法严格一致）----
     legend = [("#fae6d6", C["orange"], None, "全部保存"),
-              ("#fae6d6", C["orange"], "ckpt", "只存块输入"),
+              ("#ffffff", C["orange"], "ckpt", "只存块输入"),
+              ("#f5f5f5", "#aaaaaa", None, "算完即丢"),
               ("#f5f5f5", "#aaaaaa", "///", "不保存、反向前重算"),
               ("#dce9f7", C["blue"], None, "反向")]
-    lx = 0.55
+    lx = 0.45
     for fc, ec, kind, name in legend:
         r = Rectangle((lx, 6.35), 0.28, 0.24, facecolor=fc, edgecolor=ec,
                       lw=0.8)
@@ -368,7 +369,7 @@ def fig_checkpointing():
             r.set_hatch("///")
         ax.add_patch(r)
         if kind == "ckpt":
-            r2 = Rectangle((lx + 0.09, 6.42), 0.1, 0.1, facecolor="#ffffff",
+            r2 = Rectangle((lx + 0.1, 6.42), 0.08, 0.1, facecolor="#fae6d6",
                            edgecolor=ec, lw=0.5)
             ax.add_patch(r2)
         text(ax, lx + 0.38, 6.47, name, ha="left", va="center",
@@ -414,7 +415,7 @@ def fig_checkpointing():
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
     text(ax, bx + bw_max / 2, y1 + 0.31, f"{mb1:.1f}MB", ha="center",
          va="center", fontsize=8.5)
-    small_bar = max(bw_max * mb2 / mb1, 0.22)
+    small_bar = max(bw_max * mb2 / mb1, 0.12)
     ax.add_patch(Rectangle((bx, y2 + 0.12), small_bar, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
     text(ax, bx + small_bar + 0.18, y2 + 0.31,

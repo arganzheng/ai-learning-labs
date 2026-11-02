@@ -63,23 +63,32 @@ def double_descent_schematic():
             + 0.55 / (1 + np.exp(1.4 * (cap - 4.2)))
             + 0.18)
     train = 0.85 / (1 + np.exp(6.0 * (cap - 3.0))) + 0.02
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
-    ax.plot(cap, test, color=BLUE, lw=LW, label="测试误差")
-    ax.plot(cap, train, color=ORANGE, lw=LW, label="训练误差")
-    ax.axvline(3.6, color=GRAY, lw=0.9)
-    ax.annotate("插值阈值：\n训练误差刚到 0", (3.6, 2.85),
-                xytext=(4.6, 3.05), ha="left", fontsize=9.5, color=GRAY,
-                arrowprops=dict(arrowstyle="-", color=GRAY, lw=0.8))
-    ax.text(1.15, 2.35, "欠拟合：经典 U 形", ha="center", fontsize=10.5,
+    fig, ax = plt.subplots(figsize=(7.6, 3.1))
+    ax.plot(cap, test, color=RED, lw=LW, label="测试误差")
+    ax.plot(cap, train, color=BLUE, lw=LW, ls="--", label="训练误差")
+    ax.axvline(3.6, color="#555555", lw=0.9, ls="--")
+    ax.annotate("插值阈值：参数量≈样本量\n训练误差刚到 0", (3.62, 3.15),
+                xytext=(4.35, 3.5), ha="left", fontsize=9, color="#333333",
+                arrowprops=dict(arrowstyle="-", color="#555555", lw=0.8))
+    ax.text(1.1, 0.45, "欠拟合", ha="center", fontsize=10, color="#333333",
+            weight="bold")
+    ax.annotate("经典过拟合峰", (3.25, 2.6), xytext=(1.35, 3.4),
+                ha="center", fontsize=10, color="#c0392b", weight="bold",
+                arrowprops=dict(arrowstyle="-", color="#c0392b", lw=0.8))
+    ax.text(7.3, 1.05, "过参数化区：\n继续加参数，测试误差继续降",
+            ha="center", fontsize=9.5, color="#333333")
+    ax.annotate("", (8.7, 0.42), xytext=(7.9, 0.85),
+                arrowprops=dict(arrowstyle="->", color=RED, lw=1.0))
+    ax.text(7.1, 0.32, "训练误差 $\\to0$", ha="center", fontsize=9,
             color="#333333")
-    ax.text(6.6, 1.35, "过参数化：\n第二次下降", ha="center", fontsize=10.5,
-            color="#333333")
-    ax.set_xlabel("模型容量（参数 / 样本数）")
+    ax.set_xlabel("模型容量（参数量 / 宽度）")
     ax.set_ylabel("误差")
     ax.set_xticks([]); ax.set_yticks([])
-    ax.set_ylim(-0.05, 3.4)
+    ax.set_xlim(0, 10)
+    ax.set_ylim(-0.05, 3.95)
     ax.legend(loc="upper right", fontsize=9.5)
-    ax.set_title("double descent：测试误差的三段", fontsize=12)
+    ax.set_title("经典 U 形 vs 双下降：容量越过插值阈值后测试误差再降",
+                 fontsize=11)
     save(fig, "reg-double-descent-schematic")
 
 

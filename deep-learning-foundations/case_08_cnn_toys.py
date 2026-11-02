@@ -207,6 +207,36 @@ def cmd_receptive_field():
     print("  stride1 要看到 224：1+2L≥224 → L=112 层")
 
 
+X5 = np.array([[1, 2, 0, 1, 3],
+               [0, 1, 2, 3, 1],
+               [1, 0, 1, 2, 0],
+               [2, 1, 0, 1, 1],
+               [0, 3, 1, 0, 2]], dtype=float)
+K_EDGE = np.tile([1., 0., -1.], (3, 1))          # 找「左亮右暗」竖边
+OUT5 = np.array([[-1, -3, -1],
+                 [0, -4, 1],
+                 [1, 1, -1]], dtype=float)
+
+
+def cmd_sliding_window():
+    """5×5 输入、3×3 核滑窗：橙框位置的逐元素乘加与完整输出。"""
+    import torch
+    import torch.nn.functional as F
+    out = F.conv2d(torch.tensor(X5)[None, None],
+                   torch.tensor(K_EDGE)[None, None])[0, 0].numpy()
+    assert np.array_equal(out, OUT5), out
+    win = X5[0:3, 1:4]
+    prod = win * K_EDGE
+    print("橙框窗口 (行0-2, 列1-3):")
+    print(win.astype(int))
+    print("逐元素乘积:")
+    print(prod.astype(int))
+    print(f"求和 = {prod.sum():g} → 输出 (0,1)")
+    print("conv2d 完整输出:")
+    print(out.astype(int))
+    print("与图一致: OK")
+
+
 # ---------------------------------------------------------------- figures
 
 def figure_conv_matrix():
@@ -321,12 +351,78 @@ def figure_receptive_field():
     finish(fig, "cnn-receptive-field")
 
 
+def _mcells(ax, x, y, labels, cw, ch, fs=7.5, fc="#ffffff",
+            ec="#999999", hi=None, hi_fc="#fff3e0", hi_ec="#c98a00"):
+    """mathtext 数字格子；labels 为字符串矩阵，hi=(i,j) 高亮。"""
+    for i, row in enumerate(labels):
+        for j, s in enumerate(row):
+            c, e = (hi_fc, hi_ec) if (i, j) in (hi or ()) else (fc, ec)
+            p = box(ax, x + j * cw, y - (i + 1) * ch, cw - .02, ch - .02,
+                    fc=c, ec=e, lw=.5, r=.005)
+            text(ax, x + j * cw + (cw - .02) / 2,
+                 y - (i + 1) * ch + (ch - .02) / 2, s,
+                 in_box=p, ha="center", va="center", fontsize=fs)
+
+
+def figure_sliding_window():
+    fig, ax = base_fig("卷积：$3\\times3$ 的核在 $5\\times5$ 输入上滑动，"
+                     "每个位置对应相乘再相加", h=4.8, xlim=(0, 12.4),
+                     ylim=(0.4, 8.2))
+    cw = .64
+    ix, iy = .45, 6.85            # 输入 5×5
+    lbl = [[f"${v:g}$" for v in row] for row in X5]
+    hi = {(i, j) for i in range(3) for j in range(1, 4)}
+    _mcells(ax, ix, iy, lbl, cw, cw, hi=hi)
+    box(ax, ix + cw, iy - 3 * cw, 3 * cw - .02, 3 * cw - .02,
+        fc="none", ec="#c98a00", lw=1.8, r=.01)
+    text(ax, ix + 2.5 * cw, iy + .35, "输入 $x$（$5\\times5$）",
+         ha="center", fontsize=9, color="#333333")
+    text(ax, ix + 2.5 * cw, iy - 5 * cw - .3, "橙框：核当前盖住的 $3\\times3$",
+         ha="center", fontsize=8, color="#666666")
+    kx, ky = 5.15, 6.85         # kernel 3×3
+    klbl = [[f"${v:g}$" for v in row] for row in K_EDGE]
+    _mcells(ax, kx, ky, klbl, cw, cw, fc="#eef6ff", ec="#1f6fb2")
+    text(ax, kx + 1.5 * cw, ky + .35, "核 $k$（$3\\times3$，9 个权重）",
+         ha="center", fontsize=9, color="#333333")
+    ox, oy = 9.75, 6.85         # 输出 3×3
+    olbl = [[f"${v:g}$" for v in row] for row in OUT5]
+    _mcells(ax, ox, oy, olbl, cw, cw, hi={(0, 1)})
+    text(ax, ox + 1.5 * cw, oy + .35, "输出 $y$（$3\\times3$）",
+         ha="center", fontsize=9, color="#333333")
+    arrow(ax, (ix + 5 * cw + .1, 5.8), (kx - .12, 5.8))
+    arrow(ax, (kx + 3 * cw + .1, 5.8), (ox - .12, 5.8))
+    # 下行：窗口内逐元素乘积 → 求和 → 写进输出 (0,1)
+    win = X5[0:3, 1:4]
+    plbl = [[f"${win[i,j]:g}\\cdot{K_EDGE[i,j]:g}$" if K_EDGE[i, j] >= 0
+             else f"${win[i,j]:g}\\cdot({K_EDGE[i,j]:g})$"
+             for j in range(3)] for i in range(3)]
+    px, py, pw, ph = 4.35, 3.35, .95, .5
+    _mcells(ax, px, py, plbl, pw, ph, fc="#f7f7f7")
+    text(ax, px + 1.5 * pw, py + .3, "窗口内逐元素相乘（$x\\odot k$）",
+         ha="center", fontsize=8.5, color="#333333")
+    arrow(ax, (kx + 1.5 * cw, ky - 3 * cw - .1), (px + 1.5 * pw, py + .55))
+    text(ax, px + 3 * pw + .75, 2.55, "求和", ha="center", fontsize=8.5,
+         color="#555555")
+    arrow(ax, (px + 3 * pw + .1, 2.35), (px + 3 * pw + 1.4, 2.35), lw=1.0)
+    p = box(ax, px + 3 * pw + 1.5, 2.1, .95, .5, fc="#fff3e0",
+            ec="#c98a00", lw=.9, r=.01)
+    text(ax, px + 3 * pw + 1.975, 2.35, "$=-3$", in_box=p, ha="center",
+         va="center", fontsize=9)
+    arrow(ax, (px + 3 * pw + 1.975, 2.65), (ox + 1.5 * cw, oy - 3 * cw - .12),
+          color="#c98a00")
+    text(ax, 6.2, .75, "全连接 $25\\to9$ 需要 $25\\times9=225$ 个权重，"
+         "卷积只有 9 个：只看局部、处处共享",
+         ha="center", fontsize=9, color="#333333")
+    finish(fig, "cnn-convolution-sliding-window")
+
+
 def figures():
-    figure_conv_matrix(); figure_receptive_field()
+    figure_sliding_window(); figure_conv_matrix(); figure_receptive_field()
 
 
 COMMANDS = {"conv-as-matrix": cmd_conv_as_matrix,
             "receptive-field": cmd_receptive_field,
+            "sliding-window": cmd_sliding_window,
             "figures": figures}
 
 

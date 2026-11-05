@@ -371,13 +371,13 @@ def figure_gate():
     与 figure_scalar 同一套配色，边旁标出「× 局部导数」与结果。
     """
     fig,ax=base_fig("每个节点只做一件事：下游梯度 = 上游梯度 × 局部导数",
-                    7.6,4.8,(0,12),(0.2,8.8))
+                    7.6,4.8,(0,12),(0.2,9.2))
     # 图例（顶部一行）
-    ax.plot([0.6,1.4],[8.45,8.45],color=C["blue"],lw=1.8)
-    text(ax,1.6,8.45,"前向（数值）",ha="left",va="center",fontsize=9.5,color=C["blue"])
-    ax.plot([4.0,4.8],[8.45,8.45],color=C["orange"],lw=1.8)
-    text(ax,5.0,8.45,"反向（梯度）",ha="left",va="center",fontsize=9.5,color=C["orange"])
-    text(ax,9.3,8.45,r"上游梯度 $g=4$ 相同，分配规则不同",
+    ax.plot([0.6,1.4],[8.95,8.95],color=C["blue"],lw=1.8)
+    text(ax,1.6,8.95,"前向（数值）",ha="left",va="center",fontsize=9.5,color=C["blue"])
+    ax.plot([4.0,4.8],[8.95,8.95],color=C["orange"],lw=1.8)
+    text(ax,5.0,8.95,"反向（梯度）",ha="left",va="center",fontsize=9.5,color=C["orange"])
+    text(ax,9.3,8.95,r"上游梯度 $g=4$ 相同，分配规则不同",
          ha="left",va="center",fontsize=9.5,color="#555555")
     # 三行横排；每行自含：行题在最左，输入 → gate → 输出，g 从最右进来
     for y in (5.85,3.15):

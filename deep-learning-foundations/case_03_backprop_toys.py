@@ -379,34 +379,38 @@ def figure_gate():
     text(ax,4.5,6.85,"反向（梯度）",ha="left",va="center",fontsize=8.5,color=C["orange"])
     text(ax,9.2,6.85,r"上游梯度 $g=4$ 相同，分配规则不同",
          ha="left",va="center",fontsize=8.5,color="#555555")
+    # 三块竖向分板；每板自含：输入在左、gate 居中、输出格在右、g 从右进来
+    for x in (4.0,8.0):
+        ax.plot([x,x],[1.2,6.4],color="#d9dee6",lw=1)
     # (名字, 算符, 局部导数 u', v', 输出值, du, dv, 说明)
-    gates=[("加法",r"$o=u+v$","1","1","5","4","4",r"$g\times1=4$",r"$g\times1=4$","原样分发"),
-           ("乘法",r"$o=u\,v$","v=3","u=2","6","12","8",r"$g\times3=12$",r"$g\times2=8$","乘上另一路输入"),
-           ("max",r"$o=\max(u,v)$","0","1","3","0","4",r"$g\times0=0$",r"$g\times1=4$","只给被选中的一路")]
-    for cx,(op,fo,du_l,dv_l,o,g1,g2,s1,s2,rule) in zip((.35,4.35,8.35),gates):
+    gates=[("加法门",r"$o=u+v$","1","1","5","4","4",r"$g\times1=4$",r"$g\times1=4$","原样分发"),
+           ("乘法门",r"$o=u\,v$","v=3","u=2","6","12","8",r"$g\times3=12$",r"$g\times2=8$","乘上另一路输入"),
+           ("max 门",r"$o=\max(u,v)$","0","1","3","0","4",r"$g\times0=0$",r"$g\times1=4$","只给被选中的一路")]
+    for cx,(op,fo,du_l,dv_l,o,g1,g2,s1,s2,rule) in zip((.15,4.15,8.15),gates):
+        text(ax,cx+1.9,6.3,op,ha="center",fontsize=10.5)
         # 输入 u=2 (上) v=3 (下)，值用真值（与 fanout/scalar 一致的小例子）
         cell(ax,cx,4.7,1.0,.75,r"$u=2$",fc="#dce9f7",ec=C["blue"])
         cell(ax,cx,2.4,1.0,.75,r"$v=3$",fc="#dce9f7",ec=C["blue"])
-        p=box(ax,cx+1.65,3.3,1.5,1.2,"",fc="#f5f8fc",ec="#777777")
-        box_title(ax,cx+2.4,4.2,op,p)
-        text(ax,cx+2.4,3.62,fo,in_box=p,ha="center",va="center",fontsize=7.5)
-        cell(ax,cx+3.6,3.5,.9,.8,r"$o="+o+"$","$g=4$",fc="#f5f8fc",ec=C["blue"])
-        # 前向箭头（蓝）
-        arrow(ax,(cx+1.05,5.05),(cx+1.65,4.35),color=C["blue"],lw=1.0)
-        arrow(ax,(cx+1.05,2.8),(cx+1.65,3.55),color=C["blue"],lw=1.0)
-        arrow(ax,(cx+3.15,3.9),(cx+3.55,3.9),color=C["blue"],lw=1.0)
-        # 上游梯度 g=4 从右侧进来（橙，标注在输出格小字里），落到输出再折返进 gate
-        arrow(ax,(cx+5.0,3.9),(cx+4.55,3.9),color=C["orange"],lw=1.0)
-        arrow(ax,(cx+3.55,3.55),(cx+3.15,3.55),color=C["orange"],lw=1.0)
-        # 反向箭头：gate → u / v，标 ×局部导数=结果
-        arrow(ax,(cx+1.65,4.15),(cx+1.05,4.85),color=C["orange"],lw=.9)
-        text(ax,cx+.95,4.42,s1,ha="right",fontsize=7.5,color=C["orange"])
-        text(ax,cx+.5,5.55,r"$du="+g1+"$",ha="center",fontsize=8,color=C["orange"])
-        arrow(ax,(cx+1.65,3.75),(cx+1.05,3.05),color=C["orange"],lw=.9)
-        text(ax,cx+.95,3.42,s2,ha="right",fontsize=7.5,color=C["orange"])
-        text(ax,cx+.5,2.15,r"$dv="+g2+"$",ha="center",fontsize=8,color=C["orange"])
+        p=box(ax,cx+1.25,3.3,1.3,1.2,"",fc="#f5f8fc",ec="#777777")
+        text(ax,cx+1.9,3.9,fo,in_box=p,ha="center",va="center",fontsize=7.5)
+        cell(ax,cx+2.8,3.5,.85,.8,r"$o="+o+"$",fc="#f5f8fc",ec=C["blue"])
+        # 前向箭头（蓝，走上方）
+        arrow(ax,(cx+1.05,5.1),(cx+1.2,4.45),color=C["blue"],lw=1.0)
+        arrow(ax,(cx+1.05,2.75),(cx+1.2,3.4),color=C["blue"],lw=1.0)
+        arrow(ax,(cx+2.6,3.95),(cx+2.75,3.95),color=C["blue"],lw=1.0)
+        # 上游梯度 g=4 从右侧进来（橙），经输出格折返进 gate（走下方，与前向错开）
+        arrow(ax,(cx+3.9,3.85),(cx+3.7,3.85),color=C["orange"],lw=1.0)
+        text(ax,cx+3.55,4.75,r"$g=4$",ha="center",fontsize=8.5,color=C["orange"])
+        arrow(ax,(cx+2.75,3.6),(cx+2.6,3.6),color=C["orange"],lw=1.0)
+        # 反向箭头：gate → u / v，标 ×局部导数=结果（错开画在各自箭头旁）
+        arrow(ax,(cx+1.2,4.25),(cx+1.05,4.95),color=C["orange"],lw=.9)
+        text(ax,cx+.15,4.35,s1,ha="left",fontsize=7.5,color=C["orange"])
+        text(ax,cx+.5,5.62,r"$du="+g1+"$",ha="center",fontsize=8.5,color=C["orange"])
+        arrow(ax,(cx+1.2,3.5),(cx+1.05,2.85),color=C["orange"],lw=.9)
+        text(ax,cx+.15,3.3,s2,ha="left",fontsize=7.5,color=C["orange"])
+        text(ax,cx+.5,2.12,r"$dv="+g2+"$",ha="center",fontsize=8.5,color=C["orange"])
         # 局部导数公式与规则说明合并放在最下方一行
-        text(ax,cx+2.4,1.55,r"$\partial o/\partial u="+du_l+r",\ \partial o/\partial v="+dv_l+r"$："+rule,
+        text(ax,cx+1.9,1.55,r"$\partial o/\partial u="+du_l+r",\ \partial o/\partial v="+dv_l+r"$："+rule,
              ha="center",va="center",fontsize=8)
     text(ax,6,0.95,"读法：蓝色是前向的数值流；橙色是反向的梯度流，每条反向边标着「上游 × 局部导数 = 该输入分到的梯度」。",
          ha="center",fontsize=8.5)

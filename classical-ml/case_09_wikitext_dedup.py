@@ -132,7 +132,7 @@ def main():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8), width_ratios=[1.4, 1])
     ax = axes[0]
     ss = np.linspace(0.2, 1, 200)
-    ax.plot(ss, 1 - (1 - ss ** r) ** b, c=C["gray"], label=f"S 曲线 1 − (1 − s^{r})^{b}")
+    ax.plot(ss, 1 - (1 - ss ** r) ** b, c=C["gray"], label=rf"S 曲线 $1-(1-s^{{{r}}})^{{{b}}}$")
     for frac, col in zip([0.02, 0.05, 0.10, 0.20], [C["green"], C["blue"], C["orange"], C["red"]]):
         pts = [(jaccard(sets[a], sets[bb]), (a, bb) in cand) for a, bb, f in truth if f == frac]
         jj = np.array([x for x, _ in pts]); hit = np.array([h for _, h in pts])

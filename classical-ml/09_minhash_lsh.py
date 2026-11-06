@@ -97,10 +97,10 @@ def exp_error():
         print(f"  k = {k:>4}: 200 次估计的均值 {est.mean():.3f}（真实 {J:.3f}），标准差 实测 {est.std():.3f} / 理论 {theory[-1]:.3f}")
     fig, ax = plt.subplots(figsize=(7.6, 2.6))
     ax.plot(ks, measured, "o-", color=C["red"], label="实测（200 次重复）")
-    ax.plot(ks, theory, "--", color=C["gray"], label="理论 √(J(1−J)/k)")
+    ax.plot(ks, theory, "--", color=C["gray"], label=r"理论 $\sqrt{J(1-J)/k}$")
     ax.set_xscale("log", base=2); ax.set_yscale("log")
     ax.set_xlabel("签名个数 k"); ax.set_ylabel("Jaccard 估计的标准差"); ax.legend(frameon=False)
-    ax.set_title(f"真实 Jaccard {J:.2f}：k 翻 4 倍，误差减半；k = 128 时 ±{theory[4]:.3f}", fontsize=8.5)
+    ax.set_title(f"真实 Jaccard {J:.2f}：$k$ 翻 4 倍，误差减半；$k=128$ 时 $\pm${theory[4]:.3f}", fontsize=8.5)
     save(fig, "09-minhash-error-vs-k")
     print()
 
@@ -120,6 +120,24 @@ def exp_scurve():
         print(f"  b={b:>2}, r={r:>2}: 曲线在 s ≈ {s50:.3f} 处过 50%   ← 这就是'阈值'；r 大更陡更严，b 大更宽松")
     print("  FineWeb 用 b=14, r=8（112 个 hash）：Jaccard 0.5 → 5% 候选，0.7 → 56%，0.8 → 92%，0.9 → 99.96%")
     print()
+    ss = np.linspace(0, 1, 400)
+    fig, ax = plt.subplots(figsize=(7.6, 3.4))
+    configs = ((14, 8, "#c98a00"), (8, 16, "#5b8def"),
+               (28, 4, "#4d9a5c"), (20, 5, "#7e57c2"))
+    for b, r, color in configs:
+        threshold = (1 - 0.5 ** (1 / b)) ** (1 / r)
+        ax.plot(ss, p_candidate(ss, b, r), color=color,
+                label=rf"$b={b},\ r={r}$  ($k={b*r}$)   $s_{{50}}\approx{threshold:.3f}$")
+        if (b, r) != (20, 5):
+            ax.axvline(threshold, color=color, ls=":", lw=0.8, alpha=0.6)
+    ax.axhline(0.5, color=C["gray"], ls="--", lw=0.8)
+    ax.set_xlim(0.25, 1); ax.set_ylim(-0.02, 1.02)
+    ax.set_xlabel(r"两段文本的真实 Jaccard 相似度 $s$")
+    ax.set_ylabel(r"成为候选对的概率 $P=1-(1-s^r)^b$")
+    ax.set_title("LSH 的 S 曲线：r 越大越陡越严，b 越大越宽松；过 50% 的位置就是阈值")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper center",
+              bbox_to_anchor=(0.5, -0.22), ncol=2)
+    save(fig, "deduplication-lsh-s-curve")
 
 
 # ---------------- 3. 在一批文本上跑 MinHash + LSH ----------------
@@ -168,7 +186,7 @@ def exp_dedup():
         frac.append(np.mean([p in cand for p, _ in m])); mids.append((lo + hi) / 2)
     ss = np.linspace(0.3, 1, 200)
     fig, ax = plt.subplots(figsize=(7.6, 2.6))
-    ax.plot(ss, p_candidate(ss, b, rr), color=C["gray"], label="S 曲线 1 − (1 − s⁸)¹⁴（理论）")
+    ax.plot(ss, p_candidate(ss, b, rr), color=C["gray"], label=r"S 曲线 $1-(1-s^8)^{14}$（理论）")
     ax.plot(mids, frac, "o", color=C["red"], label="300 组真实近重复：各 Jaccard 区间被找到的比例（实测）")
     ax.axvline(0.685, color=C["gray"], ls="--", lw=0.8)
     ax.set_xlabel("两段文本的真实 Jaccard"); ax.set_ylabel("成为候选的概率"); ax.legend(frameon=False, fontsize=7.5, loc="upper left")
@@ -343,11 +361,11 @@ def exp_family():
             row.append(hits[key] / reps_fig)
     ss = np.linspace(0.1, 1, 200)
     fig, ax = plt.subplots(figsize=(7.6, 2.8))
-    ax.plot(ss, p_candidate(ss, b, r), color=C["gray"], label="理论 1 − (1 − s²)³（独立随机排列）")
+    ax.plot(ss, p_candidate(ss, b, r), color=C["gray"], label=r"理论 $1-(1-s^2)^3$（独立随机排列）")
     ax.plot(js, rows["perm"], "o", ms=4, color=C["blue"], label="独立随机排列实测（每点 300 次）")
     ax.plot(js, rows["hash"], "s", ms=4, mfc="none", color=C["green"], label="仿射 hash (a·x + b) mod p 实测")
     ax.plot(js, rows["bad"], "^", ms=4, color=C["red"], label="只平移 (x + b) mod p：k 个 hash 高度相关")
-    ax.plot(ss, ss, ":", color=C["red"], lw=0.8, label="P = s（k 列完全相关时的极限）")
+    ax.plot(ss, ss, ":", color=C["red"], lw=0.8, label=r"$P=s$（k 列完全相关时的极限）")
     ax.set_xlabel("两个集合的真实 Jaccard")
     ax.set_ylabel("成为候选的概率")
     ax.legend(frameon=False, fontsize=7, loc="upper left")

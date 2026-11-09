@@ -322,11 +322,11 @@ def figure_overview():
     cxs=[x+w/2 for x in xs]
     for i in (4,3,2,1):
         arrow(ax,(cxs[i]-.15,band),(cxs[i-1]+.15,band),color=C["orange"])
-    labs=[r"$G_X$（不算）",r"$\times$mask $=G_H$",r"$\times W_2^{\!\top}=G_A$",r"$G_Z=(P-Y)/m$"]
+    labs=[r"$G_X$（不算）",r"$\times$mask $=G_H$",r"$\times W_2^{\!\!\top}=G_A$",r"$G_Z=(P-Y)/m$"]
     for i,(a,b) in enumerate(((0,1),(1,2),(2,3),(3,4))):
         mid=(cxs[a]+cxs[b])/2
         text(ax,mid,band-.42,labs[i],ha="center",va="center",fontsize=10.5,color=C["orange"])
-    for cx,lab in ((cxs[1],r"$dW_1=X^{\!\top}G_H$"),(cxs[3],r"$dW_2=A^{\!\top}G_Z$")):
+    for cx,lab in ((cxs[1],r"$dW_1=X^{\!\!\top}G_H$"),(cxs[3],r"$dW_2=A^{\!\!\top}G_Z$")):
         p=box(ax,cx-1.3,1.85,2.6,.85,"",fc="#fff3e0",ec=C["orange"])
         box_title(ax,cx,2.28,lab,p,color="#111111")
         arrow(ax,(cx,band-.05),(cx,2.75),color=C["orange"])
@@ -474,7 +474,7 @@ def figure_relu_jacobian():
     grid(ax,4.2,4.95,[[0],[-.2],[.5]],cw=.5,fc="#fae6d6",zero_grey=False)
     text(ax,2.35,4.15,r"$\times$",ha="center",va="center",fontsize=12)
     text(ax,3.85,4.15,"=",ha="center",va="center",fontsize=11)
-    text(ax,5.7,4.15,r"$g_x=J^{\!\top}g_y$；负元素的梯度被挡住",ha="left",va="center",fontsize=10.5)
+    text(ax,5.7,4.15,r"$g_x=J^{\!\!\top}g_y$；负元素的梯度被挡住",ha="left",va="center",fontsize=10.5)
     text(ax,1.25,2.75,"mask",ha="center",fontsize=10.5)
     grid(ax,.5,2.55,[[0,1,1]],cw=.5,zero_grey=False)
     text(ax,3.5,2.75,r"$g_y$",ha="center",fontsize=10.5)
@@ -507,16 +507,16 @@ def figure_batched_jacobian():
                 ax.text(x0+c*cell+cell/2,y0-(r+.5)*cell,f"{v:g}",ha="center",va="center",fontsize=10.5)
     for bx,by in ((x0,y0),(x0+2*cell,y0-2*cell),(x0+4*cell,y0-4*cell)):
         ax.add_patch(Rectangle((bx,by-2*cell),2*cell,2*cell,fill=False,edgecolor="#111111",lw=1.4))
-    text(ax,1.5,2.75,(r"对角块都是 $W^{\!\top}$，其余全 $0$" + "\n" + "（样本互不依赖）"),ha="center",va="center",fontsize=10.5)
+    text(ax,1.5,2.75,(r"对角块都是 $W^{\!\!\top}$，其余全 $0$" + "\n" + "（样本互不依赖）"),ha="center",va="center",fontsize=10.5)
     text(ax,5.2,5.15,r"$G$（$3\times2$）",ha="center",fontsize=10.5)
     grid(ax,4.7,4.9,G.tolist(),cw=.5,zero_grey=False,fs=10.5)
     text(ax,6.65,4.15,"×",ha="center",va="center",fontsize=12)
-    text(ax,7.75,5.15,r"$W^{\!\top}$",ha="center",fontsize=10.5)
+    text(ax,7.75,5.15,r"$W^{\!\!\top}$",ha="center",fontsize=10.5)
     grid(ax,7.35,4.9,W.T.tolist(),cw=.5,zero_grey=False,fs=10.5)
     text(ax,8.7,4.15,"=",ha="center",va="center",fontsize=11)
     text(ax,10.0,5.15,r"$dX$（$3\times2$）",ha="center",fontsize=10.5)
     grid(ax,9.4,4.9,dX.tolist(),cw=.5,fc="#fae6d6",zero_grey=False,fs=10.5)
-    text(ax,7.7,3.1,r"乘大矩阵 = 直接 $G\,W^{\!\top}$，结果一致",ha="center",va="center",fontsize=10.5)
+    text(ax,7.7,3.1,r"乘大矩阵 = 直接 $G\,W^{\!\!\top}$，结果一致",ha="center",va="center",fontsize=10.5)
     text(ax,4.2,2.0,"本文第一层 batch 128：",ha="left",fontsize=10.5)
     text(ax,4.2,1.6,r"$(128\times784)\times(128\times256)\times4$B",ha="left",fontsize=10.5)
     vals=[("Jacobian",2.3,"13 GB",C["red"]),(r"$dX$",.55,"392 KiB",C["blue"]),(r"$W_1$",.7,"784 KiB",C["green"])]
@@ -532,16 +532,16 @@ def figure_linear_outer():
     X=np.array([[1.,2.,-1.],[.5,-1.,2.]]); G=np.array([[.2,-.3],[1.,.5]])
     O1=np.outer(X[0],G[0]); O2=np.outer(X[1],G[1]); dW=X.T@G
     fig,ax=base_fig("Linear 权重梯度：每个样本贡献一个外积",7.6,3.3,(0,12),(0.8,6.5))
-    text(ax,1.2,5.45,r"样本1 外积 $x_1^{\!\top}g_1$",ha="center",fontsize=10.5)
+    text(ax,1.2,5.45,r"样本1 外积 $x_1^{\!\!\top}g_1$",ha="center",fontsize=10.5)
     grid(ax,.5,5.0,O1.tolist(),cw=.62,fs=10.5)
     text(ax,1.95,4.2,"+",ha="center",va="center",fontsize=12)
-    text(ax,3.2,5.45,r"样本2 外积 $x_2^{\!\top}g_2$",ha="center",fontsize=10.5)
+    text(ax,3.2,5.45,r"样本2 外积 $x_2^{\!\!\top}g_2$",ha="center",fontsize=10.5)
     grid(ax,2.5,5.0,O2.tolist(),cw=.62,fs=10.5)
     text(ax,3.95,4.2,"=",ha="center",va="center",fontsize=11)
     text(ax,4.95,5.45,r"$dW$",ha="center",fontsize=10.5)
     grid(ax,4.35,5.0,dW.tolist(),cw=.62,fc="#fae6d6",fs=10.5)
     text(ax,6.3,4.2,"与 W 同形",ha="left",va="center",fontsize=10.5)
-    text(ax,.5,3.1,r"矩阵乘 $X^{\!\top}G$ 一次算出的正是这份和：",ha="left",fontsize=10.5)
+    text(ax,.5,3.1,r"矩阵乘 $X^{\!\!\top}G$ 一次算出的正是这份和：",ha="left",fontsize=10.5)
     text(ax,.5,2.6,r"$dW[r,j]=\sum_i x_i[r]\,g_i[j]$ —— 每个样本 $i$ 的外积取 $(r,j)$ 项相加。",ha="left",fontsize=10.5)
     text(ax,.5,2.0,"batch 维求和 = 二.3 的分叉相加：同一 W 被每个样本各用一次。",ha="left",fontsize=10.5)
     finish(fig,"backprop-linear-outer-products")
@@ -615,7 +615,7 @@ def figure_mlp():
         p=box(ax,x,3.2,1.65,.9,"",fc="#fff3e0",ec=C["orange"]); box_title(ax,x+.825,3.82,a,p)
         text(ax,x+.825,3.45,b,in_box=p,ha="center",va="center",fontsize=10.5)
     arrow(ax,(8.0,3.65),(6.9,3.65),color=C["orange"]); arrow(ax,(5.1,3.65),(4.0,3.65),color=C["orange"])
-    for x,label in ((1.2,r"$dW_1=X^{\!\top}G_H$"),(7.0,r"$dW_2=A^{\!\top}G_Z$")):
+    for x,label in ((1.2,r"$dW_1=X^{\!\!\top}G_H$"),(7.0,r"$dW_2=A^{\!\!\top}G_Z$")):
         p=box(ax,x,1.15,3.0,.85,"",fc="#f6eadf",ec=C["orange"]); box_title(ax,x+1.5,1.58,label,p,color="#111111")
     arrow(ax,(8.85,3.1),(8.55,2.05),color=C["orange"]); arrow(ax,(3.1,3.1),(3.2,2.05),color=C["orange"])
     dashed_line(ax,(1.2,4.4),(1.2,2.9)); arrow(ax,(1.2,2.9),(2.25,2.9),color=C["orange"],lw=.9)
@@ -629,8 +629,8 @@ def figure_mlp():
 
 
 def figure_flops():
-    fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,2.6,(0,12),(0.75,3.9))
-    items=[(.5,"前向",r"$X[m,k]\,W[k,n]$","$2mkn$",C["blue"]),(4.3,r"反向 $dW$",r"$X^{\!\top}[k,m]\,G[m,n]$","$2mkn$",C["orange"]),(8.1,r"反向 $dX$",r"$G[m,n]\,W^{\!\top}[n,k]$","$2mkn$",C["green"])]
+    fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,2.4,(0,12),(0.75,3.5))
+    items=[(.5,"前向",r"$X[m,k]\,W[k,n]$","$2mkn$",C["blue"]),(4.3,r"反向 $dW$",r"$X^{\!\!\top}[k,m]\,G[m,n]$","$2mkn$",C["orange"]),(8.1,r"反向 $dX$",r"$G[m,n]\,W^{\!\!\top}[n,k]$","$2mkn$",C["green"])]
     for x,title,formula,cost,color in items:
         p=box(ax,x,1.75,3.25,1.5,"",fc="#f7f7f7",ec=color); box_title(ax,x+1.625,2.82,title,p)
         text(ax,x+1.625,2.3,formula,in_box=p,ha="center",va="center",fontsize=10.5)

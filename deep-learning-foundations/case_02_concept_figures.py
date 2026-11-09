@@ -153,8 +153,8 @@ def plot_chain():
     ax.text(X, 53, "反向：梯度是 Jacobian 的连乘", ha="center",
             fontsize=18, weight="bold")
     ax.text(X, 47,
-            r"$\partial L / \partial x \;=\; J_1^{\!\top} J_2^{\!\top} \cdots"
-            r" J_L^{\!\top}\;\partial L / \partial h_L$",
+            r"$\partial L / \partial x \;=\; J_1^{\!\!\top} J_2^{\!\!\top} \cdots"
+            r" J_L^{\!\!\top}\;\partial L / \partial h_L$",
             ha="center", fontsize=17)
     bxs = {"gx": 23, "j1": 52, "dots": 80, "jL": 108, "ghL": 136}
     ax.text(13, 36, "无残差", ha="right", va="center", fontsize=17.0,

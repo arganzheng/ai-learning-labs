@@ -90,7 +90,7 @@ def figure_onehot_lookup():
                        h=3.9, xlim=(0, 12.6), ylim=(0.6, 7.0))
     # ---- 左：e_2^T × W(5×3) = W 第 2 行
     cw, ch = .62, .62
-    text(ax, .3, 6.35, r"$e_2^{\!\top}$（$1\times5$）", fontsize=10.5)
+    text(ax, .3, 6.35, r"$e_2^{\!\!\top}$（$1\times5$）", fontsize=10.5)
     grid(ax, .3, 6.05, np.eye(5)[2], cw=cw, ch=ch, fs=10.5, zero_grey=True)
     # e_2 的第 2 格高亮
     box(ax, .3 + 2 * cw, 6.05 - ch, cw - .02, ch - .02,
@@ -115,7 +115,7 @@ def figure_onehot_lookup():
     grid(ax, 7.75, 6.05, W[2], cw=cw, ch=ch, fs=10.5, fc="#fae6d6",
          ec=C["orange"])
     text(ax, .3, 2.7,
-         r"$e_i^{\!\top}W=W_i$：矩阵乘法只做了一次「取行」，"
+         r"$e_i^{\!\!\top}W=W_i$：矩阵乘法只做了一次「取行」，"
          "所以实现时直接按 ID 查表",
          fontsize=10.5, color="#555555")
     # ---- 右下：W.grad 5×3，只有第 0、2 行非零

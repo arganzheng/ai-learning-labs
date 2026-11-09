@@ -43,13 +43,13 @@ def run_vq():
         rec2 = km2.cluster_centers_[t2].reshape(-1, 16, 4); print(f"  K = {K2:>3}：重建 MSE {((np.stack([unpatchify(r) for r in rec2]) - IMG) ** 2).mean():.4f}——码本越大重建越好，但 AR 模型要在越多的类里选")
     fig, axes = plt.subplots(3, 6, figsize=(7.6, 3.9))
     for j in range(6):
-        axes[0, j].imshow(IMG[j], cmap="gray_r", vmin=0, vmax=1); axes[0, j].set_title(f"原图 {digits.target[j]}", fontsize=8)
+        axes[0, j].imshow(IMG[j], cmap="gray_r", vmin=0, vmax=1); axes[0, j].set_title(f"原图 {digits.target[j]}", fontsize=10.5)
         axes[1, j].imshow(TOKENS[j].reshape(4, 4), cmap="tab20", vmin=0, vmax=K - 1)
         for r in range(4):
             for c in range(4):
-                axes[1, j].text(c, r, str(TOKENS[j, r * 4 + c]), ha="center", va="center", fontsize=6)
-        axes[1, j].set_title("16 个 token", fontsize=8)
-        axes[2, j].imshow(rec[j], cmap="gray_r", vmin=0, vmax=1); axes[2, j].set_title("查码本重建", fontsize=8)
+                axes[1, j].text(c, r, str(TOKENS[j, r * 4 + c]), ha="center", va="center", fontsize=10.5)
+        axes[1, j].set_title("16 个 token", fontsize=10.5)
+        axes[2, j].imshow(rec[j], cmap="gray_r", vmin=0, vmax=1); axes[2, j].set_title("查码本重建", fontsize=10.5)
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
     save(fig, "09-vq-tokens")
@@ -97,7 +97,7 @@ def run_ar():
     fig, axes = plt.subplots(5, 12, figsize=(7.6, 3.3))
     for ax, im in zip(axes.ravel(), imgs):
         ax.imshow(im, cmap="gray_r", vmin=0, vmax=1); ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("栅格顺序逐 token 生成 16 个 token、查码本解码——60 张「手写数字」（计数模型，不是神经网络）", fontsize=9)
+    fig.suptitle("栅格顺序逐 token 生成 16 个 token、查码本解码——60 张「手写数字」（计数模型，不是神经网络）", fontsize=11.5)
     save(fig, "09-ar-samples")
 
 

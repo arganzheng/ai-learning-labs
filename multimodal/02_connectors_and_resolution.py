@@ -51,22 +51,22 @@ def run_connectors():
     # 图：16 个 patch → 三种 connector
     fig, axes = plt.subplots(1, 4, figsize=(7.6, 2.3))
     val = np.arange(16).reshape(4, 4)
-    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出：4×4 个 patch 特征", fontsize=8)
+    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出：4×4 个 patch 特征", fontsize=10.5)
     for i in range(4):
         for j in range(4):
-            axes[0].text(j, i, str(val[i, j]), ha="center", va="center", fontsize=8)
-    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP：16 → 16，逐个映射", fontsize=8)
+            axes[0].text(j, i, str(val[i, j]), ha="center", va="center", fontsize=10.5)
+    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP：16 → 16，逐个映射", fontsize=10.5)
     for i in range(4):
         for j in range(4):
-            axes[1].text(j, i, f"z{val[i, j]}", ha="center", va="center", fontsize=7)
-    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("2×2 merge：16 → 4，邻域拼接", fontsize=8)
+            axes[1].text(j, i, f"z{val[i, j]}", ha="center", va="center", fontsize=10.5)
+    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("2×2 merge：16 → 4，邻域拼接", fontsize=10.5)
     labels = [["0,1\n4,5", "2,3\n6,7"], ["8,9\n12,13", "10,11\n14,15"]]
     for i in range(2):
         for j in range(2):
-            axes[2].text(j, i, labels[i][j], ha="center", va="center", fontsize=7)
-    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler：16 → K=3\n每个 query 看全部 patch", fontsize=8)
+            axes[2].text(j, i, labels[i][j], ha="center", va="center", fontsize=10.5)
+    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler：16 → K=3\n每个 query 看全部 patch", fontsize=10.5)
     for i in range(3):
-        axes[3].text(0, i, f"q{i}·全图", ha="center", va="center", fontsize=7)
+        axes[3].text(0, i, f"q{i}·全图", ha="center", va="center", fontsize=10.5)
     for ax in axes:
         ax.set_xticks([]); ax.set_yticks([])
     save(fig, "02-connectors")
@@ -109,7 +109,7 @@ def run_budget():
     ax.plot(sides, [tokens_native(s, s) for s in sides], color=C["blue"], label="原生动态：像素 / 784，夹在 [256, 1280]")
     ax.plot(sides, [(s / 28) ** 2 for s in sides], color=C["blue"], ls=":", lw=0.8, label="像素 / 784（不设上下限）")
     ax.set_xlabel("正方形图的边长（像素）"); ax.set_ylabel("进 LLM 的 token 数"); ax.set_ylim(0, 3200)
-    ax.legend(fontsize=7, loc="lower right"); ax.set_title("同一张图，三种策略给出的 token 数")
+    ax.legend(fontsize=10.5, loc="lower right"); ax.set_title("同一张图，三种策略给出的 token 数")
     save(fig, "02-token-budget")
 
 
@@ -154,7 +154,7 @@ def run_diagrams():
             assert figbox.contains(e.x0, e.y0) and figbox.contains(e.x1, e.y1), (
                 "artist leaves the figure canvas")
 
-    def box(ax, patches, inner, xy, w, h, text, fc, fs=8):
+    def box(ax, patches, inner, xy, w, h, text, fc, fs=10.5):
         x, y = xy
         p = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02",
                            facecolor=fc, edgecolor="#999999", linewidth=1)
@@ -174,32 +174,33 @@ def run_diagrams():
     print(f"  MLP：Linear({dv}→{d}) + GELU + Linear({d}→{d})，参数 {p:,} ≈ {p/1e6:.0f}M")
     print(f"  输出 {n_patch} 个 {d} 维 token，与文本 token 首尾相接进 decoder")
 
-    fig, ax = plt.subplots(figsize=(10.5, 2.4))
-    ax.set_xlim(0, 110); ax.set_ylim(0, 24); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 3.4))
+    ax.set_xlim(0, 72); ax.set_ylim(0, 25); ax.axis("off")
     patches, inner = [], []
-    box(ax, patches, inner, (1, 7), 13, 10, "一张图\n336×336×3", L["gray"])
-    arrow(ax, 14.5, 12, 17.5, 12)
-    box(ax, patches, inner, (18, 7), 15, 10, "ViT 切块\n24×24 = 576\n个 patch", L["blue"], fs=7.5)
-    arrow(ax, 33.5, 12, 36.5, 12)
-    box(ax, patches, inner, (37, 7), 12, 10, "576 行\n每行 1024 维", L["blue"], fs=7.5)
-    arrow(ax, 49.5, 12, 52.5, 12)
-    # MLP：外框 + 三个堆叠子框
-    big = FancyBboxPatch((53, 0.5), 24, 23, boxstyle="round,pad=0.02",
+    # 上行：图 → ViT 切块 → 576 行 1024 维
+    box(ax, patches, inner, (1, 14), 16, 8, "一张图\n336×336×3", L["gray"])
+    arrow(ax, 17.5, 18, 19.5, 18)
+    box(ax, patches, inner, (20, 14), 20, 8, "ViT 切块\n24×24 = 576\n个 patch", L["blue"])
+    arrow(ax, 40.5, 18, 42.5, 18)
+    box(ax, patches, inner, (43, 14), 17, 8, "576 行\n每行 1024 维", L["blue"])
+    arrow(ax, 51.5, 13.5, 17.5, 14.3)
+    # 下行：MLP（外框 + 三个堆叠子框）→ 576 行 4096 维 → 与文本 token 拼接
+    big = FancyBboxPatch((0.5, 0.5), 31, 13.3, boxstyle="round,pad=0.02",
                          facecolor=L["orange"], edgecolor="#999999", linewidth=1)
     ax.add_patch(big); patches.append(big)
-    ax.text(65, 21.3, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
-            fontsize=7.5, color=L["dark"])
+    ax.text(16, 12.6, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
+            fontsize=10.5, color=L["dark"])
     inner.append(ax.texts[-1])
     for i, sub in enumerate(["Linear 1024→4096", "GELU", "Linear 4096→4096"]):
-        sp = FancyBboxPatch((56, 14.5 - i * 4.7), 18, 3.6, boxstyle="round,pad=0.02",
+        sp = FancyBboxPatch((4.5, 9.6 - i * 3.9), 24, 3.0, boxstyle="round,pad=0.02",
                             facecolor="white", edgecolor="#999999", linewidth=1)
         ax.add_patch(sp); patches.append(sp)
-        inner.append(ax.text(65, 16.3 - i * 4.7, sub, ha="center", va="center",
-                             fontsize=7.5, color=L["dark"]))
-    arrow(ax, 77.5, 12, 80.5, 12)
-    box(ax, patches, inner, (81, 7), 12, 10, "576 行\n每行 4096 维", L["green"], fs=7.5)
-    arrow(ax, 93.5, 12, 96.5, 12)
-    box(ax, patches, inner, (97, 7), 12, 10, "与文本 token\n序列拼接", L["green"], fs=7.5)
+        inner.append(ax.text(16.5, 11.1 - i * 3.9, sub, ha="center", va="center",
+                             fontsize=10.5, color=L["dark"]))
+    arrow(ax, 32.5, 11, 34.5, 11)
+    box(ax, patches, inner, (35, 3), 17, 8, "576 行\n每行 4096 维", L["green"])
+    arrow(ax, 52.5, 7, 55.5, 7)
+    box(ax, patches, inner, (56, 3), 14, 8, "与文本 token\n序列拼接", L["green"])
     check_layout(fig, ax, patches, inner)
     save(fig, "02-mlp-projector")
 
@@ -225,25 +226,25 @@ def run_diagrams():
         assert m >= 0.30, "query 权重不够集中——热力图又会变成均匀洗色"
     print(f"  不论图有多少 patch，输出永远是 {K} 个 token")
 
-    fig = plt.figure(figsize=(10.5, 3.0))
-    gs = fig.add_gridspec(1, 4, width_ratios=[3.6, 1.5, 1.5, 1.5], wspace=0.25)
-    ax = fig.add_subplot(gs[0])
-    ax.set_xlim(0, 116); ax.set_ylim(0, 30); ax.axis("off")
+    fig = plt.figure(figsize=(7.6, 4.8))
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.15, 1], hspace=0.5, wspace=0.25)
+    ax = fig.add_subplot(gs[0, :])
+    ax.set_xlim(0, 90); ax.set_ylim(0, 30); ax.axis("off")
     patches, inner = [], []
-    box(ax, patches, inner, (1, 17), 28, 10, "576 个 patch 特征\n作 key / value", L["blue"], fs=7.5)
-    box(ax, patches, inner, (1, 3), 28, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"], fs=7.5)
-    box(ax, patches, inner, (37, 8), 34, 14, "cross-attention\nsoftmax(QKᵀ/√d)\n· V", L["gray"], fs=7)
-    box(ax, patches, inner, (81, 10), 34, 10, "32 个输出 token\n每个 = patch\n的加权平均", L["green"], fs=7)
-    arrow(ax, 29.5, 22, 36.5, 17)
-    arrow(ax, 29.5, 8, 36.5, 13)
-    arrow(ax, 71.5, 15, 80.5, 15)
+    box(ax, patches, inner, (1, 17), 30, 10, "576 个 patch 特征\n作 key / value", L["blue"])
+    box(ax, patches, inner, (1, 3), 30, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"])
+    box(ax, patches, inner, (36, 8), 30, 14, "cross-attention\nsoftmax(QKᵀ/√d)\n· V", L["gray"])
+    box(ax, patches, inner, (71, 10), 18, 10, "32 个输出 token\n每个 = patch\n的加权平均", L["green"])
+    arrow(ax, 31.5, 22, 35.5, 17)
+    arrow(ax, 31.5, 8, 35.5, 13)
+    arrow(ax, 66.5, 15, 70.5, 15)
     check_layout(fig, ax, patches, inner)
     titles = ["query 0 → 左上角物体", "query 7 → 文字带", "query 15 → 右下角背景"]
     vmax = att.max()
     for i, q in enumerate([0, 7, 15]):
-        a2 = fig.add_subplot(gs[i + 1])
+        a2 = fig.add_subplot(gs[1, i])
         im = a2.imshow(att[q].reshape(G, G), cmap="Oranges", vmin=0, vmax=vmax)
-        a2.set_title(f"{titles[i]}\nmax {att[q].max():.2f}", fontsize=7.5)
+        a2.set_title(f"{titles[i]}\nmax {att[q].max():.2f}", fontsize=10.5)
         a2.set_xticks([]); a2.set_yticks([])
         fig.colorbar(im, ax=a2, fraction=0.046, pad=0.04)
     save(fig, "02-resampler-attention")

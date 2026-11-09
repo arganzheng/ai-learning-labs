@@ -30,7 +30,7 @@ def run_forward():
     for ax, t in zip(axes, ts):
         xt = q_sample(X, torch.full((len(X),), t), eps) if t > 0 else X
         ax.scatter(xt[:, 0], xt[:, 1], s=1, color=C["blue"], alpha=0.5)
-        ax.set_title(f"t = {t}\nᾱ = {abar[t]:.3f}", fontsize=8); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
+        ax.set_title(f"t = {t}\nᾱ = {abar[t]:.3f}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
         print(f"  t = {t:>4}: ᾱ_t = {abar[t]:.4f}，信号系数 sqrt(ᾱ) = {abar[t].sqrt():.3f}，噪声系数 sqrt(1−ᾱ) = {(1-abar[t]).sqrt():.3f}")
     save(fig, "06-forward-noising")
 
@@ -105,7 +105,7 @@ def run_sample():
     fig, axes = plt.subplots(1, 6, figsize=(7.6, 1.6))
     for ax, t in zip(axes, shots_t):
         ax.scatter(shots[t][:, 0], shots[t][:, 1], s=1, color=C["orange"], alpha=0.5)
-        ax.set_title(f"t = {t}", fontsize=8); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
+        ax.set_title(f"t = {t}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
     save(fig, "06-reverse-sampling")
     from sklearn.neighbors import NearestNeighbors
     nn = NearestNeighbors(n_neighbors=1).fit(X.numpy())
@@ -120,11 +120,11 @@ def run_ddim():
     nn = NearestNeighbors(n_neighbors=1).fit(X.numpy())
     fig, axes = plt.subplots(1, 5, figsize=(7.6, 1.8))
     x_full, _ = ddpm_sample(model, 2000)
-    axes[0].scatter(x_full[:, 0], x_full[:, 1], s=1, color=C["orange"], alpha=0.5); axes[0].set_title(f"DDPM 1000 步\n距离 {nn.kneighbors(x_full.numpy())[0].mean():.3f}", fontsize=8)
+    axes[0].scatter(x_full[:, 0], x_full[:, 1], s=1, color=C["orange"], alpha=0.5); axes[0].set_title(f"DDPM 1000 步\n距离 {nn.kneighbors(x_full.numpy())[0].mean():.3f}", fontsize=10.5)
     for ax, steps in zip(axes[1:], (50, 20, 10, 5)):
         x = ddim_sample(model, 2000, steps)
         d = nn.kneighbors(x.numpy())[0].mean()
-        ax.scatter(x[:, 0], x[:, 1], s=1, color=C["green"], alpha=0.5); ax.set_title(f"DDIM {steps} 步\n距离 {d:.3f}", fontsize=8)
+        ax.scatter(x[:, 0], x[:, 1], s=1, color=C["green"], alpha=0.5); ax.set_title(f"DDIM {steps} 步\n距离 {d:.3f}", fontsize=10.5)
         print(f"  DDIM {steps:>3} 步：到最近真实点的平均距离 {d:.3f}")
     for ax in axes:
         ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")

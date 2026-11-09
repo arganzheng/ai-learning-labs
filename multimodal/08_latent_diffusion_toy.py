@@ -30,9 +30,9 @@ def run_vae():
         print(f"  latent {k:>2} 维：压缩 {64/k:>4.1f} 倍，重建 MSE {((rec - X64)**2).mean():.4f}，保留方差 {p.explained_variance_ratio_.sum():.1%}")
     fig, axes = plt.subplots(2, 6, figsize=(7.6, 2.7))
     for j, i in enumerate((0, 1, 2, 3, 4, 5)):
-        axes[0, j].imshow(IMG[i], cmap="gray_r", vmin=0, vmax=1); axes[0, j].set_title(f"原图 {digits.target[i]}", fontsize=8)
+        axes[0, j].imshow(IMG[i], cmap="gray_r", vmin=0, vmax=1); axes[0, j].set_title(f"原图 {digits.target[i]}", fontsize=10.5)
         rec = pca.inverse_transform(pca.transform(X64[i:i + 1]))[0].reshape(8, 8)
-        axes[1, j].imshow(rec, cmap="gray_r", vmin=0, vmax=1); axes[1, j].set_title("16 维 → 解码", fontsize=8)
+        axes[1, j].imshow(rec, cmap="gray_r", vmin=0, vmax=1); axes[1, j].set_title("16 维 → 解码", fontsize=10.5)
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
     save(fig, "08-pca-vae")
@@ -66,7 +66,7 @@ def run_latent():
     fig, axes = plt.subplots(5, 12, figsize=(7.6, 3.3))
     for ax, im in zip(axes.ravel(), imgs):
         ax.imshow(im, cmap="gray_r", vmin=0, vmax=1); ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("从 16 维噪声出发、latent 里去噪 50 步、解码——60 张生成的「手写数字」", fontsize=9)
+    fig.suptitle("从 16 维噪声出发、latent 里去噪 50 步、解码——60 张生成的「手写数字」", fontsize=11.5)
     save(fig, "08-latent-samples")
     from sklearn.neighbors import NearestNeighbors
     nn = NearestNeighbors(n_neighbors=1).fit(X64)

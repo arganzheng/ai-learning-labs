@@ -27,7 +27,7 @@ def run_score():
         score = -eps / sigma                                                       # ① 分数 s = ∇ log p_t = −ε_θ / σ_t
         ax.scatter(X[:, 0] * abar[t].sqrt(), X[:, 1] * abar[t].sqrt(), s=1, color=C["light"])
         ax.quiver(pts[:, 0], pts[:, 1], score[:, 0], score[:, 1], color=C["blue"], scale=40 if t > 100 else 120, width=0.004)
-        ax.set_title(f"t = {t}，σ = {sigma:.2f}", fontsize=9); ax.set_xlim(-2.5, 2.5); ax.set_ylim(-2.5, 2.5); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"t = {t}，σ = {sigma:.2f}", fontsize=11.5); ax.set_xlim(-2.5, 2.5); ax.set_ylim(-2.5, 2.5); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
         print(f"  t = {t}：σ = {sigma:.2f}；网格上分数向量的平均长度 {score.norm(dim=1).mean():.2f}——箭头都指向数据（灰点）所在的地方")
     save(fig, "07-score-field", dpi=110)
     # Tweedie：x̂_0 = x_t + σ² s
@@ -107,7 +107,7 @@ def run_flow():
         ax.scatter(X[:, 0], X[:, 1], s=1, color=C["light"])
         for k in range(12):
             ax.plot(tr[:, k, 0], tr[:, k, 1], color=col, lw=0.8); ax.plot(tr[0, k, 0], tr[0, k, 1], "o", color=C["gray"], ms=3); ax.plot(tr[-1, k, 0], tr[-1, k, 1], "o", color=col, ms=3)
-        ax.set_title(f"{name}\n直线度 {straightness(tr):.2f}", fontsize=9); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"{name}\n直线度 {straightness(tr):.2f}", fontsize=11.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
     save(fig, "07-trajectories")
 
 
@@ -125,7 +125,7 @@ def run_steps():
         for i, (name, x) in enumerate((("DDIM", ddim_sample(ddpm, 2000, steps)), ("flow matching", euler_sample(fm, 2000, steps)), ("FM + reflow", euler_sample(fm2, 2000, steps)))):
             d = nn.kneighbors(x.numpy())[0].mean()
             axes[i, j].scatter(x[:, 0], x[:, 1], s=1, color=[C["orange"], C["blue"], C["green"]][i], alpha=0.5)
-            axes[i, j].set_title(f"{name} {steps} 步\n距离 {d:.3f}", fontsize=8); axes[i, j].set_xlim(-3, 3); axes[i, j].set_ylim(-3, 3); axes[i, j].set_aspect("equal"); axes[i, j].set_xticks([]); axes[i, j].set_yticks([])
+            axes[i, j].set_title(f"{name} {steps} 步\n距离 {d:.3f}", fontsize=10.5); axes[i, j].set_xlim(-3, 3); axes[i, j].set_ylim(-3, 3); axes[i, j].set_aspect("equal"); axes[i, j].set_xticks([]); axes[i, j].set_yticks([])
             print(f"  {name:<20} {steps:>2} 步：到最近真实点的平均距离 {d:.3f}")
     save(fig, "07-few-steps")
 
@@ -158,7 +158,7 @@ def run_cfg():
         frac = (x[:, 1] > -0.3).float().mean().item()                          # 类 0 是上面那个月牙的粗略判据
         spread = x.std(0).mean().item()
         ax.scatter(X[:, 0], X[:, 1], s=1, color=C["light"]); ax.scatter(x[:, 0], x[:, 1], s=1.5, color=C["red"], alpha=0.6)
-        ax.set_title(f"w = {w}\n落在类 0：{frac:.0%}，散度 {spread:.2f}", fontsize=8); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"w = {w}\n落在类 0：{frac:.0%}，散度 {spread:.2f}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
         print(f"  w = {w}：条件「类 0」的 1500 个样本里落在类 0 一侧的 {frac:.1%}，样本坐标的标准差 {spread:.3f}（w 越大越集中）")
     save(fig, "07-cfg")
 

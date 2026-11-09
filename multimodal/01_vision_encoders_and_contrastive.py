@@ -41,7 +41,7 @@ def run_patchify():
     axes[0].set_xticks([]); axes[0].set_yticks([])
     for i in range(16):
         r, c = divmod(i, 4)
-        axes[0].text(c * P + 0.5, r * P + 0.5, str(i), ha="center", va="center", color=C["blue"], fontsize=7)
+        axes[0].text(c * P + 0.5, r * P + 0.5, str(i), ha="center", va="center", color=C["blue"], fontsize=10.5)
     axes[1].imshow(patches, cmap="gray_r", aspect="auto"); axes[1].set_title("16 个 patch，各 4 个像素")
     axes[1].set_xlabel("patch 内像素"); axes[1].set_ylabel("patch 序号"); axes[1].set_xticks(range(4)); axes[1].set_yticks(range(0, 16, 3))
     axes[2].imshow(tokens, cmap="RdBu_r", aspect="auto"); axes[2].set_title("乘 W（4→3）：16 个 3 维 token")
@@ -136,11 +136,11 @@ def run_toy():
         for x in b[:-1]:
             ax.axhline(x - 0.5, color="k", lw=0.5); ax.axvline(x - 0.5, color="k", lw=0.5)
         ax.set_xticks([]); ax.set_yticks([]); ax.set_xlabel("文本（按概念排序）"); ax.set_ylabel("图（按概念排序）")
-        ax.set_title("训练前：余弦无规律" if it == 0 else "400 步后：同概念块亮、其余暗", fontsize=9)
+        ax.set_title("训练前：余弦无规律" if it == 0 else "400 步后：同概念块亮、其余暗", fontsize=11.5)
     axes[2].plot(losses, color=C["blue"], lw=0.8)
-    axes[2].axhline(np.log(B), color=C["gray"], ls="--", lw=0.8); axes[2].text(200, np.log(B) + 0.12, "log 64：随机猜", fontsize=7, color=C["gray"], ha="center")
-    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(200, np.log(16) - 0.35, "log 16：同概念分不开的下限", fontsize=7, color=C["green"], ha="center")
-    axes[2].set_xlabel("步"); axes[2].set_ylabel("InfoNCE"); axes[2].set_title("损失", fontsize=9)
+    axes[2].axhline(np.log(B), color=C["gray"], ls="--", lw=0.8); axes[2].text(200, np.log(B) + 0.12, "log 64：随机猜", fontsize=10.5, color=C["gray"], ha="center")
+    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(200, np.log(16) - 0.35, "log 16：同概念分不开的下限", fontsize=10.5, color=C["green"], ha="center")
+    axes[2].set_xlabel("步"); axes[2].set_ylabel("InfoNCE"); axes[2].set_title("损失", fontsize=11.5)
     save(fig, "01-toy-contrastive", dpi=72)
 
 
@@ -156,8 +156,8 @@ def run_temperature():
     fig, ax = plt.subplots(figsize=(4.6, 2.6))
     ax.semilogx(taus, p0, color=C["blue"])
     for t in (1.0, 0.1, 0.01):
-        p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"]); ax.annotate(f"τ={t}: {p:.2f}", (t, p), textcoords="offset points", xytext=(5, -10), fontsize=7)
-    ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.02, 0.27, "1/4 = 随机猜", fontsize=7, color=C["gray"])
+        p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"]); ax.annotate(f"τ={t}: {p:.2f}", (t, p), textcoords="offset points", xytext=(5, -10), fontsize=10.5)
+    ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.02, 0.27, "1/4 = 随机猜", fontsize=10.5, color=C["gray"])
     ax.set_xlabel("温度 τ（对数轴）"); ax.set_ylabel("正确类的 softmax 概率"); ax.set_title("余弦只差 0.05，τ 决定它算不算「分开了」")
     save(fig, "01-temperature")
 

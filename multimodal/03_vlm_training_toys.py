@@ -73,7 +73,7 @@ def run_freeze():
     for ax in axes:
         ax.set_xlabel("训练步")
     axes[0].set_ylim(0, 1.02); axes[1].set_ylim(0.8, 1.0)
-    axes[1].legend(fontsize=7, loc="lower left")
+    axes[1].legend(fontsize=10.5, loc="lower left")
     save(fig, "03-freeze-vs-joint")
 
 

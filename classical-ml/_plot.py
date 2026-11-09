@@ -126,7 +126,10 @@ def collide(fig):
             xd, yd = ln.get_xdata(), ln.get_ydata()
             if len(xd) < 2:
                 continue
-            pts = ax.transData.transform(list(zip(xd, yd)))
+            try:
+                pts = ax.transData.transform(list(zip(xd, yd)))
+            except (TypeError, ValueError):
+                continue        # 类别轴（字符串 x）跳过
             ab = ax.get_window_extent(renderer=ren)
             for k in range(len(pts) - 1):
                 if (max(pts[k][0], pts[k + 1][0]) < ab.x0 or min(pts[k][0], pts[k + 1][0]) > ab.x1
@@ -235,6 +238,7 @@ def save(fig, name):
             t.set_fontsize(10)
     check_texts(fig)
     collide(fig)
+    _ft.check_legend_collisions(fig)
     _dump_texts(fig, name)
     _check_text_floor(fig, name)
     check_math_needed(fig)

@@ -68,20 +68,20 @@ def main():
     # 4. 特征脸空间里两个人的脸各在哪：前两个主成分
     Z = pca.transform(X)
     # 图 1：平均脸 + 前 15 张特征脸
-    fig, axes = plt.subplots(2, 8, figsize=(7.6, 2.2))
-    axes[0, 0].imshow(pca.mean_.reshape(64, 64), cmap="gray"); axes[0, 0].set_title("平均脸", fontsize=7)
+    fig, axes = plt.subplots(2, 8, figsize=(7.6, 2.4))
+    axes[0, 0].imshow(pca.mean_.reshape(64, 64), cmap="gray"); axes[0, 0].set_title("平均脸", fontsize=9)
     for i, ax in enumerate(axes.ravel()[1:]):
-        ax.imshow(pca.components_[i].reshape(64, 64), cmap="gray"); ax.set_title(f"特征脸 {i + 1}\n{ev[i]:.1%}", fontsize=7)
+        ax.imshow(pca.components_[i].reshape(64, 64), cmap="gray"); ax.set_title(f"脸 {i + 1}\n{ev[i]:.0%}", fontsize=10, linespacing=1.5)
     for ax in axes.ravel():
         ax.axis("off")
     save(fig, "case-08-eigenfaces")
 
     # 图 2：重建
     fig, axes = plt.subplots(1, 6, figsize=(7.6, 1.7))
-    axes[0].imshow(face.reshape(64, 64), cmap="gray"); axes[0].set_title("原图\n4,096 个数", fontsize=7)
-    axes[1].imshow(pca.mean_.reshape(64, 64), cmap="gray"); axes[1].set_title("k = 0\n平均脸", fontsize=7)
+    axes[0].imshow(face.reshape(64, 64), cmap="gray"); axes[0].set_title("原图\n4,096 个数", fontsize=9, linespacing=1.5)
+    axes[1].imshow(pca.mean_.reshape(64, 64), cmap="gray"); axes[1].set_title("$k$ = 0\n平均脸", fontsize=9, linespacing=1.5)
     for ax, k in zip(axes[2:], [5, 20, 50, 150]):
-        ax.imshow(recs[k].reshape(64, 64), cmap="gray"); ax.set_title(f"k = {k}\n{k} 个数", fontsize=7)
+        ax.imshow(recs[k].reshape(64, 64), cmap="gray"); ax.set_title(f"$k$ = {k}\n{k} 个数", fontsize=9, linespacing=1.5)
     for ax in axes:
         ax.axis("off")
     save(fig, "case-08-reconstruction")
@@ -91,12 +91,12 @@ def main():
     ax = axes[0]
     ax.plot(range(1, 151), cum * 100, c=C["blue"]); ax.set_xlabel("主成分个数 k"); ax.set_ylabel("累计解释方差 %")
     for k in [10, 50]:
-        ax.axvline(k, ls=":", c=C["gray"], lw=0.8); ax.text(k + 2, 30, f"k={k}: {cum[k - 1]:.0%}", fontsize=7, color=C["gray"])
+        ax.axvline(k, ls=":", c=C["gray"], lw=0.8); ax.text(k + 2, 30 + (0 if k < 30 else 30), f"$k$ = {k}：{cum[k - 1]:.0%}", fontsize=7, color=C["gray"])
     ax.set_title("4,096 维里 50 个方向就够了")
     ax = axes[1]
     for cname, col in [("1-NN", C["orange"]), ("SVM(RBF)", C["green"]), ("逻辑回归", C["purple"])]:
         ax.plot(["像素", "PCA 10", "PCA 50", "PCA 150"], [a for f, c, a in rows if c == cname], "o-", c=col, label=cname)
-    ax.set_ylabel("识别准确率（100 张测试）"); ax.set_ylim(0.5, 1.02); ax.legend(fontsize=7); ax.set_title("先降维再分类")
+    ax.set_ylabel("识别准确率（100 张测试）"); ax.set_ylim(0.5, 1.02); ax.legend(fontsize=9); ax.set_title("先降维再分类")
     save(fig, "case-08-accuracy")
 
     # 图 4：前两个主成分上 5 个人的分布
@@ -104,7 +104,7 @@ def main():
     for pid, col in zip([0, 7, 13, 21, 35], [C["red"], C["blue"], C["green"], C["orange"], C["purple"]]):
         m = y == pid
         ax.scatter(Z[m, 0], Z[m, 1], c=col, s=18, label=f"第 {pid} 人")
-    ax.set_xlabel("主成分 1"); ax.set_ylabel("主成分 2"); ax.legend(fontsize=7); ax.set_title("5 个人的 50 张脸投到前两个主成分上")
+    ax.set_xlabel("主成分 1"); ax.set_ylabel("主成分 2"); ax.legend(fontsize=9); ax.set_title("5 个人的 50 张脸投到前两个主成分上")
     save(fig, "case-08-pc-scatter")
 
 

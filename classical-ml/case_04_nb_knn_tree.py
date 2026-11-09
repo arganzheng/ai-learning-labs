@@ -191,7 +191,7 @@ def exp_tree():
 
 def draw_tree(model, names, n_total):
     t = model.tree_
-    fig, ax = plt.subplots(figsize=(7.6, 3.9)); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(9.4, 3.9)); ax.axis("off")
     ax.set_xlim(0, 1); ax.set_ylim(-3.5, 0.3)
 
     def rec(node, x0, x1, depth):
@@ -199,22 +199,22 @@ def draw_tree(model, names, n_total):
         n = int(t.n_node_samples[node]); p1 = t.value[node][0][1] / t.value[node][0].sum()
         if t.children_left[node] == -1:
             col = C["blue"] if p1 >= 0.5 else C["orange"]
-            ax.text(x, y, f"{'生还' if p1 >= 0.5 else '死亡'}\n生还率 {p1:.0%}\n{n} 人（{n / n_total:.0%}）", ha="center", va="center", fontsize=7,
+            ax.text(x, y, f"{'生还' if p1 >= 0.5 else '死亡'}\n生还率 {p1:.0%}\n{n} 人（{n / n_total:.0%}）", ha="center", va="center", fontsize=12,
                     bbox={"boxstyle": "round,pad=0.35", "fc": col, "ec": "none", "alpha": 0.85}, color="white")
             return
         f, thr = names[t.feature[node]], t.threshold[node]
         cond = "是女性？" if f == "是女性" else f"{f} ≤ {thr:.3g}？"
-        ax.text(x, y, f"{cond}\n{n} 人，生还率 {p1:.0%}", ha="center", va="center", fontsize=7.5,
+        ax.text(x, y, f"{cond}\n{n} 人，生还率 {p1:.0%}", ha="center", va="center", fontsize=12,
                 bbox={"boxstyle": "round,pad=0.35", "fc": "#f2f2f2", "ec": C["gray"]})
         for child, (a, b), lab in [(t.children_left[node], (x0, x), "否" if f == "是女性" else "是"),
                                    (t.children_right[node], (x, x1), "是" if f == "是女性" else "否")]:
             cx = (a + b) / 2
             ax.annotate("", xy=(cx, y - 1 + 0.32), xytext=(x, y - 0.3), arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 0.8})
-            ax.text((x + cx) / 2 + (-0.03 if cx < x else 0.03), y - 0.45, lab, fontsize=7, color=C["gray"], ha="center")
+            ax.text((x + cx) / 2 + (-0.03 if cx < x else 0.03), y - 0.45, lab, fontsize=12, color=C["gray"], ha="center")
             rec(child, a, b, depth + 1)
 
     rec(0, 0, 1, 0)
-    ax.set_title("深度 3 的决策树：先问性别，男性再问年龄，女性再问舱等——「妇女与儿童优先」被数据学出来了", fontsize=9)
+    ax.set_title("深度 3 的决策树：先问性别，男性再问年龄，女性再问舱等——「妇女与儿童优先」被数据学出来了", fontsize=13)
     save(fig, "case-04-titanic-tree")
 
 

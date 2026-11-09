@@ -95,10 +95,10 @@ def fig_infonce():
     for i in range(n):
         for j in range(n):
             color = "#c94c4c" if (i != j and y[i] == y[j]) else "#444444"
-            ax.text(j, i, f"{sim[i,j]:.0f}", ha="center", va="center", fontsize=10.5, color=color)
+            ax.text(j, i, f"{sim[i,j]:.0f}".replace("-","−"), ha="center", va="center", fontsize=10.5, color=color)
     ax.set_xticks(range(n)); ax.set_yticks(range(n))
     ax.set_xticklabels([f"$z_{j}$" for j in range(n)]); ax.set_yticklabels([f"$z_{i}$" for i in range(n)])
-    ax.set_title("in-batch 相似度矩阵 $\\times\\,1/\\tau$（红=正例对）")
+    ax.set_title("in-batch 相似度矩阵 $\\times\\,1/\\tau$（红 = 正例对）")
     fig.colorbar(im, ax=ax, shrink=0.8)
     save(fig, "loss-infonce")
     # 第一行：z0 的 InfoNCE（正例 z1..z3，其余为负）
@@ -245,7 +245,7 @@ def case_focal_imbalance(X, y, Xt, yt):
 def case_calibration(X, y, Xt, yt):
     print("=== 4. 校准：one-hot vs label smoothing ε=0.1，1 epoch，seed 2 ===")
     res = {}
-    for name, fn in [("one-hot", ce_loss), ("平滑 ε=0.1", lambda l_, y_: smooth_loss(l_, y_, 0.1))]:
+    for name, fn in [("one-hot", ce_loss), ("平滑 $\\varepsilon$ = 0.1", lambda l_, y_: smooth_loss(l_, y_, 0.1))]:
         rng = np.random.default_rng(2)
         net = nn.MLP([784, 256, 10], rng)
         run_custom(net, X, y, 469, 128, rng, fn, lr=0.1)
@@ -255,7 +255,7 @@ def case_calibration(X, y, Xt, yt):
               f"平均置信度 {p.max(1).mean()*100:.1f}%")
     fig, ax = plt.subplots(figsize=(3.6, 2.9))
     bins = np.linspace(0, 1, 11)
-    for name, c in [("one-hot", C["blue"]), ("平滑 ε=0.1", C["orange"])]:
+    for name, c in [("one-hot", C["blue"]), ("平滑 $\\varepsilon$ = 0.1", C["orange"])]:
         conf = res[name].max(1); acc = (res[name].argmax(1) == yt)
         mids, accs = [], []
         for b in range(10):

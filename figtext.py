@@ -447,6 +447,92 @@ def fix_math_eq_spacing(fig):
             t.set_text(n)
 
 
+def check_legend_collisions(fig):
+    """图例的文字与色块/线柄压到数据线、散点或 marker 时往往漏检——
+    legend 绘制顺序在数据之上，肉眼看得出但普通文本检查只看 Text。
+    把每个图例条目（文字 + handle 的外接框）当矩形，检查是否与
+    实线/虚线数据段（忽略样式）、散点集合、Line2D marker 相交。"""
+    import numpy as np
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    errs = []
+
+    def _rect(r):
+        x0, y0 = r.x0 - 1, r.y0 - 1
+        x1, y1 = r.x1 + 1, r.y1 + 1
+        return (x0, y0, x1, y1)
+
+    def _seg_rect(a, b, r):
+        if max(a[0], b[0]) < r[0] or min(a[0], b[0]) > r[2] or \
+           max(a[1], b[1]) < r[1] or min(a[1], b[1]) > r[3]:
+            return False
+        if a[0] == b[0]:
+            return r[0] <= a[0] <= r[2]
+        if a[1] == b[1]:
+            return r[1] <= a[1] <= r[3]
+        # 简化：用采样点判断近似相交
+        for t in np.linspace(0, 1, 20):
+            px, py = a[0] + (b[0]-a[0])*t, a[1] + (b[1]-a[1])*t
+            if r[0] <= px <= r[2] and r[1] <= py <= r[3]:
+                return True
+        return False
+
+    for axi, ax in enumerate(fig.axes):
+        leg = ax.get_legend()
+        if leg is None:
+            continue
+        try:
+            if leg.get_frame().get_visible():        # 有底色框的图例盖住数据是合法的
+                continue
+        except Exception:
+            pass
+        frame = leg.get_window_extent(renderer=ren)
+        items = []
+        for t in leg.get_texts():
+            items.append((t.get_window_extent(renderer=ren), f"图例文字：{t.get_text()!r}"))
+        for h in getattr(leg, "legend_handles", getattr(leg, "legendHandles", [])):
+            try:
+                items.append((h.get_window_extent(renderer=ren), "图例色块/线柄"))
+            except Exception:
+                pass
+        # 数据线（含虚线/点线，不再按样式跳过）
+        for ln in ax.lines:
+            if not ln.get_visible() or ln.get_linestyle() == "none":
+                continue
+            xd, yd = ln.get_xdata(), ln.get_ydata()
+            try:
+                pts = ax.transData.transform(list(zip(xd, yd)))
+            except (TypeError, ValueError):
+                continue        # 类别轴（字符串 x）等不可数值化的数据跳过
+            if len(xd) < 2:
+                # Line2D 散点 marker
+                for px, py in pts:
+                    for e, lab in items:
+                        r = _rect(e)
+                        if r[0] <= px <= r[2] and r[1] <= py <= r[3]:
+                            errs.append(f"ax{axi} {lab} 压数据点")
+                continue
+            for k in range(len(pts) - 1):
+                for e, lab in items:
+                    if _seg_rect(tuple(pts[k]), tuple(pts[k + 1]), _rect(e)):
+                        errs.append(f"ax{axi} {lab} 压数据线")
+        # PathCollection 散点
+        for c in ax.collections:
+            try:
+                off = c.get_offsets()
+                tr = c.get_offset_transform()
+                pts = tr.transform(off)
+            except Exception:
+                continue
+            for px, py in pts:
+                for e, lab in items:
+                    r = _rect(e)
+                    if r[0] <= px <= r[2] and r[1] <= py <= r[3]:
+                        errs.append(f"ax{axi} {lab} 压散点")
+    if errs:
+        raise AssertionError(f"{len(errs)} 处图例压线/点：\n" + "\n".join(sorted(set(errs))))
+
+
 def checks(fig):
     """save() 前的全部文字检查。"""
     center_in_rects(fig)
@@ -457,6 +543,7 @@ def checks(fig):
     check_plain_text(fig)
     check_math_line_spacing(fig)
     check_text_in_rect(fig)
+    check_legend_collisions(fig)
 
 
 def strip_ws(path):

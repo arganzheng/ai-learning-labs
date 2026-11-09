@@ -3,15 +3,16 @@
 选一句带指代的话，取第 5 层的两个头（一个看"上一个词"，一个把 "it" 指回名词），
 输出 SVG 到博客 img/in-post/。运行一次即可，依赖 transformers（本地缓存的 gpt2）+ matplotlib。
 """
-import sys, torch
+import os, sys, torch
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+import figtext  # noqa: E402  注册 Noto Sans SC + svg.fonttype=none
+
 OUT = sys.argv[1] if len(sys.argv) > 1 else "/Users/argan/Code/arganzheng.github.com/img/in-post/transformer-01-gpt2-attention-heads.svg"
-plt.rcParams["font.family"] = ["Heiti SC", "PingFang SC", "Arial Unicode MS", "DejaVu Sans"]
-plt.rcParams["svg.fonttype"] = "none"
 
 tok = GPT2TokenizerFast.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained("gpt2", attn_implementation="eager").eval()
@@ -50,4 +51,6 @@ for ax, (score, layer, h), title in zip(axes, [best_prev, best_it],
 fig.colorbar(im, ax=axes, fraction=0.02, pad=0.02, label="注意力权重（每行和为 1）")
 fig.suptitle(f"GPT-2 small 对「{text}」的两个真实 attention 头：下三角是 causal mask（看不到右边）", fontsize=12)
 fig.savefig(OUT, bbox_inches="tight")
+figtext.strip_ws(OUT)
+figtext.embed_fonts(OUT)
 print("saved", OUT)

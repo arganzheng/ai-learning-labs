@@ -138,7 +138,7 @@ def logit_qkln():
         ax.set_xlim(0, 800)
         ax.set_xticks(range(0, 801, 200))
     a1.axhline(100, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(20, 115, "~100 经验危险线（§二.4）", fontsize=10, color="#555555")
+    a1.text(0.55, 0.04, "~100 经验危险线（§二.4）", transform=a1.transAxes, fontsize=10, color="#555555")
     a1.legend(fontsize=10, frameon=False, loc="upper left")
     a1.set_ylim(0, 780)
     a1.set_yticks([0, 100, 200, 300, 400, 500, 600, 700])

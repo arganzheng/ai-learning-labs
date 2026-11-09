@@ -70,6 +70,7 @@ def save(fig, name):
     check_plain_text(fig)
     check_math_line_spacing(fig)
     check_text_in_rect(fig)
+    _ft.check_legend_collisions(fig)
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})

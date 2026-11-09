@@ -315,10 +315,10 @@ def plot_negsample():
     """FIGURE：一个正样本对 + 5 个负样本，σ 分数一上一下。"""
     center, pos, negs, before, after = negsample_numbers()
     n = len(negs)
-    pitch = 9.0
+    pitch = 11.5
     top = n * pitch
 
-    fig, ax = new_diagram((7.6, 3.6), (0, 100), (-8, top + 10))
+    fig, ax = new_diagram((7.6, 4.4), (0, 100), (-8, top + 14))
     patches, inner = [], []
 
     def bx_(center_, text, **kw):
@@ -328,22 +328,22 @@ def plot_negsample():
         return p, t
 
     mid = top / 2
-    bx_((16, mid), f"中心词\n{center}", width=15, height=7,
-        fontsize=14, fc="#eef3fa")
+    bx_((16, mid), f"中心词\n{center}", width=24, height=9.5,
+        fontsize=12.5, fc="#eef3fa")
     bx_((60, top), f"正样本：{pos}\n$\sigma$ = {after[pos]:.2f}",
-        width=24, height=6.2, fontsize=14, fc="#ffffff", ec=GREEN)
+        width=27, height=9.5, fontsize=12.5, fc="#ffffff", ec=GREEN)
     arrow(ax, (24.5, mid + 1.6), (46.5, top - 0.4), color=GREEN)
     for i, w in enumerate(negs):
         y = top - pitch * (i + 1) - 1.0
         bx_((60, y), f"负样本 {i + 1}：{w}  $\sigma$ = {after[w]:.2f}",
-            width=27, height=5.2, fontsize=14, fc="#ffffff", ec=VERMILION)
+            width=29, height=8.5, fontsize=12.5, fc="#ffffff", ec=VERMILION)
         ax.plot([24.5, 45.5], [mid - 1.2, y + 0.6],
                 color=VERMILION, lw=1.1, zorder=1, alpha=0.6)
-    bx_((88, mid), "目标：\n正样本推上去\n负样本压下来", width=19,
-        height=11, fontsize=14)
+    bx_((89, mid), "目标：\n正样本推上去\n负样本压下来", width=21,
+        height=14, fontsize=12.5)
     arrow(ax, (74.5, top), (78, mid + 3), color=GREEN)
     arrow(ax, (74.5, 0), (78, mid - 3), color=VERMILION)
-    ax.text(50, top + 6.8, "随机初始化 + 15 步 SGD 之后的 $\sigma$ 分数",
+    ax.text(50, top + 10.5, "随机初始化 + 15 步 SGD 之后的 $\sigma$ 分数",
             ha="center", va="center", fontsize=14, color="#444444")
 
     check_layout(fig, ax, patches, inner)

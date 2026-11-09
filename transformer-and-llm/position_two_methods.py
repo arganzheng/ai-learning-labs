@@ -53,15 +53,17 @@ if __name__ == "__main__":
     print(f"  不加位置时 猫·狗 = {bare:.3f}；两种词序分数不同，整句后移分数不变（只看相对位置）")
 
     if len(sys.argv) > 1:
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         import matplotlib
 
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         from matplotlib.patches import Arc
+        import figtext
 
         plt.rcParams.update({
-            "font.family": ["Heiti SC", "PingFang SC", "Noto Sans CJK SC", "Arial Unicode MS", "DejaVu Sans"],
-            "axes.unicode_minus": False, "svg.fonttype": "none", "font.size": 9,
+            "axes.unicode_minus": False, "font.size": 9,
             "axes.titlesize": 10, "axes.spines.top": False, "axes.spines.right": False,
             "figure.constrained_layout.use": True,
         })
@@ -112,4 +114,6 @@ if __name__ == "__main__":
             ax.spines["bottom"].set_visible(False)
 
         fig.savefig(sys.argv[1], format="svg", bbox_inches="tight", metadata={"Date": None})
+        figtext.strip_ws(sys.argv[1])
+        figtext.embed_fonts(sys.argv[1])
         print(f"\n  图已保存 {sys.argv[1]}")

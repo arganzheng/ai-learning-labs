@@ -190,6 +190,7 @@ def save(fig, name, dpi=150):
     _check_text_floor(fig, name)
     figtext.center_in_rects(fig)
     collide(fig)
+    figtext.check_legend_collisions(fig)
     figtext.checks(fig)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None}, dpi=dpi)

@@ -25,7 +25,11 @@ def _openml(data_id, name):
         return pd.read_parquet(path)
     from sklearn.datasets import fetch_openml
     print(f"  下载 openml #{data_id} ({name}) ...")
-    df = fetch_openml(data_id=data_id, as_frame=True, data_home=DATA).frame
+    try:
+        df = fetch_openml(data_id=data_id, as_frame=True, data_home=DATA).frame
+    except TypeError:
+        # pandas ARFF 解析器在类目含 int 时崩（re.search on int）；liac-arff 解析器不受影响
+        df = fetch_openml(data_id=data_id, as_frame=True, data_home=DATA, parser="liac-arff").frame
     df.to_parquet(path)
     return df
 

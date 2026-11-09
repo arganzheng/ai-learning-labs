@@ -298,7 +298,7 @@ def exp_variance():
         print(f"  {B:>5} {form[-1]:>10.4f} {meas[-1]:>10.4f} {time.time() - t0:>11.1f}s")
     print("  条件读法：方差公式要求各棵树同分布（bootstrap + 同一算法保证）、ρ 是任意两棵树的相关；B → ∞ 只能压掉 (1 − ρ)σ²/B，剩下的 $\\rho\\sigma^2$ 只能靠降 ρ——这就是每个节点只看 m 个特征的理由；m 太小单棵树偏差上升，准确率反而掉")
     print(f"  ρ 是用 {S} 份数据 × {pairs} 对树估的，小到 0.0x 时本身带有 ±0.01 量级的抽样误差，所以「公式」列在 m = 4、1 时只能看量级，不能看第四位小数")
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4))
     ax = axes[0]
     for m, col in ((20, C["gray"]), (4, C["red"]), (1, C["blue"])):
         s2, r_ = rows[m]
@@ -306,7 +306,7 @@ def exp_variance():
         ax.plot(bb, r_ * s2 + (1 - r_) * s2 / bb, color=col, lw=1.4, label=f"m = {m}：$\\rho$ = {r_:.2f}，$\\rho\\sigma^2$ = {r_ * s2:.4f}")
     ax.plot(Bs, meas, "o", color=C["red"], label="实测（m = 4）")
     ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xlabel("树的棵数 B（对数轴）"); ax.set_ylabel("森林预测概率的方差（对数轴）")
-    ax.legend(frameon=False, fontsize=6.5); ax.set_title("方差 = $\\rho\\sigma^2 + (1-\\rho)\\sigma^2/B$：B 大了只剩 $\\rho\\sigma^2$", fontsize=8)
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.24), fontsize=9); ax.set_title("方差 = $\\rho\\sigma^2 + (1-\\rho)\\sigma^2/B$：B 大了只剩 $\\rho\\sigma^2$", fontsize=8)
     ax = axes[1]
     ms = [20, 4, 1]
     ax.bar([f"m = {m}" for m in ms], [rows[m][1] for m in ms], color=[C["gray"], C["red"], C["blue"]])
@@ -401,12 +401,12 @@ def exp_logit():
         ax.plot(xs[:, 0], sigmoid(predict_logit(model_4, xs, lr=1.0, n_trees=k)), color=col, lw=1.4, label=f"{k} 棵后：$p$")
         ax.plot(xs[:, 0], predict_logit(model_4, xs, lr=1.0, n_trees=k) / 4, color=col, lw=0.8, ls="--", label=f"{k} 棵后：$F/4$")
     ax.scatter(X4[:, 0], y4, s=30, color=C["blue"], zorder=3, label="4 个样本")
-    ax.axhline(0, color=C["gray"], lw=0.5); ax.set_xlabel("x"); ax.legend(frameon=True, loc="upper left", fontsize=9)
+    ax.axhline(0, color=C["gray"], lw=0.5); ax.set_xlabel("x"); ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.26), ncol=2, fontsize=9)
     ax.set_title("树累加 $F$（虚线），概率是最后一步 $\sigma(F)$")
     ax = axes[1]
     ax.plot(range(1, n_trees + 1), curve_logit, color=C["red"], lw=1.4, label="累加 logit，最后 sigmoid")
     ax.plot(range(1, n_trees + 1), curve_naive, color=C["gray"], lw=1.4, label="直接累加概率（裁剪）")
-    ax.set_xlabel("树的棵数"); ax.set_ylabel("测试 log-loss"); ax.legend(frameon=True, loc="upper left", fontsize=9)
+    ax.set_xlabel("树的棵数"); ax.set_ylabel("测试 log-loss"); ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.26), fontsize=9)
     ax.set_title("两种累加方式的测试 log-loss")
     save(fig, "06-logit-boosting")
     print()

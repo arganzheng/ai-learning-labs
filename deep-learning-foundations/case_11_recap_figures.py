@@ -111,8 +111,15 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
 
 def cell(ax, x, y, w, h, body, fs=10.5, fc="#eef4fb", ec="#7a9ac0"):
     p = box(ax, x, y, w, h, fc=fc, ec=ec, lw=.9, r=.03)
-    text(ax, x + w / 2, y + h / 2, body, in_box=p, ha="center", va="center",
-         fontsize=fs)
+    ls_ = body.split("\n")
+    if len(ls_) == 1:
+        text(ax, x + w / 2, y + h / 2, body, in_box=p, ha="center",
+             va="center", fontsize=fs)
+    else:
+        text(ax, x + w / 2, y + h * .68, ls_[0], in_box=p, ha="center",
+             va="center", fontsize=fs)
+        text(ax, x + w / 2, y + h * .32, ls_[1], in_box=p, ha="center",
+             va="center", fontsize=fs)
     return p
 
 
@@ -160,8 +167,8 @@ def figure_training_step():
     _SEGMENTS.append((ax, (12.1, y - .05), (12.1, 3.30)))
     _SEGMENTS.append((ax, (12.1, 3.30), (4.15, 3.30)))
     arrow(ax, (4.15, 3.30), (4.15, y - .35))
-    text(ax, 8.2, 3.08, "更新 $\\theta$", fontsize=10.5, ha="center",
-         va="top", color="#555555")
+    text(ax, 8.2, 3.34, "更新 $\\theta$", fontsize=10.5, ha="center",
+         va="bottom", color="#555555")
     # 07 正则化挂在 loss 与优化器上
     pr = box(ax, 5.4, 5.9, 5.8, .8, fc="#eef4fb", ec="#7a9ac0", lw=.9,
              r=.03)
@@ -170,15 +177,21 @@ def figure_training_step():
          va="center", fontsize=10.5, color="#333333")
     arrow(ax, (6.95, 5.9), (6.95, 5.35), style="-")
     arrow(ax, (9.9, 5.9), (9.9, 5.35), style="-")
-    # 可替换结构块
-    text(ax, 10.9, 2.72, "模型块可替换的结构（08 / 09 / 10）",
-         fontsize=10.5, ha="center", color="#555555")
+    # 可替换结构块：三格顶边括号 → 竖线连到 模型盒底
     cell(ax, .5, 1.1, 2.3, 1.2, "08 CNN\ny=Mx 稀疏共享", fs=10.5)
-    cell(ax, 2.95, 1.1, 2.3, 1.2, "09 Embedding\n$e_i^{\\top}W$ 查表",
+    cell(ax, 2.95, 1.1, 2.3, 1.2, "09 Embedding\n$e_i^{\\!\\top}W$ 查表",
          fs=10.5)
     cell(ax, 5.4, 1.1, 3.0, 1.2,
          "10 RNN\n$h_t=\\tanh(Wh_{t-1}\\!+\\!Ux_t)$", fs=10.5)
-    ax.plot([4.15, 4.15], [3.35, 2.9], color="#aaaaaa", lw=.8)
+    for cx_ in (1.65, 4.1, 6.9):
+        ax.plot([cx_, cx_], [2.3, 2.55], color="#aaaaaa", lw=.8)
+        _SEGMENTS.append((ax, (cx_, 2.3), (cx_, 2.55)))
+    ax.plot([1.65, 6.9], [2.55, 2.55], color="#aaaaaa", lw=.8)
+    _SEGMENTS.append((ax, (1.65, 2.55), (6.9, 2.55)))
+    ax.plot([4.15, 4.15], [2.55, 3.78], color="#aaaaaa", lw=.8)
+    _SEGMENTS.append((ax, (4.15, 2.55), (4.15, 3.78)))
+    text(ax, 4.4, 2.95, "模型块可替换的结构（08 / 09 / 10）",
+         fontsize=10.5, ha="left", va="center", color="#555555")
     finish(fig, "dl-recap-training-step")
 
 

@@ -125,7 +125,7 @@ def min_norm():
     ax.plot(*w_min, "o", ms=8, color=ORANGE)
     ax.text(w_min[0] + 0.12, w_min[1] + 0.18,
             f"最小范数解 $w^*=(1,2)$\n$\\|w^*\\|=\\sqrt{{5}}\\approx2.236$",
-            fontsize=10.5, color=ORANGE)
+            fontsize=10.5, color=ORANGE, linespacing=1.5)
     ax.plot(*w_other, "o", ms=8, color=RED)
     ax.text(w_other[0] + 0.15, w_other[1] + 0.42,
             "另一个插值解 (5,0)，范数 =5", fontsize=10.5, color=RED,

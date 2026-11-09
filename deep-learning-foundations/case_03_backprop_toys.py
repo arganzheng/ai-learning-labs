@@ -120,7 +120,7 @@ def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
                                    edgecolor=ec, lw=.5))
             if not grey:
                 ax.text(x + c * cw + (cw - .02) / 2, y - r * ch - ch / 2,
-                        f"{v:g}", ha="center", va="center", fontsize=fs)
+                        f"{v:g}".replace("-","\u2212"), ha="center", va="center", fontsize=fs)
     return y - len(vals) * ch
 
 
@@ -349,7 +349,7 @@ def figure_scalar():
     node(ax,7.1,top,"e=z-y","1",w=2.0,h=1.1)
     node(ax,10.1,top,r"$L=e^2$","1",w=1.5,h=1.1)
     node(ax,2.6,1.3,r"w","3",w=1.5,h=1.05)
-    node(ax,5.1,1.3,r"b","-1",w=1.5,h=1.05)
+    node(ax,5.1,1.3,r"b","−1",w=1.5,h=1.05)
     node(ax,8.2,1.3,r"y","4",w=1.5,h=1.05)
     arrow(ax,(2.15,5.45),(3.65,5.45),color=C["blue"])
     arrow(ax,(6.15,5.45),(7.05,5.45),color=C["blue"])
@@ -455,17 +455,20 @@ def figure_shapes():
     grid(ax,.6,4.95,[[1,2,3]],cw=.5,zero_grey=False)
     arrow(ax,(2.25,4.4),(2.75,4.4),color=C["blue"])
     grid(ax,2.85,4.95,[[2,4,6]],cw=.5,fc="#fae6d6",zero_grey=False)
-    text(ax,2.35,3.45,(r"$L=\sum_i x_i^2$" + "\n" + "dL/dx 与 x 同形"),ha="center",va="center",fontsize=10.5)
+    text(ax,2.35,3.68,r"$L=\sum_i x_i^2$",ha="center",va="center",fontsize=10.5)
+    text(ax,2.35,3.22,"dL/dx 与 x 同形",ha="center",va="center",fontsize=10.5)
     text(ax,5.95,5.55,r"标量 L 对矩阵 W",ha="center",fontsize=10.5)
     grid(ax,4.35,4.95,[[1,2],[3,4]],cw=.5,zero_grey=False)
     arrow(ax,(5.5,4.4),(6.0,4.4),color=C["blue"])
     grid(ax,6.1,4.95,[[2,4],[6,8]],cw=.5,fc="#fae6d6",zero_grey=False)
-    text(ax,5.95,3.45,(r"$L=\sum_{ij}W_{ij}^2$" + "\n" + "dW 与 W 同形"),ha="center",va="center",fontsize=10.5)
+    text(ax,5.95,3.68,r"$L=\sum_{ij}W_{ij}^2$",ha="center",va="center",fontsize=10.5)
+    text(ax,5.95,3.22,"dW 与 W 同形",ha="center",va="center",fontsize=10.5)
     text(ax,9.5,5.55,r"向量 y 对向量 x：Jacobian",ha="center",fontsize=10.5)
     grid(ax,8.1,4.95,[[1,1,0],[0,3,2]],cw=.5,zero_grey=False)
     text(ax,9.85,4.42,r"$y_1$ 的梯度",ha="left",va="center",fontsize=10.5)
     text(ax,9.85,3.92,r"$y_2$ 的梯度",ha="left",va="center",fontsize=10.5)
-    text(ax,11.7,3.3,(r"$y=(x_1+x_2,\,x_2 x_3)$" + "\n" + r"x=(1,2,3)，J 为 2×3"),ha="right",va="center",fontsize=10.5)
+    text(ax,11.7,3.52,r"$y=(x_1+x_2,\,x_2 x_3)$",ha="right",va="center",fontsize=10.5)
+    text(ax,11.7,3.08,r"x=(1,2,3)，J 为 2×3",ha="right",va="center",fontsize=10.5)
     text(ax,6,2.35,r"每格 $g_{ij}$：$W_{ij}$ 增 $\epsilon$，L 约增 $g_{ij}\epsilon$。$W\leftarrow W-\eta\,dW$ 逐元素对应，",ha="center",fontsize=10.5)
     text(ax,6,1.9,"所以标量对参数的梯度必须与参数同形；只有向量对向量才产生 Jacobian。",ha="center",fontsize=10.5)
     finish(fig,"backprop-gradient-shapes")
@@ -512,10 +515,11 @@ def figure_batched_jacobian():
                                    facecolor="#ececec" if grey else "#dce9f7",
                                    edgecolor="#888888",lw=.4))
             if not grey:
-                ax.text(x0+c*cw_+cw_/2,y0-(r+.5)*ch_,f"{v:g}",ha="center",va="center",fontsize=10.5)
+                ax.text(x0+c*cw_+cw_/2,y0-(r+.5)*ch_,f"{v:g}".replace("-","\u2212"),ha="center",va="center",fontsize=10.5)
     for bx,by in ((x0,y0),(x0+2*cw_,y0-2*ch_),(x0+4*cw_,y0-4*ch_)):
         ax.add_patch(Rectangle((bx,by-2*ch_),2*cw_,2*ch_,fill=False,edgecolor="#111111",lw=1.4))
-    text(ax,2.15,2.3,(r"对角块都是 $W^{\!\!\top}$，其余全 0" + "\n" + "（样本互不依赖）"),ha="center",va="center",fontsize=10.5)
+    text(ax,2.15,2.52,r"对角块都是 $W^{\!\!\top}$，其余全 0",ha="center",va="center",fontsize=10.5)
+    text(ax,2.15,2.08,"（样本互不依赖）",ha="center",va="center",fontsize=10.5)
     text(ax,5.2,5.15,r"G（3×2）",ha="center",fontsize=10.5)
     grid(ax,4.7,4.9,G.tolist(),cw=.5,zero_grey=False,fs=10.5)
     text(ax,6.65,4.15,"×",ha="center",va="center",fontsize=12)
@@ -580,15 +584,15 @@ def figure_mini():
     d=mini_values(); err=mini_rel_err()
     fig,ax=base_fig("2-2-2 迷你网络：前向值在上，反向梯度沿链逐节点回走",7.6,3.8,(0,12),(0.3,6.3))
     xs=[.3,2.75,5.2,7.65,10.1]; w=1.8
-    vals=[("x","[ 0.6 -1.2]"),("h","[0.34 -0.66]"),("a","[0.34 0]"),
-          ("z","[0.29 -0.27]"),("L","0.453")]
+    vals=[("x","[ 0.6 −1.2]"),("h","[0.34 −0.66]"),("a","[0.34 0]"),
+          ("z","[0.29 −0.27]"),("L","0.453")]
     for x,(a,b) in zip(xs,vals):
         p=box(ax,x,4.5,w,1.05,"",fc="#dce9f7",ec=C["blue"])
         box_title(ax,x+w/2,5.2,a,p); text(ax,x+w/2,4.78,b,in_box=p,ha="center",va="center",fontsize=10.5)
     for i in range(4): arrow(ax,(xs[i]+w+.05,5.02),(xs[i+1]-.08,5.02),color=C["blue"])
     text(ax,4.88,4.05,"ReLU 置 0",ha="center",va="center",fontsize=10.5)
     bw=1.9
-    grads=[(2.7,r"$G_H$","[-0.44 0]"),(5.15,r"$G_A$","[-0.44 0.15]"),(7.6,r"$G_Z$","[-0.36 0.36]")]
+    grads=[(2.7,r"$G_H$","[−0.44 0]"),(5.15,r"$G_A$","[−0.44 0.15]"),(7.6,r"$G_Z$","[−0.36 0.36]")]
     for x,a,b in grads:
         p=box(ax,x,2.6,bw,1.0,"",fc="#fff3e0",ec=C["orange"])
         box_title(ax,x+bw/2,3.28,a,p); text(ax,x+bw/2,2.86,b,in_box=p,ha="center",va="center",fontsize=10.5)
@@ -598,7 +602,7 @@ def figure_mini():
     arrow(ax,(7.55,3.1),(7.15,3.1),color=C["orange"])
     arrow(ax,(5.1,3.1),(4.7,3.1),color=C["orange"])
     text(ax,10.35,3.4,r"$G_Z=(P-Y)$",ha="left",va="center",fontsize=10.5,color=C["orange"])
-    for x,a,b in ((1.4,"dW1","[[-0.26 0]\n [ 0.52 0]]"),(5.6,"dW2","[[-0.12 0.12]\n [0 0]]")):
+    for x,a,b in ((1.4,"dW1","[[−0.26 0]\n [ 0.52 0]]"),(5.6,"dW2","[[−0.12 0.12]\n [0 0]]")):
         p=box(ax,x,.55,2.5,1.55,"",fc="#fff3e0",ec=C["orange"])
         box_title(ax,x+1.25,1.78,a,p); text(ax,x+1.25,1.1,b,in_box=p,ha="center",va="center",fontsize=10.5)
     arrow(ax,(3.7,2.55),(3.0,2.15),color=C["orange"],lw=.9)

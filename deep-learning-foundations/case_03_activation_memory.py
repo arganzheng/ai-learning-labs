@@ -406,11 +406,11 @@ def fig_checkpointing():
     u = cw_ + cgap
     seg_label(y2 + chh + 0.5, x0, x0 + 8 * u, "前向 L1→L8",
               C["orange"])
-    seg_label(y2 + chh + 0.5, x0 + 8 * u, x0 + 12 * u, "重 L5-8", "#888888")
-    seg_label(y2 + chh + 0.5, x0 + 12 * u, x0 + 16 * u, "反 L8-5",
+    seg_label(y2 + chh + 0.5, x0 + 8 * u, x0 + 12 * u, "重 L5–8", "#888888")
+    seg_label(y2 + chh + 0.5, x0 + 12 * u, x0 + 16 * u, "反 L8–5",
               C["blue"])
-    seg_label(y2 + chh + 0.5, x0 + 16 * u, x0 + 20 * u, "重 L1-4", "#888888")
-    seg_label(y2 + chh + 0.5, x0 + 20 * u, x0 + 24 * u, "反 L4-1",
+    seg_label(y2 + chh + 0.5, x0 + 16 * u, x0 + 20 * u, "重 L1–4", "#888888")
+    seg_label(y2 + chh + 0.5, x0 + 20 * u, x0 + 24 * u, "反 L4–1",
               C["blue"])
 
     # ---- 右列：实测保存量的比例条（起点对齐，同在 ckpt 行最右格之外）----
@@ -457,7 +457,7 @@ def fig_one_layer():
         (r"x", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
         (r"z=Wx+b", "线性", "W, b",
          "#f5f8fc", "#555555", 2.6),
-        (r"z", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
+        (r"z", "加权和", "(\u22121, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
         (r"f", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
         (r"a", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
         ("下一层", r"它的 x", "", "#f5f5f5", "#888888", 1.6),

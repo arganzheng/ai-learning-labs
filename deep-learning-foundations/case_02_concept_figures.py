@@ -104,7 +104,9 @@ def plot_chain():
     a1_mid = (xs["f1"] + 3.6 + xs["h1"] - 2.6) / 2
     ax.text(a1_mid, 100, "初始化", ha="center", fontsize=17.0, color=BLUE,
             weight="bold")
-    ax.text(a1_mid, 95.5, "选 W 的标准差，\n让 t=0 时每个 $a_l \\approx 1$",
+    ax.text(a1_mid, 97.6, "选 W 的标准差，",
+            ha="center", va="top", fontsize=17.0, color=BLUE)
+    ax.text(a1_mid, 91.4, "让 t=0 时每个 $a_l \\approx 1$",
             ha="center", va="top", fontsize=17.0, color=BLUE)
     arrow(ax, (a1_mid, 102.6), (a1_mid, y1 - 7.2), color=BLUE)
 
@@ -144,9 +146,10 @@ def plot_chain():
         ax.text(mid, y2 + 4.2, "方差回到 1", ha="center", va="bottom",
                 fontsize=15.5, color=ORANGE)
 
-    ax.text(X, 64.5, "初始化是每个网络都要做的一步，只决定 $a_l$ 的起点；\n"
-            "归一化是另外加进结构的部件。Transformer 实际用 Pre-Norm——"
-            "归一化放在 $f_l$ 之前、残差分支里（见第六章）",
+    ax.text(X, 65.5, "初始化是每个网络都要做的一步，只决定 $a_l$ 的起点；",
+            ha="center", va="top", fontsize=15, color="#555555")
+    ax.text(X, 61.0, "归一化是另外加进结构的部件。Transformer 实际用 "
+            "Pre-Norm——归一化放在 $f_l$ 之前、残差分支里（见第六章）",
             ha="center", va="top", fontsize=15, color="#555555")
 
     # ---- 面板 B：反向，Jacobian 连乘；两行对照 ----
@@ -239,8 +242,9 @@ def plot_product():
     ax.tick_params(labelsize=13)
     ax.grid(alpha=0.2, which="both")
     ax.legend(frameon=True, framealpha=0.9, fontsize=12, loc="lower right")
-    marks = [(64, 0.5, "0.5^64 ≈ 5e-20"), (128, 0.9, "0.9^128 ≈ 1.4e-6"),
-             (128, 1.1, "1.1^128 ≈ 2e5")]
+    marks = [(64, 0.5, r"$0.5^{64}$ ≈ $5\times10^{-20}$"),
+             (128, 0.9, r"$0.9^{128}$ ≈ $1.4\times10^{-6}$"),
+             (128, 1.1, r"$1.1^{128}$ ≈ $2\times10^{5}$")]
     color_of = {a: c for a, c in curves}
     for depth, a, text in marks:
         y = a ** depth

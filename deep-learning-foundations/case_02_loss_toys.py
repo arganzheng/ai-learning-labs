@@ -178,15 +178,24 @@ def figure_overview():
         ("语言模型", r"V=50257 softmax", r"next-token CE 逐位平均" + "\n" + r"初始 $=\ln V=10.82$",
          r"同 p−y；每步在 V 类上推"),
         ("对比学习", r"相似度 $\times\,1/\tau$", r"InfoNCE（$\tau=0.1$）" + "\n" + r"$=-\log e^{s^+}/\sum_j e^{s_j}=5.96$",
-         "行内 softmax 差：\n正例推高、其余压低"),
+         "行内 softmax 差：" + "\n" + "正例推高、其余压低"),
         ("偏好对齐", r"$\log\pi-\log\pi_{\mathrm{ref}}$ 差", r"DPO $=-\log\sigma(\beta\cdot\mathrm{margin})$" + "\n" + r"$=-\log 0.532=0.630$",
-         r"chosen ↑$\beta(1-\sigma)$\nrejected ↓同量"),
+         r"chosen ↑$\beta(1-\sigma)$" + "\n" + r"rejected ↓同量"),
     ]
     y = 5.9
     for name, c1, c2, c3 in rows:
         text(ax, .15, y + .12, name, fontsize=10.5, va="center", color="#111111")
         for s, x, w in zip((c1, c2, c3), xs, ws):
-            box(ax, x, y - .45, w, 1.15, s, fs=10.5)
+            p = box(ax, x, y - .45, w, 1.15)
+            lines = s.split("\n")
+            if len(lines) == 1:
+                text(ax, x + w / 2, y + .12, s, in_box=p, ha="center",
+                     va="center", fontsize=10.5)
+            else:
+                text(ax, x + w / 2, y + .36, lines[0], in_box=p,
+                     ha="center", va="center", fontsize=10.5)
+                text(ax, x + w / 2, y - .05, lines[1], in_box=p,
+                     ha="center", va="center", fontsize=10.5)
         y -= 1.25
     finish(fig, "dl-loss-overview")
 
@@ -201,8 +210,11 @@ def figure_lm_tokens():
     for i, p in enumerate(TOY_PROBS):
         x = x0 + i * (cw + gap)
         box(ax, x, 4.15, cw, .6, rf"$p_{i + 1}={p:.2f}$", fs=10.5)
-        box(ax, x, 2.55, cw, .95, rf"$-\log p$" + "\n" + rf"−{np.log(p):.3f}", fs=10.5,
-            fc="#eef4fb", ec="#7a9ac0")
+        p_ = box(ax, x, 2.55, cw, .95, fc="#eef4fb", ec="#7a9ac0")
+        text(ax, x + cw / 2, 3.14, r"$-\log p$", in_box=p_, ha="center",
+             va="center", fontsize=10.5)
+        text(ax, x + cw / 2, 2.79, rf"−{-np.log(p):.3f}", in_box=p_,
+             ha="center", va="center", fontsize=10.5)
         arrow(ax, (x + cw / 2, 4.15), (x + cw / 2, 3.55))
         arrow(ax, (x + cw / 2, 2.55), (x + cw / 2, 2.4))
     ax.plot([x0 + cw / 2, 9.2], [2.4, 2.4], color="#555555", lw=1.0)
@@ -228,16 +240,32 @@ def figure_dpo():
             ("rejected", LP_L, LPR_L, rl, C["red"], r"梯度为正 → $\log p$ 被压低 ↓"))):
         y = 5.0 - i * 1.9
         text(ax, .1, y + .15, name, fontsize=10.5, color=col)
-        box(ax, 1.55, y - .35, 3.6, .95,
-            rf"$\log\pi_\theta-\log\pi_{{\mathrm{{ref}}}}$" + "\n" + rf"={lp}−({lpr})", fs=10.5)
-        box(ax, 5.6, y - .35, 1.6, .95, "ratio" + "\n" + rf"{r:+.2f}", fs=10.5)
+        p_ = box(ax, 1.55, y - .35, 3.6, .95)
+        text(ax, 3.35, y + .21,
+             rf"$\log\pi_\theta-\log\pi_{{\mathrm{{ref}}}}$", in_box=p_,
+             ha="center", va="center", fontsize=10.5)
+        text(ax, 3.35, y - .04,
+             rf"={lp}−({lpr})".replace("-", "\u2212"), in_box=p_,
+             ha="center", va="center", fontsize=10.5)
+        p_ = box(ax, 5.6, y - .35, 1.6, .95)
+        text(ax, 6.4, y + .21, "ratio", in_box=p_, ha="center",
+             va="center", fontsize=10.5)
+        text(ax, 6.4, y - .04, rf"{r:+.2f}".replace("-", "\u2212"),
+             in_box=p_, ha="center", va="center", fontsize=10.5)
         arrow(ax, (5.15, y + .12), (5.6, y + .12))
         text(ax, 7.85, y + .12, note, fontsize=10.5, color="#555555")
-    box(ax, 5.6, 1.55, 2.45, .85, rf"margin ={delta:+.2f}" + "\n" + rf"$\beta\cdot$margin ={z:.3f}",
-        fs=10.5, fc="#eef4fb", ec="#7a9ac0")
+    p_ = box(ax, 5.6, 1.42, 2.45, 1.0, fc="#eef4fb", ec="#7a9ac0")
+    text(ax, 6.825, 2.08, rf"margin ={delta:+.2f}".replace("-", "\u2212"),
+         in_box=p_, ha="center", va="center", fontsize=10.5)
+    text(ax, 6.825, 1.74, rf"$\beta\cdot$margin ={z:.3f}".replace("-", "\u2212"),
+         in_box=p_, ha="center", va="center", fontsize=10.5)
     arrow(ax, (6.9, 4.65), (8.0, 2.42))     # chosen ratio ↓ 合流
     arrow(ax, (6.4, 2.75), (6.4, 2.42))     # rejected ratio ↓ 合流（相减）
-    box(ax, 8.45, 1.55, 1.5, .85, rf"$\sigma({z:.2f})$" + "\n" + rf"={sig:.3f}", fs=10.5)
+    p_ = box(ax, 8.45, 1.42, 1.5, 1.0)
+    text(ax, 9.2, 2.08, rf"$\sigma({z:.2f})$", in_box=p_, ha="center",
+         va="center", fontsize=10.5)
+    text(ax, 9.2, 1.74, rf"={sig:.3f}", in_box=p_, ha="center",
+         va="center", fontsize=10.5)
     arrow(ax, (8.05, 1.97), (8.45, 1.97))
     box(ax, 10.2, 1.55, 1.7, .85, "loss" + "\n" + rf"={loss:.3f}", fs=10.5,
         fc="#fde9d9", ec="#c98a4a")

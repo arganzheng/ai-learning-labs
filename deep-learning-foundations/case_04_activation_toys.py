@@ -117,7 +117,8 @@ def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
                                    edgecolor=ec, lw=.5))
             if not grey:
                 ax.text(x + c * cw + (cw - .02) / 2, y - r * ch - ch / 2,
-                        f"{v:g}", ha="center", va="center", fontsize=fs)
+                        f"{v:g}".replace("-", "\u2212"), ha="center",
+                        va="center", fontsize=fs)
     return y - len(vals) * ch
 
 
@@ -338,6 +339,7 @@ def figure_relu_fit():
     ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=10.5,
               frameon=False)
     ax.set_xticks([-2, -1, 0, 1, 2]); ax.set_yticks([0, 1, 2, 3, 4])
+    ax.set_xticklabels(["\u22122", "\u22121", "0", "1", "2"])
     ax.tick_params(labelsize=11.5)
     ax.set_xlabel("x"); ax.set_ylabel("y")
     ax.set_title("ReLU 单元各贡献一个折点，5 个折点就贴近整条曲线",
@@ -417,6 +419,7 @@ def figure_dead_relu():
         ax.axvline(0, color="#111111", lw=1)
         ax.set_title(t, fontsize=10.5)
         ax.set_xlabel("预激活 z", fontsize=10.5); ax.set_xticks(xt)
+        ax.set_xticklabels([f"{v:g}".replace("-", "\u2212") for v in xt])
         ax.tick_params(labelsize=10)
         if xl:
             ax.set_xlim(*xl)
@@ -461,7 +464,7 @@ def figure_glu_example():
 
 def figure_ffn_position():
     fig, ax = base_fig("激活函数在 Transformer block 里的位置：FFN 内部那一处",
-                       8.4, 3.5, (0, 12.2), (2.4, 6.6))
+                       8.4, 3.5, (0, 12.5), (2.4, 6.6))
     chain = [("输入", .3, .8), ("Layer\nNorm", 1.3, 1.3), ("Attn", 2.8, 1.0),
              ("+ 残差", 4.3, 1.0), ("Layer\nNorm", 5.45, 1.3)]
     y = 4.65
@@ -477,7 +480,7 @@ def figure_ffn_position():
     text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
          fontsize=11.5)
     ax.plot([6.77, 6.83], [y + .4, y + .4], color=C["blue"], lw=.9)
-    text(ax, 6.78, 5.9, r"d", ha="center", va="center", fontsize=11.5)
+    text(ax, 7.0, 5.9, r"d", ha="center", va="center", fontsize=11.5)
     # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
     arrow(ax, (6.9, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
     arrow(ax, (6.9, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
@@ -490,8 +493,8 @@ def figure_ffn_position():
     arrow(ax, (8.14, 5.56), (8.33, 5.56), color=C["orange"], lw=.8)
     arrow(ax, (9.2, 5.45), (9.3, 5.38), color=C["orange"], lw=.8)
     arrow(ax, (8.14, 4.76), (9.04, 5.1), color=C["orange"], lw=.8)
-    p2 = box(ax, 9.06, 4.85, .55, .5, "", fc="#fae6d6", ec=C["orange"])
-    text(ax, 9.425, 5.1, r"$\odot$", in_box=p2, ha="center", va="center", fontsize=11.5)
+    p2 = box(ax, 9.0, 4.85, .62, .5, "", fc="#fae6d6", ec=C["orange"])
+    text(ax, 9.31, 5.1, r"$\odot$", in_box=p2, ha="center", va="center", fontsize=11.5)
     p2 = box(ax, 9.64, 4.75, .94, .7, "", fc="#fae6d6", ec=C["orange"])
     text(ax, 10.11, 5.22, r"$W_2$", in_box=p2, ha="center", va="center", fontsize=11.5)
     text(ax, 10.11, 4.97, "down", in_box=p2, ha="center", va="center",
@@ -499,15 +502,16 @@ def figure_ffn_position():
     # 形状标注：d → d_g（两支）→ d
     text(ax, 7.5, 5.9, r"$d_g$", ha="center", va="center", fontsize=11.5)
     text(ax, 7.5, 5.12, r"$d_g$", ha="center", va="center", fontsize=11.5)
-    text(ax, 11.85, 4.35, r"d", ha="center", va="center", fontsize=11.5)
+    text(ax, 10.68, 5.72, r"d", ha="center", va="center", fontsize=11.5)
+    arrow(ax, (10.6, 5.1), (10.76, 5.1), color=C["orange"], lw=.8)
     # +残差 → 输出
-    p = box(ax, 10.6, 4.7, .88, .8, "", fc="#dce9f7", ec=C["blue"])
-    text(ax, 11.04, 5.1, "+残差", in_box=p, ha="center", va="center",
+    p = box(ax, 10.78, 4.7, .88, .8, "", fc="#dce9f7", ec=C["blue"])
+    text(ax, 11.22, 5.1, "+残差", in_box=p, ha="center", va="center",
          fontsize=11.5)
-    p = box(ax, 11.5, 4.7, .68, .8, "", fc="#dce9f7", ec=C["blue"])
-    text(ax, 11.84, 5.1, "输出", in_box=p, ha="center", va="center", fontsize=11.5)
+    p = box(ax, 11.68, 4.7, .68, .8, "", fc="#dce9f7", ec=C["blue"])
+    text(ax, 12.02, 5.1, "输出", in_box=p, ha="center", va="center", fontsize=11.5)
     text(ax, 6, 3.55, "每个 token 各自过同一个 FFN；激活函数在 gate/up 之间，"
-         "形状变化 d → d_g → d。", ha="center", va="center", fontsize=11.5)
+         "形状变化 $d \to d_g \to d$。", ha="center", va="center", fontsize=11.5)
     text(ax, 6, 2.9, "注意力混合 token 之间信息；FFN 只在单 token 内部算。",
          ha="center", va="center", fontsize=11.5, color="#555555")
     finish(fig, "activation-ffn-position")

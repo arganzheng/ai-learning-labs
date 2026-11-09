@@ -429,10 +429,10 @@ def plot_signals():
         inner.append(t)
 
     a = axes[0]
-    bx_(a, (3.0, 7.4), "猫 追 __", width=5.8, height=2.4)
+    bx_(a, (3.0, 7.4), "猫 追 ＿", width=5.8, height=2.4)
     bx_(a, (9.7, 7.4), "狗", width=3.0, height=2.4)
     arrow(a, (6.1, 7.4), (8.0, 7.4))
-    bx_(a, (3.0, 3.0), "猫 __ 球", width=5.8, height=2.4)
+    bx_(a, (3.0, 3.0), "猫 ＿ 球", width=5.8, height=2.4)
     bx_(a, (9.7, 3.0), "追", width=3.0, height=2.4)
     arrow(a, (6.1, 3.0), (8.0, 3.0))
 

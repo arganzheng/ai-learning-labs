@@ -123,7 +123,7 @@ def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
             ax.add_patch(Rectangle((x + c * cw, y - r * ch - ch), cw - .02,
                                    ch - .02, facecolor=fc, edgecolor=ec, lw=.5))
             ax.text(x + c * cw + (cw - .02) / 2, y - r * ch - ch / 2,
-                    fmt.format(v=v), ha="center", va="center", fontsize=fs)
+                    fmt.format(v=v).replace("-", "\u2212"), ha="center", va="center", fontsize=fs)
     return y - len(vals) * ch
 
 

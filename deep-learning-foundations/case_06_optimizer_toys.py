@@ -283,9 +283,9 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
 
 
 def sci(v):
-    """科学计数法 -> mathtext 段（2.5e-04 -> 2.5\\times10^{-4}）"""
+    """科学计数法 -> $…$（2.5e-04 -> $2.5\times10^{-4}$），普通数值直接写。"""
     m, e = f"{v:.1e}".split("e")
-    return rf"{m}\times10^{{{int(e)}}}"
+    return rf"${m}\times10^{{{int(e)}}}$"
 
 
 def figure_one_step():
@@ -309,7 +309,7 @@ def figure_one_step():
                  ha="center", color="#555555")
         elif name == "Momentum":
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
-                rf"$m=\beta_1 m_0+g$" + "\n" + rf"={r['m']:.3f}", fs=10.5)
+                rf"$m=\beta_1 m_0+g={r['m']:.3f}$", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
                 rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
@@ -317,10 +317,20 @@ def figure_one_step():
             text(ax, 8.2, yc + .18, r"$-\eta\,m$", fontsize=10.5,
                  ha="center", color="#555555")
         else:
-            box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
-                rf"m={r['m']:.3f}" + "\n" + rf"v={sci(r['v'])}", fs=10.5)
-            box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0,
-                rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=10.5)
+            p_ = box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0)
+            text(ax, cols["mid"][0] + cols["mid"][1] / 2, yc + .2,
+                 rf"m = {r['m']:.3f}", in_box=p_, ha="center", va="center",
+                 fontsize=10.5)
+            text(ax, cols["mid"][0] + cols["mid"][1] / 2, yc - .2,
+                 rf"v = {sci(r['v'])}", in_box=p_, ha="center", va="center",
+                 fontsize=10.5)
+            p_ = box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0)
+            text(ax, cols["hat"][0] + cols["hat"][1] / 2, yc + .2,
+                 rf"$\hat m={r['mh']:.3f}$", in_box=p_, ha="center",
+                 va="center", fontsize=10.5)
+            text(ax, cols["hat"][0] + cols["hat"][1] / 2, yc - .2,
+                 rf"$\hat v={r['vh']:.3f}$", in_box=p_, ha="center",
+                 va="center", fontsize=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
                 rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
@@ -328,14 +338,20 @@ def figure_one_step():
             arrow(ax, (cols["hat"][0] + cols["hat"][1], yc), (cols["d"][0], yc))
     # AdamW 的 wd 支路：不进矩，单独一条
     yc = rows_y["AdamW"]
-    box(ax, cols["mid"][0], yc - 1.5, cols["hat"][0] + cols["hat"][1]
-        - cols["mid"][0], .95,
-        r"wd 支路：$-\eta\,\lambda\,\theta=-0.010$" + "\n" + r"（不进矩、不被 $\sqrt{\hat v}$ 缩放）",
-        fs=10.5, fc="#eef4fb", ec="#7a9ac0")
+    p_ = box(ax, cols["mid"][0], yc - 1.5, cols["hat"][0] + cols["hat"][1]
+        - cols["mid"][0], .95, fc="#eef4fb", ec="#7a9ac0")
+    cx_ = (cols["mid"][0] + cols["hat"][0] + cols["hat"][1]) / 2
+    text(ax, cx_, yc - .84, r"wd 支路：$-\eta\,\lambda\,\theta=-0.010$",
+         in_box=p_, ha="center", va="center", fontsize=10.5)
+    text(ax, cx_, yc - 1.2, r"（不进矩、不被 $\sqrt{\hat v}$ 缩放）",
+         in_box=p_, ha="center", va="center", fontsize=10.5)
     arrow(ax, (cols["hat"][0] + 2.2, yc - 0.53),
           (cols["d"][0] + cols["d"][1] / 2, yc - ch / 2), color="#7a9ac0")
-    text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.62,
-         r"$\Delta\theta=$ Adam 项 −0.100" + "\n" + r"+ wd 支路 −0.010", fontsize=10.5,
+    text(ax, 11.15, .62,
+         r"$\Delta\theta=$ Adam 项 −0.100", fontsize=10.5,
+         ha="center", va="top", color="#555555")
+    text(ax, 11.15, .24,
+         r"+ wd 支路 −0.010", fontsize=10.5,
          ha="center", va="top", color="#555555")
     finish(fig, "dl-opt-one-step")
 
@@ -352,7 +368,7 @@ def figure_bias_correction():
     ax.set_yticks([1e-3, 1e-2, 1e-1, 1])
     ax.set_yticklabels(["1e-3", "1e-2", "1e-1", "1"], fontsize=10.5)
     ax.set_xticks([1, 5, 10, 15, 20])
-    ax.set_xlabel("步 t"); ax.set_ylabel("对真值 g^2 的比值（对数）")
+    ax.set_xlabel("步 t"); ax.set_ylabel(r"对真值 $g^2$ 的比值（对数）")
     ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 v 从 $0.001\,g^2$ 慢慢爬",
                  fontweight=600, color="#111111")
     ax.text(2.4, 1.2e-2, r"t=1：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])

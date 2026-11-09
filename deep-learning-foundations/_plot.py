@@ -284,6 +284,54 @@ def check_math_needed(fig):
             + "\n".join(repr(b) for b in sorted(set(bad))))
 
 
+def check_plain_text(fig):
+    """$...$ 之外的正文必须是干净的 Unicode 文字：
+    不允许出现反斜杠（\\times、\\n 漏排）、_ / ^（d_g 漏排）、
+    以及当作负号/减号的 ASCII -（-1、(−1) 应写 −）。
+    单词里的连字符（next-token）与代码标识符不受影响。"""
+    bad = []
+    for t in fig.findobj(matplotlib.text.Text):
+        s = t.get_text()
+        if not s.strip() or not t.get_visible():
+            continue
+        plain = re.sub(r"\$[^$]*\$", "", s)
+        if "\\" in plain:
+            bad.append(("反斜杠", s))
+        for m_ in re.finditer(r"\w*[_^]\w*", plain):
+            # next_functions 这类代码标识符（两侧都 ≥2 字符）豁免
+            if not re.fullmatch(r"\w{2,}[_^]\w{2,}", m_.group(0)):
+                bad.append(("_ 或 ^", s))
+                break
+        if re.search(r"(?<![A-Za-z0-9])-\d", plain):
+            bad.append(("ASCII 负号/减号", s))
+    if bad:
+        raise AssertionError(
+            f"{len(bad)} 处正文含非法字符（\\\\ / _ / ^ / ASCII 负号）：\n"
+            + "\n".join(f"{k}：{s!r}" for k, s in bad))
+
+
+def check_math_line_spacing(fig):
+    """单行以上的 Text 里只要有任何一行含 $...$ 数学，
+    linespacing 必须 ≥1.4——否则会叠到上一行。"""
+    bad = []
+    for t in fig.findobj(matplotlib.text.Text):
+        s = t.get_text()
+        if not t.get_visible() or "\n" not in s:
+            continue
+        ls = t.get_linespacing()
+        try:
+            ls = float(ls)
+        except (TypeError, ValueError):
+            ls = 1.2
+        if "$" in s and ls < 1.4:
+            bad.append(s)
+    if bad:
+        raise AssertionError(
+            f"{len(bad)} 处含数学的多行文字 linespacing<1.4"
+            "（应拆成两个 Text 或加大行距）：\n"
+            + "\n".join(repr(b) for b in sorted(set(bad))))
+
+
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
 C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c",
      "gray": "#8a8a8a", "purple": "#7b5ea7", "light": "#dddddd", "teal": "#2a9d8f"}
@@ -300,6 +348,8 @@ def save(fig, name):
                         f"mathtext 内科学计数法（会排成减法）：{s!r}，改用 \\times10^{{}}")
     _dump_texts(fig, name)
     check_math_needed(fig)
+    check_plain_text(fig)
+    check_math_line_spacing(fig)
     check_text_in_rect(fig)
     _check_text_floor(fig, name)
     os.makedirs(OUT, exist_ok=True)
@@ -324,6 +374,8 @@ def enable_embed(mod):
 
     def wrapped(fig, name, *a, **k):
         check_math_needed(fig)
+        check_plain_text(fig)
+        check_math_line_spacing(fig)
         check_text_in_rect(fig)
         p = orig(fig, name, *a, **k)
         embed_fonts(p)

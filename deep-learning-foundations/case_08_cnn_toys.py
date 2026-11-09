@@ -127,7 +127,7 @@ def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
                     fc=c, ec=e, lw=.4, r=.005)
             text(ax, x + j * cw + (cw - .02) / 2,
                  y - (i + 1) * ch + (ch - .02) / 2,
-                 f"{v:g}", in_box=p, ha="center", va="center", fontsize=fs)
+                 f"{v:g}".replace("-","\u2212"), in_box=p, ha="center", va="center", fontsize=fs)
 
 
 # ---------------------------------------------------------------- toys
@@ -293,7 +293,7 @@ def figure_conv_matrix():
             if v != 0:
                 text(ax, mx + j * mcw + (mcw - .02) / 2,
                      2.48 - (i + 1) * mch + (mch - .02) / 2,
-                     f"{v:g}", in_box=p, ha="center", va="center", fontsize=10.5)
+                     f"{v:g}".replace("-", "\u2212"), in_box=p, ha="center", va="center", fontsize=10.5)
     # M 第 0 行同色描边 —— 对应上行那个窗口
     box(ax, mx, 2.48 - mch, 16 * mcw - .02, mch - .02,
         fc="none", ec=C["orange"], lw=1.6, r=.01)
@@ -303,7 +303,7 @@ def figure_conv_matrix():
         p = box(ax, ys, 2.48 - (i + 1) * mch, .68, mch - .02,
                 fc="#e8f3e8", ec=C["green"], lw=.5, r=.003)
         text(ax, ys + .34, 2.48 - (i + 1) * mch + (mch - .02) / 2,
-             f"{v:g}", in_box=p, ha="center", va="center", fontsize=10.5)
+             f"{v:g}".replace("-", "\u2212"), in_box=p, ha="center", va="center", fontsize=10.5)
     text(ax, ys + .34, 2.48 - 4 * mch - .13, r"y（拉直 4）", fontsize=10.5,
          ha="center", va="top", color="#555555")
     text(ax, ys + 1.0, 2.48 - mch / 2,
@@ -375,7 +375,7 @@ def figure_sliding_window():
                      ylim=(0.85, 8.2))
     cw = .64
     ix, iy = .45, 6.85            # 输入 5×5
-    lbl = [[f"{v:g}" for v in row] for row in X5]
+    lbl = [[f"{v:g}".replace("-", "\u2212") for v in row] for row in X5]
     hi = {(i, j) for i in range(3) for j in range(1, 4)}
     _mcells(ax, ix, iy, lbl, cw, cw, hi=hi)
     box(ax, ix + cw, iy - 3 * cw, 3 * cw - .02, 3 * cw - .02,
@@ -384,12 +384,12 @@ def figure_sliding_window():
          "橙框 = 核当前盖住的 3×3）",
          ha="center", fontsize=10.5, color="#333333")
     kx, ky = 5.15, 6.85         # kernel 3×3
-    klbl = [[f"{v:g}" for v in row] for row in K_EDGE]
+    klbl = [[f"{v:g}".replace("-", "\u2212") for v in row] for row in K_EDGE]
     _mcells(ax, kx, ky, klbl, cw, cw, fc="#eef6ff", ec="#1f6fb2")
     text(ax, kx + 1.5 * cw, ky + .35, "核 k（3×3，9 个权重）",
          ha="center", fontsize=10.5, color="#333333")
     ox, oy = 9.75, 6.85         # 输出 3×3
-    olbl = [[f"{v:g}" for v in row] for row in OUT5]
+    olbl = [[f"{v:g}".replace("-", "\u2212") for v in row] for row in OUT5]
     _mcells(ax, ox, oy, olbl, cw, cw, hi={(0, 1)})
     text(ax, ox + 1.5 * cw, oy + .35, "输出 y（3×3）",
          ha="center", fontsize=10.5, color="#333333")
@@ -400,7 +400,7 @@ def figure_sliding_window():
     # 下行：窗口内逐元素乘积 → 求和 → 写进输出 (0,1)
     win = X5[0:3, 1:4]
     plbl = [[f"{win[i,j]:g}·{K_EDGE[i,j]:g}" if K_EDGE[i, j] >= 0
-             else f"{win[i,j]:g}·({K_EDGE[i,j]:g})"
+             else f"{win[i,j]:g}·({K_EDGE[i,j]:g})".replace("-","\u2212")
              for j in range(3)] for i in range(3)]
     px, py, pw, ph = 4.2, 3.35, 1.02, .5
     _mcells(ax, px, py, plbl, pw, ph, fc="#f7f7f7")
@@ -413,7 +413,7 @@ def figure_sliding_window():
     arrow(ax, (px + 3 * pw + .1, 2.35), (px + 3 * pw + 1.4, 2.35), lw=1.0)
     p = box(ax, px + 3 * pw + 1.5, 2.1, .95, .5, fc="#fff3e0",
             ec="#c98a00", lw=.9, r=.01)
-    text(ax, px + 3 * pw + 1.975, 2.35, "=−3", in_box=p, ha="center",
+    text(ax, px + 3 * pw + 1.975, 2.35, "−3", in_box=p, ha="center",
          va="center", fontsize=10.5)
     arrow(ax, (px + 3 * pw + 1.975, 2.65), (ox + 1.5 * cw, oy - 3 * cw - .12),
           color="#c98a00")

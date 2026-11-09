@@ -182,12 +182,13 @@ def toy_dropout():
 
 # ---------------------------------------------------------------- figures
 
-def sci(v):
-    """大数用 mathtext 科学计数法，小数直接十进制。"""
+def sci(v, math=True):
+    """大数科学计数法（math=True 返回 $…$ 段；mathtext 内使用时传 False），小数直接十进制。"""
     if v == 0 or (1e-2 <= abs(v) < 1e4):
         return f"{v:.3g}"
     m, e = f"{v:.3g}".split("e")
-    return rf"{m}\times10^{{{int(e)}}}"
+    s = rf"{m}\times10^{{{int(e)}}}"
+    return f"${s}$" if math else s
 
 
 def figure_weight_decay():
@@ -206,7 +207,7 @@ def figure_weight_decay():
     for lam, tr, te, nw, w in poly_rows():
         yh = np.vander(x_te, 10, increasing=True) @ w
         ax.plot(x_te, np.clip(yh, -2.1, 2.1), color=cols[lam], lw=1.6,
-                label=rf"$\lambda={lam:g}$：$\|w\|={sci(nw)}$，"
+                label=rf"$\lambda={lam:g}$：$\|w\|={sci(nw, math=False)}$，"
                       rf"测试MSE={sci(te)}")
     ax.scatter(x_tr, y_tr, s=22, color="#222222", zorder=5,
                label="10 个训练点（含噪声）")
@@ -246,7 +247,8 @@ def figure_dropout():
               (x0 + j * (cw + .06) + cw / 2, 3.06), lw=.9)
     text(ax, 8.4, 1.3, "\n".join([
         r"训练：$x\odot m/(1-p)$", r"幸存单元 × 2",
-        "期望不变；推理不缩放"]), fontsize=10.5, color="#555555")
+        "期望不变；推理不缩放"]), fontsize=10.5, color="#555555",
+        linespacing=1.5)
     box(ax, 8.4, 3.9, 3.5, 1.35, "eval 输出 = 输入\n大样本输出均值 ≈ 1.0",
         fs=10.5, fc="#fde9d9", ec="#c98a4a")
     finish(fig, "dl-reg-dropout")

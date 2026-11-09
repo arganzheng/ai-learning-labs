@@ -187,11 +187,12 @@ def alert_timeline():
     for a in (a0, al, a1, a2):
         a.set_xlim(-10.5, 43)
     # 三个事件：dip、心跳停、重启窗口，各居其事件中心
-    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=11,
+    # 三行错开：心跳停独占上行，dip / 重启窗口同下行且横向上不重叠
+    a0.text(12.5, 0.18, "10:00–15:00 掉 20%（5 分钟）", fontsize=11,
             ha="center", color="#8a5a00")
-    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=11, ha="center",
+    a0.text(23.5, 0.78, "23:30 心跳停", fontsize=11, ha="center",
             color=C["red"])
-    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=11, ha="center",
+    a0.text(28, 0.18, "25:00–28:00 自动重启", fontsize=11, ha="center",
             color="#1d4ed8")
 
     a1.plot(T, thr, color=C["blue"], lw=1.6)
@@ -218,7 +219,8 @@ def alert_timeline():
                                 ec="#888888", lw=0.6,
                                 hatch="///" if st == "suppressed" else None))
         al.text(hx + 1.9, 0.5, lab, fontsize=11, va="center", ha="left")
-        hx += 1.9 + len(lab) * 0.62 + 1.2
+        w = sum(1.15 if ord(c) > 0x2fff else 0.62 for c in lab)
+        hx += 1.9 + w + 1.6
 
     # 泳道：一行一个规则名；细则放右侧备注列
     lanes = [("TrainingMfuDegraded", 3,

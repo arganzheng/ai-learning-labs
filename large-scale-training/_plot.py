@@ -190,10 +190,17 @@ def collide(fig, margin=6.0):
             ih = min(a.y1, b.y1) - max(a.y0, b.y0)
             if iw > 1 and ih > 1:
                 errs.append(f"文本重叠：{items[i][0].get_text()!r} × {items[j][0].get_text()!r}")
-    # 非盒内文本（箭头标注等）不得压到任何盒子上
-    for p in _PATCHES:
-        if p.get_figure() is not fig:
-            continue
+    # 非盒内文本（箭头标注等）不得压到任何盒子上。
+    # _PATCHES 之外的裸 add_patch（图例色块等）同样检查；axvspan/barh 产生的矩形
+    # 也算，但跳过撑满全轴的 band（text 与其相交不算压盒）。
+    seen = {id(p) for p in _PATCHES if p.get_figure() is fig}
+    all_patches = [p for p in _PATCHES if p.get_figure() is fig]
+    for ax in fig.axes:
+        for p in ax.patches:
+            if id(p) not in seen:
+                seen.add(id(p))
+                all_patches.append(p)
+    for p in all_patches:
         b = p.get_window_extent(renderer=ren)
         for t, own, _ in items:
             if own is not None:
@@ -203,11 +210,20 @@ def collide(fig, margin=6.0):
             ih = min(e.y1, b.y1) - max(e.y0, b.y0)
             if iw > 1 and ih > 1:
                 errs.append(f"标注压盒：{t.get_text()!r}")
-            elif ih > 1:
-                # 同一行里不在盒内的标注（泳道名等）离盒边至少 16px
+            elif ih > 1 and id(p) in {id(q) for q in _PATCHES}:
+                # 同一行里不在盒内的标注（泳道名等）离盒边至少 16px；
+                # 只约束 box() 画的盒——barh/axvspan 的数据矩形不套这个规则
                 gap = max(b.x0 - e.x1, e.x0 - b.x1)
                 if gap < 16:
                     errs.append(f"行内标注距盒 {gap:.0f}px<16px：{t.get_text()!r}")
+    # 完全落在轴外的补丁会被静默裁掉（漏画图例色块这类错误），报出来
+    for ax in fig.axes:
+        ab = ax.get_window_extent(renderer=ren)
+        for p in ax.patches:
+            pb = p.get_window_extent(renderer=ren)
+            if (pb.x1 < ab.x0 or pb.x0 > ab.x1 or
+                    pb.y1 < ab.y0 or pb.y0 > ab.y1):
+                errs.append("矩形完全在轴外不可见（图例色块被裁掉等）")
     # 文字/图例不得压到数据折线：所有文本 bbox 与 Line2D 的显示坐标线段相交即失败
     def _seg_rect(a, b, r):
         x0, y0, x1, y1 = r

@@ -62,13 +62,16 @@ def five_terms():
     def mx(v):
         return 1.9 + v / 14 * 8.8
     # 图例行（色块→文字间距 ≥0.25u）
-    lx = 1.2
     names = {"T_d": "检测 $T_d$", "T_r": "重启 $T_r$", "T_l": "加载 $T_l$",
              "τ/2": "回退 $\\tau/2$", "δ/τ": "保存 $\\delta/\\tau$"}
-    for sname, fc, ec in segs:
-        _card(ax, lx, 5.32, 0.28, 0.28, "", fc=fc, ec=ec, lw=0.6)
-        _label(ax, lx + 0.72, 5.46, names[sname], 10.5, ha="left")
-        lx += 0.72 + len(names[sname]) * 0.17 + 0.55
+    # 图例分两行，色块+标签都不出画布
+    for row_i, grp in enumerate((segs[:3], segs[3:])):
+        ly = 5.6 - row_i * 0.36
+        lx = 1.2
+        for sname, fc, ec in grp:
+            _card(ax, lx, ly, 0.28, 0.28, "", fc=fc, ec=ec, lw=0.6)
+            _label(ax, lx + 0.6, ly + 0.14, names[sname], 10.5, ha="left")
+            lx += 0.6 + len(names[sname]) * 0.17 + 0.55
     ys = [4.1, 3.05]
     for r, (name, vals, tot) in enumerate(rows):
         y = ys[r]
@@ -87,7 +90,7 @@ def five_terms():
             x += w
         # 窄段：B 行上方引线；C 行全窄，改为条下一行
         if narrow and r == 0:
-            lv_h = {0: 0.98}
+            lv_h = {0: 0.85}
             groups = [narrow]
             for lv, grp in enumerate(groups):
                 pos = [c for c, _ in grp]
@@ -112,10 +115,10 @@ def five_terms():
                    "$T_d$ 600 s → 60 s：5.5% → 0.5%（§三.3 心跳检测）",
                    10.5, ha="left", color="#444444")
     for gx in range(0, 15, 2):
-        ax.plot([mx(gx), mx(gx)], [0.88, 1.02], color="#bbbbbb", lw=0.6, zorder=0)
-        _label(ax, mx(gx), 0.68, f"{gx}", 10, color="#666666")
-    _label(ax, 6, 0.42, "横轴：损失时间占墙钟时间 %（与 G 互补）；过窄的段 % 注在上方引线处。", 10)
-    _label(ax, 6, 0.12, "85→95 的顺序：先 $\\delta$（A→B 拿走 16 个点），再压 hang 检测 $T_d$（B→C 的最大项）。", 10.5)
+        ax.plot([mx(gx), mx(gx)], [1.72, 1.86], color="#bbbbbb", lw=0.6, zorder=0)
+        _label(ax, mx(gx), 1.5, f"{gx}", 10, color="#666666")
+    _label(ax, 6, 0.9, "横轴：损失时间占墙钟时间 %（与 G 互补）；过窄的段 % 注在上方引线处。", 10)
+    _label(ax, 6, 0.52, "85→95 的顺序：先 $\\delta$（A→B 拿走 16 个点），再压 hang 检测 $T_d$（B→C 的最大项）。", 10.5)
     save(fig, "fault-tolerance-five-terms")
 
 

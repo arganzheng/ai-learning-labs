@@ -27,6 +27,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -190,8 +195,8 @@ def figure_weight_decay():
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
     ax.set_xlim(-0.03, 1.03); ax.set_ylim(-2.0, 2.0)
     ax.set_xticks([0, .5, 1.0]); ax.set_yticks([-2, -1, 0, 1, 2])
-    ax.set_xlabel(r"$x$", fontsize=10.5); ax.set_ylabel(r"$y$", fontsize=10.5)
-    ax.tick_params(labelsize=8)
+    ax.set_xlabel(r"x", fontsize=10.5); ax.set_ylabel(r"y", fontsize=10.5)
+    ax.tick_params(labelsize=10.5)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.spines["left"].set_color("#aaaaaa"); ax.spines["bottom"].set_color("#aaaaaa")
@@ -202,7 +207,7 @@ def figure_weight_decay():
         yh = np.vander(x_te, 10, increasing=True) @ w
         ax.plot(x_te, np.clip(yh, -2.1, 2.1), color=cols[lam], lw=1.6,
                 label=rf"$\lambda={lam:g}$：$\|w\|={sci(nw)}$，"
-                      rf"测试MSE$={sci(te)}$")
+                      rf"测试MSE={sci(te)}")
     ax.scatter(x_tr, y_tr, s=22, color="#222222", zorder=5,
                label="10 个训练点（含噪声）")
     ax.set_title(r"9 次多项式拟合 10 个带噪点：$\lambda$ 越大曲线越平、"
@@ -217,11 +222,11 @@ def figure_weight_decay():
 def figure_dropout():
     m = dropout_mask().astype(int)
     out = m * 2
-    fig, ax = base_fig(r"inverted dropout：$p=0.5$，输入全 $1$ → "
-                       r"幸存位置输出 $2$，被丢位置 $0$",
+    fig, ax = base_fig(r"inverted dropout：p=0.5，输入全 1 → "
+                       r"幸存位置输出 2，被丢位置 0",
                        h=4.1, xlim=(0, 12), ylim=(0, 7.1))
     x0, cw, ch, pitch = 1.9, .72, .55, .62
-    rows = ((3.6, "mask\n$1$ = 保留", m),
+    rows = ((3.6, "mask\n1 = 保留", m),
             (0.6, "训练时输出", out))
     for y0, name, grid in rows:
         text(ax, .15, y0 + .85, name, fontsize=10.5, color="#555555")
@@ -240,9 +245,9 @@ def figure_dropout():
         arrow(ax, (x0 + j * (cw + .06) + cw / 2, 3.55),
               (x0 + j * (cw + .06) + cw / 2, 3.06), lw=.9)
     text(ax, 8.4, 1.3, "\n".join([
-        r"训练：$x\odot m/(1-p)$", r"幸存单元 $\times 2$",
+        r"训练：$x\odot m/(1-p)$", r"幸存单元 × 2",
         "期望不变；推理不缩放"]), fontsize=10.5, color="#555555")
-    box(ax, 8.4, 3.9, 3.5, 1.35, "eval 输出 = 输入\n大样本输出均值 $\\approx 1.0$",
+    box(ax, 8.4, 3.9, 3.5, 1.35, "eval 输出 = 输入\n大样本输出均值 ≈ 1.0",
         fs=10.5, fc="#fde9d9", ec="#c98a4a")
     finish(fig, "dl-reg-dropout")
 

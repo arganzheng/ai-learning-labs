@@ -30,16 +30,16 @@ def nd_axis():
     ax.set_ylim(0.05, 1.05)
     ax.axhline(0.42, color="#222222", lw=1.4)
     ax.set_yticks([])
-    ax.set_xlabel("参数 / 数据比 $N / D$（对数刻度）", fontsize=12.0)
+    ax.set_xlabel("参数 / 数据比 N / D（对数刻度）", fontsize=16)
     ax.spines[["left", "right", "top"]].set_visible(False)
 
     ax.tick_params(axis="x", labelsize=15)
     ax.axvspan(2e-4, 1, ymin=0.30, ymax=0.54, color=BLUE, alpha=0.14)
     ax.axvspan(1, 8e3, ymin=0.30, ymax=0.54, color=ORANGE, alpha=0.14)
     ax.text(1.4e-2, 0.86, "数据主导区间：背不下数据，\n过拟合不是主要风险",
-            ha="center", fontsize=12.0, color=BLUE, weight="bold")
+            ha="center", fontsize=16, color=BLUE, weight="bold")
     ax.text(280, 0.86, "过参数化区间：能背下数据，\n会不会过拟合看训多久、有没有噪声",
-            ha="center", fontsize=12.0, color=ORANGE, weight="bold")
+            ha="center", fontsize=16, color=ORANGE, weight="bold")
 
     # 上下交错标注，避免重叠；只给上面的标注留一层高度
     layout = {0: -1, 1: -1, 2: 1, 3: -1, 4: 1, 5: -1}
@@ -47,10 +47,10 @@ def nd_axis():
         side = layout[i]
         ax.plot([v], [0.42], "o", ms=6,
                 color=BLUE if v <= 1 else ORANGE)
-        ax.annotate(f"{name}\n$N/D$ = {v:g}", (v, 0.42),
+        ax.annotate(f"{name}\nN/D = {v:g}", (v, 0.42),
                     xytext=(v, 0.52 if side > 0 else 0.30),
                     ha="center", va="bottom" if side > 0 else "top",
-                    fontsize=12.0, color="#333333",
+                    fontsize=16, color="#333333",
                     arrowprops=dict(arrowstyle="-", color="#888888", lw=0.8))
     save(fig, "reg-nd-axis")
 
@@ -119,7 +119,7 @@ def min_norm():
     ax.plot(traj[:, 0], traj[:, 1], color=BLUE, lw=LW)
     ax.plot(traj[::6, 0], traj[::6, 1], "o", ms=4, color=BLUE)
     ax.plot(0, 0, "o", ms=7, color="#222222")
-    ax.annotate("初始化 $(0,0)$", (0, 0), xytext=(-1.05, -0.8),
+    ax.annotate("初始化 (0,0)", (0, 0), xytext=(-1.05, -0.8),
                 fontsize=10.5, color="#333333",
                 arrowprops=dict(arrowstyle="-", color="#888888", lw=0.8))
     ax.plot(*w_min, "o", ms=8, color=ORANGE)
@@ -128,7 +128,7 @@ def min_norm():
             fontsize=10.5, color=ORANGE)
     ax.plot(*w_other, "o", ms=8, color=RED)
     ax.text(w_other[0] + 0.15, w_other[1] + 0.42,
-            "另一个插值解 $(5,0)$，范数 $=5$", fontsize=10.5, color=RED,
+            "另一个插值解 (5,0)，范数 =5", fontsize=10.5, color=RED,
             ha="left")
     ax.set_xlabel("$w_1$"); ax.set_ylabel("$w_2$")
     ax.set_xlim(-1.2, 6.8); ax.set_ylim(-1.2, 4.6)
@@ -164,7 +164,7 @@ def label_smoothing():
                 (g[i], ce_smooth[i]), xytext=(g[i] + 1.6, ce_smooth[i] + 0.9),
                 fontsize=10.5, color=ORANGE,
                 arrowprops=dict(arrowstyle="-", color=ORANGE, lw=0.9))
-    ax.set_xlabel("正确类与错误类的 logit 差 $g$")
+    ax.set_xlabel("正确类与错误类的 logit 差 g")
     ax.set_ylabel("交叉熵 loss")
     ax.legend(fontsize=10.5)
     ax.set_title("one-hot 下 loss 逼着 logit 差走向无穷；平滑后有最小点",
@@ -187,22 +187,22 @@ def lm_20k():
           f"此后升到 {ho[-1]:.3f}；训练 loss 继续降到 {tr[-1]:.3f}")
 
     fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.2))
-    for _ax in axes: _ax.tick_params(axis="both", labelsize=12); _ax.xaxis.label.set_size(12); _ax.yaxis.label.set_size(12)
+    for _ax in axes: _ax.tick_params(axis="both", labelsize=16); _ax.xaxis.label.set_size(14); _ax.yaxis.label.set_size(14)
     axes[0].plot(ep, tr, color=BLUE, lw=LW, label="训练 loss")
     axes[0].plot(ep, ho, color=ORANGE, lw=LW, label="held-out loss")
     axes[0].plot(ep[best], ho[best], "o", ms=8, color=ORANGE)
     axes[0].annotate(f"最低点：第 {ep[best]} epoch",
                      (ep[best], ho[best]), xytext=(ep[best] - 9, ho[best] - 0.55),
-                     fontsize=12.0, color=ORANGE,
+                     fontsize=14, color=ORANGE,
                      arrowprops=dict(arrowstyle="-", color=ORANGE, lw=0.9))
     axes[0].set_xlabel("epoch"); axes[0].set_ylabel("loss")
     axes[0].set_title("2 万字符：held-out 先降后升，训练 loss 继续降",
-                      fontsize=12.0)
-    axes[0].legend(fontsize=12.0)
+                      fontsize=14)
+    axes[0].legend(fontsize=14)
     axes[1].plot(ep, mem, color=GREEN, lw=LW)
     axes[1].plot(ep, mem, "o", ms=4, color=GREEN)
     axes[1].set_xlabel("epoch"); axes[1].set_ylabel("逐字记忆率 %")
-    axes[1].set_title("同一时刻记忆率一路上升到 10%", fontsize=12.0)
+    axes[1].set_title("同一时刻记忆率一路上升到 10%", fontsize=14)
     save(fig, "reg-lm-20k")
 
 

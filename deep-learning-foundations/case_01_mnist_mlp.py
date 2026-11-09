@@ -22,9 +22,9 @@ def draw_mlp(sizes=(784, 256, 10), names=("输入：28×28 像素", "隐藏层�
     for col, (k, y) in enumerate(zip(shown, ys)):
         for j, yy in enumerate(y):
             if col == 0 and j in (5, 6):
-                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
+                ax.text(XC[col], yy, "$\\vdots$", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
             if col == 1 and j in (4, 5):
-                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
+                ax.text(XC[col], yy, "$\\vdots$", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
             color = [C["gray"], C["blue"], C["orange"]][col]
             if col == 2 and j == 7:
                 color = C["red"]
@@ -37,9 +37,9 @@ def draw_mlp(sizes=(784, 256, 10), names=("输入：28×28 像素", "隐藏层�
                 ax.plot([XC[c], XC[c + 1]], [ya, yb], c="#cccccc", lw=0.3, zorder=1)
     for col, (n, name) in enumerate(zip(sizes, names)):
         ax.text(XC[col], 1.18, f"{name}\n[B, {n}]", ha="center", fontsize=10.5)
-    ax.text(0.9, -1.3, f"W₁ [784, 256] + b₁ [256]\n= {784 * 256 + 256:,} 个参数\n矩阵乘 + ReLU", ha="center", fontsize=10.5, color=C["blue"])
-    ax.text(2.7, -1.3, f"$W_2$（$256\\times10$）+ $b_2$（$10$）\n= {256 * 10 + 10:,} 个参数\n矩阵乘 → softmax → 交叉熵", ha="center", fontsize=10.5, color=C["orange"])
-    ax.text(3.95, ys[2][7], "← 标签 $y=7$：\n这一格的概率要大", va="center", fontsize=10.5, color=C["red"])
+    ax.text(0.9, -1.3, f"$W_1$ [784, 256] + $b_1$ [256]\n= {784 * 256 + 256:,} 个参数\n矩阵乘 + ReLU", ha="center", fontsize=10.5, color=C["blue"])
+    ax.text(2.7, -1.3, f"$W_2$（256×10）+ $b_2$（10）\n= {256 * 10 + 10:,} 个参数\n矩阵乘 → softmax → 交叉熵", ha="center", fontsize=10.5, color=C["orange"])
+    ax.text(3.95, ys[2][7], "← 标签 y=7：\n这一格的概率要大", va="center", fontsize=10.5, color=C["red"])
     ax.set_title(f"两层 MLP：784 → 256 → 10，共 {784 * 256 + 256 + 256 * 10 + 10:,} 个参数", fontsize=10.5)
     save(fig, "case-01-mlp-structure")
 

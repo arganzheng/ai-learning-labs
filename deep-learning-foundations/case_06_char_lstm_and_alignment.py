@@ -111,7 +111,7 @@ def exp_lstm():
           (1250, 1.6965, 1.8532), (1500, 1.5555, 1.7179), (1750, 1.4989, 1.6616), (2000, 1.4977, 1.6599)]
     ax.plot([r[0] for r in ng], [r[2] for r in ng], "^--", ms=3, c=C["gray"], label="nanoGPT 4 层 val（Transformer 04）")
     ax.axhline(np.log(V), ls=":", c=C["gray"], lw=0.8); ax.text(1300, np.log(V) - 0.25, f"ln {V} = {np.log(V):.2f}（65 个字符乱猜）", fontsize=10.5, color=C["gray"])
-    ax.set_xlabel("步（batch $12\\times64$ 字符）"); ax.set_ylabel("loss（每字符）"); ax.legend(fontsize=10.5); ax.set_title("同一份莎士比亚、同一预算：LSTM vs 小 Transformer")
+    ax.set_xlabel("步（batch 12×64 字符）"); ax.set_ylabel("loss（每字符）"); ax.legend(fontsize=10.5); ax.set_title("同一份莎士比亚、同一预算：LSTM vs 小 Transformer")
     save(fig, "case-06-char-lstm")
 
 

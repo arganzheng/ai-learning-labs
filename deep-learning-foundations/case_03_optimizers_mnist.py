@@ -122,7 +122,7 @@ def plot_cosine_wsd():
                           0.1 + 0.9 * (1 + np.cos(np.pi * (t - warm)
                                         / (T - warm))) / 2)
             ax.plot(t, lr, color=C["blue"], lw=2.2)
-            ax.set_title("cosine（要预先知道 $T$）", fontsize=13)
+            ax.set_title("cosine（要预先知道 T）", fontsize=13)
         else:
             decay_start = 0.8
             lr = np.where(t < warm, t / warm,
@@ -146,12 +146,12 @@ def plot_cosine_wsd():
         ax.plot([0, warm], [0, 1], color=C["blue"], lw=2.2)
         ax.set_xlim(0, T + 0.03)
         ax.set_ylim(-0.06, 1.12)
-        ax.set_xlabel("训练步 $t$", fontsize=12)
+        ax.set_xlabel("训练步 t", fontsize=12)
         ax.set_ylabel("学习率（相对峰值）", fontsize=12)
         ax.set_xticks([warm, T] if mode == "cosine" else [warm, 0.8, T])
         ax.set_xticklabels(
-            ["warmup", "$T$"] if mode == "cosine"
-            else ["warmup", "衰减开始", "$T$"], fontsize=10.5)
+            ["warmup", "T"] if mode == "cosine"
+            else ["warmup", "衰减开始", "T"], fontsize=10.5)
         ax.set_yticks([0, 0.1, 1.0])
         ax.set_yticklabels(["0", "10%", "峰值"], fontsize=10.5)
         ax.grid(alpha=0.2)

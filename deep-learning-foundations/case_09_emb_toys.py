@@ -24,6 +24,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -85,18 +90,18 @@ def cmd_onehot_lookup():
 # ---------------------------------------------------------------- figures
 
 def figure_onehot_lookup():
-    fig, ax = base_fig(r"查表 $=$ one-hot 行向量 $\times$ 表 $=$ 取第 $i$ 行"
+    fig, ax = base_fig(r"查表 = one-hot 行向量 × 表 = 取第 i 行"
                        "；反向只写被查到的行",
                        h=3.9, xlim=(0, 12.6), ylim=(0.6, 7.0))
     # ---- 左：e_2^T × W(5×3) = W 第 2 行
     cw, ch = .62, .62
-    text(ax, .3, 6.35, r"$e_2^{\!\!\top}$（$1\times5$）", fontsize=10.5)
+    text(ax, .3, 6.35, r"$e_2^{\!\!\top}$（1×5）", fontsize=10.5)
     grid(ax, .3, 6.05, np.eye(5)[2], cw=cw, ch=ch, fs=10.5, zero_grey=True)
     # e_2 的第 2 格高亮
     box(ax, .3 + 2 * cw, 6.05 - ch, cw - .02, ch - .02,
         fc="none", ec=C["orange"], lw=1.6, r=.01)
-    text(ax, 3.95, 5.5, r"$\times$", fontsize=14, va="center")
-    text(ax, 4.6, 6.35, r"表 $W$（$5\times3$）", fontsize=10.5)
+    text(ax, 3.95, 5.5, r"×", fontsize=14, va="center")
+    text(ax, 4.6, 6.35, r"表 W（5×3）", fontsize=10.5)
     for i in range(5):
         for j in range(3):
             hi = (i == 2)
@@ -110,8 +115,8 @@ def figure_onehot_lookup():
                  fontsize=10.5)
     box(ax, 4.6, 6.05 - 3 * ch, 3 * cw - .02, ch - .02,
         fc="none", ec=C["orange"], lw=1.8, r=.01)
-    text(ax, 7.05, 5.5, r"$=$", fontsize=14, va="center")
-    text(ax, 7.75, 6.35, r"第 $2$ 行（$1\times3$）", fontsize=10.5)
+    text(ax, 7.05, 5.5, r"=", fontsize=14, va="center")
+    text(ax, 7.75, 6.35, r"第 2 行（1×3）", fontsize=10.5)
     grid(ax, 7.75, 6.05, W[2], cw=cw, ch=ch, fs=10.5, fc="#fae6d6",
          ec=C["orange"])
     text(ax, .3, 2.7,
@@ -120,7 +125,7 @@ def figure_onehot_lookup():
          fontsize=10.5, color="#555555")
     # ---- 右下：W.grad 5×3，只有第 0、2 行非零
     gx = 10.05
-    text(ax, gx, 6.35, r"梯度 $\nabla_W L$（$5\times3$）", fontsize=10.5)
+    text(ax, gx, 6.35, r"梯度 $\nabla_W L$（5×3）", fontsize=10.5)
     g = np.zeros((5, 3))
     g[0] = 1
     g[2] = 2
@@ -136,10 +141,10 @@ def figure_onehot_lookup():
                  6.05 - (i + 1) * ch + (ch - .02) / 2,
                  f"{v:g}", in_box=p, ha="center", va="center",
                  fontsize=10.5)
-    text(ax, gx, 2.6, "$[2,0,2]$ 求和反向：\n"
-         "第 $0$ 行用 $1$ 次（全 $1$）；\n"
-         "第 $2$ 行用 $2$ 次（全 $2$）；\n"
-         "其余行没查到（全 $0$）",
+    text(ax, gx, 2.6, "[2,0,2] 求和反向：\n"
+         "第 0 行用 1 次（全 1）；\n"
+         "第 2 行用 2 次（全 2）；\n"
+         "其余行没查到（全 0）",
          fontsize=10.5, color="#555555", va="top")
     lst_plot.save(fig, "emb-onehot-lookup")
 

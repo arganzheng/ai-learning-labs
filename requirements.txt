@@ -22,3 +22,5 @@ pillow>=10.0
 pymupdf>=1.24
 # transformer-and-llm/nanogpt/data/shakespeare_char/prepare.py downloads tiny shakespeare:
 requests>=2.32
+fonttools>=4.0
+brotli>=1.0

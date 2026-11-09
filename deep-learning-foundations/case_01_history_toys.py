@@ -28,6 +28,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 X = np.array([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])

@@ -28,6 +28,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 from dlf import data, nn                       # noqa: E402
@@ -285,7 +290,7 @@ def sci(v):
 
 def figure_one_step():
     rows = one_step_rows()
-    fig, ax = base_fig(r"同一个梯度 $g=0.500$ 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta=0.1$）",
+    fig, ax = base_fig(r"同一个梯度 g=0.500 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta=0.1$）",
                        h=4.0, xlim=(0, 12), ylim=(0, 6.9))
     cols = dict(g=(1.95, 1.5), mid=(4.2, 2.5), hat=(7.4, 2.5), d=(10.25, 1.7))
     ch = .85
@@ -294,7 +299,7 @@ def figure_one_step():
         y0 = yc - ch / 2
         text(ax, .1, yc, name, fontsize=10.5, color="#111111")
         box(ax, cols["g"][0], y0, cols["g"][1], ch,
-            rf"$g={rows[name][0]['g']:.3f}$", fs=10.5)
+            rf"g={rows[name][0]['g']:.3f}", fs=10.5)
         r = rows[name][0]
         if name == "SGD":
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
@@ -304,7 +309,7 @@ def figure_one_step():
                  ha="center", color="#555555")
         elif name == "Momentum":
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
-                rf"$m=\beta_1 m_0+g$" + "\n" + rf"$={r['m']:.3f}$", fs=10.5)
+                rf"$m=\beta_1 m_0+g$" + "\n" + rf"={r['m']:.3f}", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
                 rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
@@ -313,7 +318,7 @@ def figure_one_step():
                  ha="center", color="#555555")
         else:
             box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
-                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={sci(r['v'])}$", fs=10.5)
+                rf"m={r['m']:.3f}" + "\n" + rf"v={sci(r['v'])}", fs=10.5)
             box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0,
                 rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
@@ -329,8 +334,8 @@ def figure_one_step():
         fs=10.5, fc="#eef4fb", ec="#7a9ac0")
     arrow(ax, (cols["hat"][0] + 2.2, yc - 0.53),
           (cols["d"][0] + cols["d"][1] / 2, yc - ch / 2), color="#7a9ac0")
-    text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.05,
-         r"$\Delta\theta=$ Adam 项 $-0.100$" + "\n" + r"$+$ wd 支路 $-0.010$", fontsize=10.5,
+    text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.62,
+         r"$\Delta\theta=$ Adam 项 −0.100" + "\n" + r"+ wd 支路 −0.010", fontsize=10.5,
          ha="center", va="top", color="#555555")
     finish(fig, "dl-opt-one-step")
 
@@ -348,9 +353,9 @@ def figure_bias_correction():
     ax.set_yticklabels(["1e-3", "1e-2", "1e-1", "1"], fontsize=10.5)
     ax.set_xticks([1, 5, 10, 15, 20])
     ax.set_xlabel("步 t"); ax.set_ylabel("对真值 g^2 的比值（对数）")
-    ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 $v$ 从 $0.001\,g^2$ 慢慢爬",
+    ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 v 从 $0.001\,g^2$ 慢慢爬",
                  fontweight=600, color="#111111")
-    ax.text(2.4, 1.2e-2, r"$t=1$：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])
+    ax.text(2.4, 1.2e-2, r"t=1：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])
     ax.add_patch(FancyArrowPatch((2.2, 1e-2), (1.15, 1.4e-3),
                                  arrowstyle="-|>", mutation_scale=10,
                                  color=C["red"], lw=.8,

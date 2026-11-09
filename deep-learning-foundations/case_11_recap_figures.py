@@ -26,6 +26,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -130,8 +135,8 @@ def figure_training_step():
     y, ch, cw = 4.1, 1.2, 1.9
     cy = y + ch / 2
 
-    cell2(ax, .2, y, cw, ch, "数据", r"batch $(x,y)$")
-    arrow(ax, (2.15, cy), (2.85, cy))
+    cell2(ax, .2, y, cw, ch, "数据", r"batch (x,y)")
+    arrow(ax, (2.15, cy), (2.33, cy))
     pm = box(ax, 2.35, y - .3, 3.6, 1.8, fc="#fae6d6", ec=C["orange"],
              lw=1.1, r=.03)
     text(ax, 4.15, y + 1.28, "模型 $f_\\theta$", in_box=pm, ha="center",
@@ -142,7 +147,6 @@ def figure_training_step():
          ha="center", va="center", fontsize=10.5, color="#444444")
     text(ax, 4.15, y + .12, "给梯度恒等通路", in_box=pm, ha="center",
          va="center", fontsize=10.5, color="#444444")
-    arrow(ax, (5.98, cy), (5.98, cy))
     cell2(ax, 6.0, y, cw, ch, "02 损失函数", r"$-\log p_y$")
     arrow(ax, (7.95, cy), (8.65, cy))
     cell2(ax, 8.7, y, cw, ch, "03 反向传播",
@@ -169,11 +173,11 @@ def figure_training_step():
     # 可替换结构块
     text(ax, 10.9, 2.72, "模型块可替换的结构（08 / 09 / 10）",
          fontsize=10.5, ha="center", color="#555555")
-    cell(ax, .5, 1.1, 2.3, 1.2, "08 CNN\n$y=Mx$ 稀疏共享", fs=10.5)
+    cell(ax, .5, 1.1, 2.3, 1.2, "08 CNN\ny=Mx 稀疏共享", fs=10.5)
     cell(ax, 2.95, 1.1, 2.3, 1.2, "09 Embedding\n$e_i^{\\top}W$ 查表",
          fs=10.5)
     cell(ax, 5.4, 1.1, 3.0, 1.2,
-         "10 RNN\n$h_t=\\tanh(Wh_{t-1}\!+\!Ux_t)$", fs=10.5)
+         "10 RNN\n$h_t=\\tanh(Wh_{t-1}\\!+\\!Ux_t)$", fs=10.5)
     ax.plot([4.15, 4.15], [3.35, 2.9], color="#aaaaaa", lw=.8)
     finish(fig, "dl-recap-training-step")
 

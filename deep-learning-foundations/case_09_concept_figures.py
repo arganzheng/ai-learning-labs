@@ -28,7 +28,7 @@ BOX_FC = "#f4f7fb"
 BOX_EC = "#7a8ca5"
 
 
-def box(ax, center, text, width=6, height=5, fontsize=13, fc=BOX_FC,
+def box(ax, center, text, width=6, height=5, fontsize=14, fc=BOX_FC,
         ec=BOX_EC, pad=0.8):
     x, y = center
     patch = FancyBboxPatch(
@@ -256,11 +256,11 @@ def plot_landscape():
 
     for name, sec, _ in ordered:
         bx_((13, obj_y[name]), f"{name}\n第{sec}章", width=24,
-            height=5.4, fontsize=12.5)
+            height=5.4, fontsize=12)
     for f, (fam, sub, color) in enumerate(zip(FAM_ORDER, FAM_SUBS,
                                               FAM_COLORS)):
         bx_((60, fam_y[f]), f"{fam}\n{sub}", width=35, height=5.6,
-            fontsize=12.5, fc="#ffffff", ec=color)
+            fontsize=12, fc="#ffffff", ec=color)
     vec_y = fam_top / 2
     bx_((99, vec_y), "d 维向量空间", width=22, height=top * 0.62,
         fontsize=13)
@@ -274,7 +274,7 @@ def plot_landscape():
         arrow(ax, (78.5, fam_y[f]), (87.5, fam_y[f]),
               color=FAM_COLORS[f])
     ax.text(50, top + 5.6, "嵌入什么 → 用什么信号得到向量",
-            ha="center", va="center", fontsize=12.5, color="#444444")
+            ha="center", va="center", fontsize=14, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-landscape")
@@ -328,22 +328,22 @@ def plot_negsample():
 
     mid = top / 2
     bx_((16, mid), f"中心词\n{center}", width=15, height=7,
-        fontsize=10.5, fc="#eef3fa")
+        fontsize=14, fc="#eef3fa")
     bx_((60, top), f"正样本：{pos}\nσ = {after[pos]:.2f}",
-        width=24, height=6.2, fontsize=10.5, fc="#ffffff", ec=GREEN)
+        width=24, height=6.2, fontsize=14, fc="#ffffff", ec=GREEN)
     arrow(ax, (24.5, mid + 1.6), (46.5, top - 0.4), color=GREEN)
     for i, w in enumerate(negs):
         y = top - pitch * (i + 1) - 1.0
         bx_((60, y), f"负样本 {i + 1}：{w}  σ = {after[w]:.2f}",
-            width=27, height=5.2, fontsize=10.5, fc="#ffffff", ec=VERMILION)
+            width=27, height=5.2, fontsize=14, fc="#ffffff", ec=VERMILION)
         ax.plot([24.5, 45.5], [mid - 1.2, y + 0.6],
                 color=VERMILION, lw=1.1, zorder=1, alpha=0.6)
     bx_((88, mid), "目标：\n正样本推上去\n负样本压下来", width=19,
-        height=11, fontsize=10.5)
+        height=11, fontsize=14)
     arrow(ax, (74.5, top), (78, mid + 3), color=GREEN)
     arrow(ax, (74.5, 0), (78, mid - 3), color=VERMILION)
     ax.text(50, top + 6.8, "随机初始化 + 15 步 SGD 之后的 σ 分数",
-            ha="center", va="center", fontsize=12.5, color="#444444")
+            ha="center", va="center", fontsize=14, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-negsample")
@@ -368,7 +368,7 @@ def plot_tokenizer():
     sent, ids, pieces = tokenizer_ids()
     n = len(ids)
 
-    fig, ax = new_diagram((14.4, 4.2), (0, 380), (-3, 36))
+    fig, ax = new_diagram((14.3, 4.2), (0, 380), (-3, 36))
     patches, inner = [], []
 
     def bx_(center_, text, **kw):
@@ -437,8 +437,8 @@ def plot_signals():
     arrow(a, (6.1, 3.0), (8.0, 3.0))
 
     a = axes[1]
-    bx_(a, (2.2, 5.4), "$x$", width=2.8, height=3.0)
-    bx_(a, (6.0, 5.4), "$z$", width=2.2, height=3.0, fc="#fdeee0",
+    bx_(a, (2.2, 5.4), "x", width=2.8, height=3.0)
+    bx_(a, (6.0, 5.4), "z", width=2.2, height=3.0, fc="#fdeee0",
         ec=ORANGE)
     bx_(a, (9.8, 5.4), "$\\hat{x}$", width=2.8, height=3.0)
     arrow(a, (3.7, 5.4), (4.8, 5.4))
@@ -454,8 +454,8 @@ def plot_signals():
     arrow(a, (5.2, 4.8), (7.8, 3.5), color=VERMILION)
 
     a = axes[3]
-    bx_(a, (2.6, 7.4), "$x$ 视图1", width=5.0, height=2.3)
-    bx_(a, (2.6, 3.0), "$x$ 视图2", width=5.0, height=2.3)
+    bx_(a, (2.6, 7.4), "x 视图1", width=5.0, height=2.3)
+    bx_(a, (2.6, 3.0), "x 视图2", width=5.0, height=2.3)
     bx_(a, (9.0, 7.4), "student", width=6.0, height=2.3)
     bx_(a, (9.0, 3.0), "teacher", width=6.0, height=2.3,
         fc="#e6f4ee", ec=GREEN)
@@ -463,7 +463,7 @@ def plot_signals():
     arrow(a, (5.3, 3.0), (5.8, 3.0), color=GREEN)
 
     a = axes[4]
-    bx_(a, (3.0, 5.4), "$x$", width=3.4, height=3.0)
+    bx_(a, (3.0, 5.4), "x", width=3.4, height=3.0)
     bx_(a, (9.5, 5.4), "猫", width=3.4, height=3.0, fc="#e6f4ee",
         ec=GREEN)
     arrow(a, (5.0, 5.4), (7.6, 5.4))

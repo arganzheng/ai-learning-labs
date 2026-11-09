@@ -88,7 +88,7 @@ def main():
     with torch.no_grad():
         fm = F.relu(model.c1(img))[0].cpu().numpy()
     axes[0, 0].imshow(Xt[7, 0], cmap="gray_r"); axes[0, 0].set_title("输入", fontsize=10.5)
-    axes[1, 0].axis("off"); axes[1, 0].text(0.5, 0.5, "C1 的 6 个\n$5\\times5$ 卷积核 ↓\n\n6 张特征图 →", ha="center", va="center", fontsize=10.5, transform=axes[1, 0].transAxes)
+    axes[1, 0].axis("off"); axes[1, 0].text(0.5, 0.5, "C1 的 6 个\n5×5 卷积核 ↓\n\n6 张特征图 →", ha="center", va="center", fontsize=10.5, transform=axes[1, 0].transAxes)
     k = model.c1.weight.detach().cpu().numpy()
     for i in range(6):
         axes[0, i + 1].imshow(fm[i], cmap="gray_r"); axes[0, i + 1].set_title(f"特征图 {i + 1}", fontsize=10.5)

@@ -21,7 +21,7 @@ MAIN = C["blue"]; TRAIN = C["orange"]; AUX = C["gray"]; STRUCT = C["green"]
 B = {}
 
 
-def box(ax, name, x, y, w, h, lines, fc, ec, fontsize=10.5, lw=1.2):
+def box(ax, name, x, y, w, h, lines, fc, ec, fontsize=13, lw=1.2):
     B[name] = (x, y, w, h)
     ax.add_patch(mp.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.06",
                                    fc=fc, ec=ec, lw=lw))
@@ -73,16 +73,16 @@ def main():
 
     # ---- 顶行主链：输入 → Embedding → 层 → 输出头 → 损失
     box(ax, "input", 0.5, TY, 2.2, TH, ["输入", "token / 像素"], "#eef3fa", MAIN)
-    box(ax, "emb", 3.4, TY, 2.6, TH, ["Embedding", "查表 $[V,d]$"], "#eef3fa", MAIN)
+    box(ax, "emb", 3.4, TY, 2.6, TH, ["Embedding", "查表 [V,d]"], "#eef3fa", MAIN)
     # 层外框（x 7.0–12.4，y 5.0–8.9）
     B["layer"] = (7.0, 5.0, 5.4, 3.9)
     ax.add_patch(mp.FancyBboxPatch((7.0, 5.0), 5.4, 3.9, boxstyle="round,pad=0.02,rounding_size=0.06",
                                    fc="#f2f8f3", ec=STRUCT, lw=1.4))
-    ax.text(9.7, 8.55, "层（堆叠 $L$ 次）", ha="center", fontsize=10.5, color=STRUCT, weight="bold")
+    ax.text(9.7, 8.55, "层（堆叠 L 次）", ha="center", fontsize=13, color=STRUCT, weight="bold")
     for i, t in enumerate(["线性 / 卷积 / 循环 / attention", "激活函数", "归一化 + 残差"]):
-        box(ax, f"sub{i}", 7.3, 7.15 - i * 0.98, 4.8, 0.78, [t], "white", STRUCT, fontsize=10.5)
+        box(ax, f"sub{i}", 7.3, 7.15 - i * 0.98, 4.8, 0.78, [t], "white", STRUCT, fontsize=13)
     box(ax, "head", 13.2, TY, 2.4, TH, ["输出头", "logits"], "#eef3fa", MAIN)
-    box(ax, "loss", 16.4, TY, 3.4, TH, ["损失 $L$", "一个可求导的数"], "#fdf2e4", TRAIN)
+    box(ax, "loss", 16.4, TY, 3.4, TH, ["损失 L", "一个可求导的数"], "#fdf2e4", TRAIN)
 
     arrow(ax, edge("input", "r"), edge("emb", "l"), "emb")
     arrow(ax, edge("emb", "r"), (7.0, CY), "layer")
@@ -93,8 +93,8 @@ def main():
     box(ax, "init", 3.4, BY, 2.6, BH, ["初始化", "训练从哪开始"], "#f4f4f4", AUX)
     box(ax, "opt", 7.5, BY, 4.4, BH, ["优化器", "SGD / AdamW + 调度"], "#fdf2e4", TRAIN)
     box(ax, "bp", 16.1, BY, 2.6, BH, ["反向传播", "链式法则求 $\\partial L/\\partial\\theta$"],
-        "#fdf2e4", TRAIN, fontsize=10.5)
-    box(ax, "reg", 18.9, BY, 1.3, BH, ["正则化", "dropout", "数据增强"], "#f4f4f4", AUX, fontsize=10.5)
+        "#fdf2e4", TRAIN, fontsize=14)
+    box(ax, "reg", 18.9, BY, 1.3, BH, ["正则化", "dropout", "数据增强"], "#f4f4f4", AUX, fontsize=13)
 
     # 损失 ↓ 反向传播（垂直，bp 中心 x=17.4 在 loss 底边范围内）
     arrow(ax, (17.4, TY), (17.4, BY + BH), "bp", color=TRAIN)
@@ -102,14 +102,14 @@ def main():
     arrow(ax, edge("bp", "l"), edge("opt", "r"), "opt", color=TRAIN)
     # 优化器 ↑ 层底边中点（opt 中心 x=9.7 = 层中心）
     arrow(ax, edge("opt", "t"), (9.7, 5.0), "layer", color=TRAIN)
-    ax.text(10.9, 3.9, "更新参数 $\\theta$", ha="center", fontsize=10.5, color=TRAIN)
+    ax.text(10.9, 3.9, "更新参数 $\\theta$", ha="center", fontsize=14, color=TRAIN)
     # 初始化 肘形：右边缘 → 水平 → 上到层底边左端（x=7.2，避开优化器左缘 7.5）
     elbow(ax, edge("init", "r"), (7.2, BY + BH / 2), (7.2, 5.0), "layer", color=AUX)
-    ax.text(6.6, 1.9, "$\\theta_0$", ha="center", fontsize=10.5, color=AUX)
+    ax.text(6.6, 1.9, "$\\theta_0$", ha="center", fontsize=14, color=AUX)
     # 正则化 ↑ 损失底边右端（x=19.55 在 loss 16.4–19.8 内）
     arrow(ax, (19.55, BY + BH), (19.55, TY), "loss", color=AUX)
     ax.text(20.15, 4.4, "惩罚项 / 平滑目标", rotation=90, ha="center", va="center",
-            fontsize=10.5, color=AUX)
+            fontsize=13, color=AUX)
 
     save(fig, "component-map")
     print("图已保存：部件地图（顶行前向链，底行训练回路；箭头正交并断言落在盒边上）")

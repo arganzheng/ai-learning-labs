@@ -80,13 +80,13 @@ def plot_chain():
             color=BLUE)
     # 与行 2 共用列网格：x | f_1 | 归一化槽位(空) | h_1 | ⋯ | f_L | 槽位(空) | h_L
     xs = {"x": 18, "f1": 28, "h1": 72, "dots": 80, "fL": 92, "hL": 136}
-    ax.text(xs["x"], y1, "$x$", ha="center", va="center", fontsize=18)
+    ax.text(xs["x"], y1, "x", ha="center", va="center", fontsize=18)
     for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
         bx_((xs[key], y1), label, width=7, height=6, fontsize=17)
         ax.text(xs[key], y1 - 8, "Linear\n+ 非线性", ha="center",
                 va="top", fontsize=14, color=GREY)
     ax.text(xs["h1"], y1, "$h_1$", ha="center", va="center", fontsize=17)
-    ax.text(xs["dots"], y1, "$\\cdots$", ha="center", va="center",
+    ax.text(xs["dots"], y1, "·s", ha="center", va="center",
             fontsize=17)
     ax.text(xs["hL"], y1, "$h_L$", ha="center", va="center", fontsize=18)
     half = {"x": 2, "h1": 2, "dots": 2, "hL": 2.6}
@@ -97,14 +97,14 @@ def plot_chain():
               (xs[b] - half.get(b, 3.6), y1))
     for a, sub in (("f1", "$a_1$"), ("fL", "$a_L$")):
         mid = (xs[a] + 3.6 + xs[{"f1": "h1", "fL": "hL"}[a]] - 2.6) / 2
-        ax.text(mid, y1 - 3.6, "方差 $\\times$ " + sub, ha="center",
+        ax.text(mid, y1 - 3.6, "方差 × " + sub, ha="center",
                 va="top", fontsize=15)
 
     # 初始化注解（蓝）：在 a_1 标签正下方，垂直箭头指到标签底下
     a1_mid = (xs["f1"] + 3.6 + xs["h1"] - 2.6) / 2
     ax.text(a1_mid, 100, "初始化", ha="center", fontsize=17.0, color=BLUE,
             weight="bold")
-    ax.text(a1_mid, 95.5, "选 $W$ 的标准差，\n让 $t=0$ 时每个 $a_l \\approx 1$",
+    ax.text(a1_mid, 95.5, "选 W 的标准差，\n让 t=0 时每个 $a_l \\approx 1$",
             ha="center", va="top", fontsize=17.0, color=BLUE)
     arrow(ax, (a1_mid, 102.6), (a1_mid, y1 - 7.2), color=BLUE)
 
@@ -114,7 +114,7 @@ def plot_chain():
             color=ORANGE)
     xs2 = {"x": 18, "f1": 28, "n1": 50, "h1": 72, "dots": 80, "fL": 92,
            "nL": 114, "hL": 136}
-    ax.text(xs2["x"], y2, "$x$", ha="center", va="center", fontsize=18)
+    ax.text(xs2["x"], y2, "x", ha="center", va="center", fontsize=18)
     for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
         bx_((xs2[key], y2), label, width=7, height=6, fontsize=17)
         ax.text(xs2[key], y2 - 8, "Linear\n+ 非线性", ha="center",
@@ -125,7 +125,7 @@ def plot_chain():
     ax.text(xs2["n1"], y2 - 8, "BN / LN\nRMSNorm", ha="center",
             va="top", fontsize=14, color=ORANGE)
     ax.text(xs2["h1"], y2, "$h_1$", ha="center", va="center", fontsize=17)
-    ax.text(xs2["dots"], y2, "$\\cdots$", ha="center", va="center",
+    ax.text(xs2["dots"], y2, "·s", ha="center", va="center",
             fontsize=17)
     ax.text(xs2["hL"], y2, "$h_L$", ha="center", va="center", fontsize=18)
     h2 = {"x": 2, "h1": 2, "dots": 2, "hL": 2.6, "n1": 5.8, "nL": 5.8}
@@ -137,7 +137,7 @@ def plot_chain():
     for a, b in (("f1", "n1"), ("fL", "nL")):
         mid = (xs2[a] + 3.6 + xs2[b] - 5.8) / 2
         sub = "$a_1$" if a == "f1" else "$a_L$"
-        ax.text(mid, y2 + 4.2, "方差 $\\times$ " + sub, ha="center",
+        ax.text(mid, y2 + 4.2, "方差 × " + sub, ha="center",
                 va="bottom", fontsize=15)
     for a, b in (("n1", "h1"), ("nL", "hL")):
         mid = (xs2[a] + 5.8 + xs2[b] - 2.6) / 2
@@ -163,7 +163,7 @@ def plot_chain():
         bx_((bxs[key], 36), label, width=9, height=6, fontsize=17.0)
     ax.text(bxs["ghL"], 36, "$\\partial L / \\partial h_L$", ha="center",
             va="center", fontsize=17.0)
-    ax.text(bxs["dots"], 36, "$\\cdots$", ha="center", va="center",
+    ax.text(bxs["dots"], 36, "·s", ha="center", va="center",
             fontsize=17)
     ax.text(bxs["gx"], 36, "$\\partial L / \\partial x$", ha="center",
             va="center", fontsize=17.0)
@@ -179,7 +179,7 @@ def plot_chain():
             fc="#e6f4ee", ec=GREEN)
     ax.text(bxs["ghL"], 22, "$\\partial L / \\partial h_L$", ha="center",
             va="center", fontsize=17.0)
-    ax.text(bxs["dots"], 22, "$\\cdots$", ha="center", va="center",
+    ax.text(bxs["dots"], 22, "·s", ha="center", va="center",
             fontsize=17)
     ax.text(bxs["gx"], 22, "$\\partial L / \\partial x$", ha="center",
             va="center", fontsize=17.0)
@@ -187,8 +187,8 @@ def plot_chain():
     for a, b in bedges:
         arrow(ax, (bxs[a] - bhalf2.get(a, 4.6), 22),
               (bxs[b] + bhalf2.get(b, 4.6), 22), color=GREEN)
-    ax.text(X, 13, "残差让反向每个因子多一项 $I$：连乘展开后总有一条不乘"
-            "任何 $J$ 的直通路（$I$ 是单位矩阵）",
+    ax.text(X, 13, "残差让反向每个因子多一项 I：连乘展开后总有一条不乘"
+            "任何 J 的直通路（I 是单位矩阵）",
             ha="center", va="top", fontsize=17.0, color=GREEN)
 
     # ---- 布局自检：标签与框、标签与标签之间不得重叠 ----
@@ -231,11 +231,11 @@ def plot_product():
     ]
     for a, color in curves:
         ax.plot(L, a ** L.astype(float), color=color, linewidth=LW,
-                label=rf"$a={a}$")
+                label=rf"a={a}")
     ax.set_yscale("log")
-    ax.set_xlabel("Depth $L$", fontsize=15)
+    ax.set_xlabel("Depth L", fontsize=15)
     ax.set_ylabel("$a^L$", fontsize=15)
-    ax.set_title("Per-layer factor $a$: $a^L$ vs depth", fontsize=15)
+    ax.set_title("Per-layer factor a: $a^L$ vs depth", fontsize=15)
     ax.tick_params(labelsize=13)
     ax.grid(alpha=0.2, which="both")
     ax.legend(frameon=True, framealpha=0.9, fontsize=12, loc="lower right")
@@ -293,7 +293,7 @@ def plot_init_variance():
 
 def plot_norm_axes():
     """FIGURE 4：BN / LN / RMSNorm 各自沿哪个维度统计。"""
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.6))
+    fig, axes = plt.subplots(1, 3, figsize=(7.4, 3.0))
     rows, cols = 4, 8
     titles = ["BatchNorm", "LayerNorm", "RMSNorm"]
     notes = [
@@ -352,7 +352,7 @@ def plot_ln_vs_rms():
     ax.set_xticks(groups)
     ax.set_xticklabels(["$x_1$", "$x_2$", "$x_3$", "$x_4$"], fontsize=14)
     ax.set_ylabel("value", fontsize=15)
-    ax.set_title(r"LayerNorm vs RMSNorm on $x=[2,4,6,8]$", fontsize=15)
+    ax.set_title(r"LayerNorm vs RMSNorm on x=[2,4,6,8]", fontsize=15)
     ax.tick_params(labelsize=13)
     ax.legend(frameon=True, framealpha=0.9, fontsize=12)
     ax.grid(alpha=0.2, axis="y")
@@ -418,10 +418,10 @@ def plot_bn_sequence():
     ax.set_yscale("log")
     ax.set_xticks(ms)
     ax.set_xticklabels([str(m) for m in ms], fontsize=14.5)
-    ax.tick_params(axis="y", labelsize=14.5)
+    ax.tick_params(axis="y", labelsize=15.5)
     ax.set_xlabel("batch size m", fontsize=14.5)
     ax.set_ylabel("std of batch mean", fontsize=14.5)
-    ax.set_title(r"BN statistics are noisy at small $m$", fontsize=14.5)
+    ax.set_title(r"BN statistics are noisy at small m", fontsize=14.5)
     ax.grid(alpha=0.2, which="both")
     ax.legend(frameon=True, framealpha=0.9, fontsize=14.5, loc="lower left")
     ax.annotate("inference: batch = 1, one token\n"
@@ -442,16 +442,16 @@ def plot_residual_paths():
     xs = {"x0": 8, "x1": 50, "x2": 92}
     for key, label in (("x0", "$x_0$"), ("x1", "$x_1$"), ("x2", "$x_2$")):
         ax.text(xs[key], y, label, ha="center", va="center", fontsize=16)
-    box(ax, (29, y - 22), "$f_1$", width=8, height=8, fontsize=15)
-    box(ax, (71, y - 22), "$f_2$", width=8, height=8, fontsize=15)
+    box(ax, (29, y - 22), "$f_1$", width=8, height=8, fontsize=15.5)
+    box(ax, (71, y - 22), "$f_2$", width=8, height=8, fontsize=15.5)
 
     # 恒等路（上弧，绿色高亮）
     arrow(ax, (xs["x0"] + 3, y + 4), (xs["x1"] - 3, y + 4), color=GREEN,
           lw=LW, connectionstyle="arc3,rad=-0.45")
     arrow(ax, (xs["x1"] + 3, y + 4), (xs["x2"] - 3, y + 4), color=GREEN,
           lw=LW, connectionstyle="arc3,rad=-0.45")
-    ax.text(29, y + 27, "$I$", ha="center", fontsize=15, color=GREEN)
-    ax.text(71, y + 27, "$I$", ha="center", fontsize=15, color=GREEN)
+    ax.text(29, y + 27, "I", ha="center", fontsize=15, color=GREEN)
+    ax.text(71, y + 27, "I", ha="center", fontsize=15, color=GREEN)
 
     # 穿过 f_l 的路（下弧，灰）
     arrow(ax, (xs["x0"] + 3, y - 4), (24.5, y - 22), color=GREY, lw=LW,
@@ -462,18 +462,18 @@ def plot_residual_paths():
           connectionstyle="arc3,rad=-0.3")
     arrow(ax, (75.5, y - 22), (xs["x2"] - 3, y - 4), color=GREY, lw=LW,
           connectionstyle="arc3,rad=-0.3")
-    ax.text(29, y - 36, "$J_1$", ha="center", fontsize=14, color=GREY)
-    ax.text(71, y - 36, "$J_2$", ha="center", fontsize=14, color=GREY)
+    ax.text(29, y - 36, "$J_1$", ha="center", fontsize=16, color=GREY)
+    ax.text(71, y - 36, "$J_2$", ha="center", fontsize=16, color=GREY)
 
     ax.text(50, 90, "Two residual blocks: the backward product unrolls "
-            "into $2^2 = 4$ paths", ha="center", fontsize=14)
+            "into $2^2 = 4$ paths", ha="center", fontsize=15.5)
     ax.text(50, 10,
             r"$\partial x_2 / \partial x_0 = (I + J_2)(I + J_1)"
             r" = I \;+\; J_1 \;+\; J_2 \;+\; J_2 J_1$",
-            ha="center", fontsize=15)
+            ha="center", fontsize=15.5)
     ax.text(50, 4, "the green term is pure identity: a path that reaches "
-            "$x_0$ without multiplying any $J$",
-            ha="center", fontsize=12.0, color=GREEN)
+            "$x_0$ without multiplying any J",
+            ha="center", fontsize=15.5, color=GREEN)
     save(fig, "init-norm-residual-paths")
 
 
@@ -495,10 +495,10 @@ def plot_one_layer_variance():
     for _ax in axes:
         _ax.tick_params(labelsize=11)
     data = [
-        (x.ravel(), BLUE, f"输入 $x$：Var = {var_x:.2f}"),
-        (z.ravel(), ORANGE, f"Linear 之后 $z$：Var = {var_z:.2f}"),
+        (x.ravel(), BLUE, f"输入 x：Var = {var_x:.2f}"),
+        (z.ravel(), ORANGE, f"Linear 之后 z：Var = {var_z:.2f}"),
         (h.ravel(), GREEN,
-         f"ReLU 之后 $h$：$\\mathbb{{E}}[h^2] = {e_h2:.2f}$"),
+         f"ReLU 之后 h：$\\mathbb{{E}}[h^2] = {e_h2:.2f}$"),
     ]
     bars3 = None
     for ax, (v, color, title) in zip(axes, data):
@@ -618,7 +618,7 @@ def plot_one_layer_steps():
     arrow(ax, (phi_x + 6.4, sum_y), (h_x - 3.6, sum_y))
     ax.text(h_x, sum_y, "$h_i$", ha="center", va="center", fontsize=12.5)
     ax.text((phi_x + h_x) / 2, sum_y - 8.2,
-            "二阶矩 $\\times\\,c_\\phi$（ReLU：$1/2$）",
+            "二阶矩 $\\times\\,c_\\phi$（ReLU：1/2）",
             ha="center", va="center", fontsize=12.5)
 
     # 底部两条彩色带 + 总结

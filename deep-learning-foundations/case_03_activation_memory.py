@@ -29,6 +29,11 @@ import numpy as np  # noqa: E402
 from matplotlib.patches import Rectangle, FancyArrowPatch  # noqa: E402
 
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 
 torch.manual_seed(0)
 
@@ -449,13 +454,13 @@ def fig_one_layer():
                  fontweight=600, color="#111111")
 
     boxes = [
-        (r"$x$", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
-        (r"$z=Wx+b$", "线性", "$W, b$",
+        (r"x", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
+        (r"z=Wx+b", "线性", "W, b",
          "#f5f8fc", "#555555", 2.6),
-        (r"$z$", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
-        (r"$f$", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
-        (r"$a$", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
-        ("下一层", r"它的 $x$", "", "#f5f5f5", "#888888", 1.6),
+        (r"z", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
+        (r"f", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
+        (r"a", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
+        ("下一层", r"它的 x", "", "#f5f5f5", "#888888", 1.6),
     ]
     h, y, gap = 1.62, 2.7, 0.3
     x = 0.1
@@ -473,11 +478,11 @@ def fig_one_layer():
                                          color="#555555", lw=1.2))
         x += w + gap
     text(ax, 6.0, 2.1,
-         r"取值：$W=[[1,-1],[0.5,0.5]]$，$b=(0,-1)$",
+         r"取值：W=[[1,−1],[0.5,0.5]]，b=(0,−1)",
          ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.55,
-         r"$z=(-1,0.5)$：线性这一步的输出还带着负数；"
-         r"ReLU 把它压成 $a=(0,0.5)$",
+         r"z=(−1,0.5)：线性这一步的输出还带着负数；"
+         r"ReLU 把它压成 a=(0,0.5)",
          ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.05,
          "术语对照：f 是「激活函数」（第①义），a 是「激活值」（第②义）；",

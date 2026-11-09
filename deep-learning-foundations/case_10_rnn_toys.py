@@ -28,6 +28,11 @@ plt, save, text, box = (lst_plot.plt, lst_plot.save, lst_plot.text,
                         lst_plot.box)
 C = lst_plot.C
 lst_plot.OUT = BLOG_IMG
+spec_dlf = importlib.util.spec_from_file_location(
+    "dlf_plot", os.path.join(HERE, "_plot.py"))
+dlf_plot = importlib.util.module_from_spec(spec_dlf)
+spec_dlf.loader.exec_module(dlf_plot)   # 导入即注册 Noto + 真文字 SVG
+save = dlf_plot.enable_embed(lst_plot)  # save() 后内嵌字体 + 数学检查
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -186,8 +191,8 @@ def figure_bptt_decay():
             J[t] = J[t + 1] * w * dtanh[t]
         ax.semilogy(range(0, 31), J[::-1][:31] if False else
                     [J[T - d] for d in range(31)], lw=1.8, color=col,
-                    label=rf"$w={w}$")
-    ax.set_xlabel(r"距离 $T-t$")
+                    label=rf"w={w}")
+    ax.set_xlabel(r"距离 T−t")
     ax.set_xlim(0, 30)
     ax.set_yticks([10.0 ** (-3 * k) for k in range(7)])
     ax.set_yticklabels(
@@ -218,23 +223,23 @@ def figure_lstm_cell():
 
     p0 = cell(ax, .3, y, cw, ch, "$c_{t-1}=1.0$", fs=10.5)
     arrow(ax, (1.95, cy), (2.8, cy))
-    lab(2.38, r"$\times f$（$0.9$）")
+    lab(2.38, r"× f（0.9）")
     p1 = cell(ax, 2.85, y, cw, ch, r"$f\,c_{t-1}=0.9$", fs=10.5)
     arrow(ax, (4.5, cy), (5.35, cy))
-    lab(4.93, r"$+$")
+    lab(4.93, r"+")
     p2 = cell(ax, 5.4, y, cw, ch, f"$c_t={c_t:.1f}$", fs=10.5,
               fc="#fae6d6", ec=C["orange"])
     # i·g 从下方经 + 汇入 c_t
     pg = cell(ax, 4.95, y - 1.7, 2.5, .9,
-              r"$i\cdot g=0.2\times0.5=0.1$", fs=10.5)
+              r"i· g=0.2×0.5=0.1", fs=10.5)
     arrow(ax, (6.2, y - .75), (6.2, y - .05))
-    text(ax, 6.32, y - .42, r"$+$", fontsize=10.5, ha="left", va="center",
+    text(ax, 6.32, y - .42, r"+", fontsize=10.5, ha="left", va="center",
          color="#555555")
     arrow(ax, (7.05, cy), (7.9, cy))
     lab(7.48, r"$\tanh$")
     p3 = cell(ax, 7.9, y, cw + .35, ch, r"$\tanh c_t=0.762$", fs=10.5)
     arrow(ax, (9.9, cy), (10.45, cy))
-    lab(10.03, r"$\times o$（$0.8$）")
+    lab(10.03, r"× o（0.8）")
     p4 = cell(ax, 10.5, y, cw, ch, f"$h_t={h_t:.2f}$", fs=10.5,
               fc="#e8f3e8", ec=C["green"])
     # 底部：30 步后 ∏f 残存比例，小柱状对比
@@ -245,9 +250,9 @@ def figure_lstm_cell():
         hgt = v / 0.740 * bh
         ax.add_patch(Rectangle((bx, y0), .9, hgt,
                                         fc=col, ec="#555555", lw=.8))
-        text(ax, bx + .45, y0 + hgt + .22, f"${v:.3f}$", fontsize=10.5,
+        text(ax, bx + .45, y0 + hgt + .22, f"{v:.3f}", fontsize=10.5,
              ha="center", color="#333333")
-        text(ax, bx + .45, y0 - .28, f"$f={fv}$", fontsize=10.5,
+        text(ax, bx + .45, y0 - .28, f"f={fv}", fontsize=10.5,
              ha="center", va="top", color="#555555")
     ax.plot([.8, 4.3], [y0, y0], color="#555555", lw=.8)
     text(ax, 5.1, y0 + .75,

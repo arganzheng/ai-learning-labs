@@ -185,9 +185,9 @@ def mfu_waterfall():
             level += d
             p = _card(ax, level, y - bh, -d, 2 * bh, "", fc=col, ec="#888888", lw=0.7)
             if -d >= 1.4:  # 段够宽，点数写进段里
-                _label(ax, level - d / 2, y, f"{d:+.1f}", 10, in_box=p)
+                _label(ax, level - d / 2, y, f"{d:+.1f}".replace("-", "−"), 10, in_box=p)
             else:  # 窄段的点数标在段右侧
-                _label(ax, level - d + 0.5, y, f"{d:+.1f}", 10, ha="left")
+                _label(ax, level - d + 0.5, y, f"{d:+.1f}".replace("-", "−"), 10, ha="left")
     _label(ax, 35, 0.35, "四项配置错误（通信、重计算、kernel、CPU）共 6 点先修；straggler 归第九篇；", 10)
     _label(ax, 35, -0.1, "气泡是结构问题；数据等待归第十篇——先修配置错误，再查硬件，最后碰结构。", 10)
     save(fig, "thousand-gpu-configuration-mfu-waterfall")

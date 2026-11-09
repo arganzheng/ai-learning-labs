@@ -12,6 +12,10 @@ import sys
 import matplotlib
 
 matplotlib.use("Agg")
+import sys as _sys  # noqa: E402
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import figtext as _ft  # noqa: E402  导入即注册 Noto
+
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager as _fm  # noqa: E402
 from matplotlib import patheffects as _pe  # noqa: E402
@@ -19,12 +23,9 @@ from matplotlib.ft2font import FT2Font  # noqa: E402
 from matplotlib.patches import FancyBboxPatch, Rectangle  # noqa: E402
 
 plt.rcParams.update({
-    # Hiragino Sans GB 是简体中文字体，W3/W6 两档都在 Hiragino Sans GB.ttc 里；
-    # 日文 Hiragino Sans 缺不少简体字形，会逐字回退造成同一行字重不一
-    "font.family": ["Hiragino Sans GB", "Heiti SC", "Hiragino Sans", "Arial Unicode MS", "DejaVu Sans"],
-    "font.weight": 600,             # Hiragino Sans GB W6；W3/Light 笔画太细
+    "font.family": ["Noto Sans SC Medium", "Noto Sans SC"],
     "axes.unicode_minus": True,
-    "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
+    "svg.fonttype": "none",         # 真文字 + 内嵌字体子集（embed_fonts），<img> 下也有 hinting
     "mathtext.fontset": "cm",        # $...$ 用 Computer Modern 排，与正文 KaTeX 风格一致
     "font.size": 11,                # 正文列宽 750 px 下约等于 11 pt 正文
     "axes.titlesize": 12,
@@ -142,14 +143,15 @@ def box_title(ax, x, y, s, in_box, color="#111111", **kw):
     return t
 
 
-def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=BOX_TEXT_SIZE, lw=0.9, r=0.012, **kw):
+def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=BOX_TEXT_SIZE, lw=0.9, r=0.012, linespacing=None, **kw):
     """圆角盒；给 s 时把文字画在正中并登记为盒内文本。"""
     p = FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}",
                        fc=fc, ec=ec, lw=lw, **kw)
     ax.add_patch(p)
     _PATCHES.append(p)
     if s:
-        text(ax, x + w / 2, y + h / 2, s, in_box=p, ha="center", va="center", fontsize=fs)
+        tkw = {"linespacing": linespacing} if linespacing else {}
+        text(ax, x + w / 2, y + h / 2, s, in_box=p, ha="center", va="center", fontsize=fs, **tkw)
     return p
 
 
@@ -468,8 +470,11 @@ def save(fig, name, dpi=150):
         for line in ax.lines:
             if len(line.get_xdata()) > 500:
                 line.set_rasterized(True)
+    _ft.checks(fig)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None}, dpi=dpi)
+    _ft.strip_ws(path)
+    _ft.embed_fonts(path)
     if os.environ.get("PLOT_PNG"):                                   # 作者自查用：PLOT_PNG=/tmp/plots 另存一份 png
         os.makedirs(os.environ["PLOT_PNG"], exist_ok=True)
         fig.savefig(os.path.join(os.environ["PLOT_PNG"], f"{name}.png"), dpi=110, bbox_inches="tight")

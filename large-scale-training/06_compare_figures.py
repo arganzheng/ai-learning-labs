@@ -13,11 +13,11 @@ def f1():
     fig, ax = plt.subplots(figsize=(7.6, 4.3))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.3); ax.axis("off")
     rows = [
-        ("Megatron\nTP2$\\times$PP2$\\times$DP2 ZeRO-1", [0.75, 1.50, 0.75, 0.75, 0.75],
+        ("Megatron\nTP2×PP2×DP2 ZeRO-1", [0.75, 1.50, 0.75, 0.75, 0.75],
          ["bf16\n参数", "fp32\n梯度", "fp32\n主参数", "Adam\nm", "Adam\nv"], "4.50 GB", C["blue"]),
         ("DeepSpeed\nZeRO-3 DP8", [0.375, 0.375, 0.749, 0.749, 0.749],
          ["bf16\n参数", "bf16\n梯度", "fp32\n主参数", "Adam\nm", "Adam\nv"], "3.00 GB", C["orange"]),
-        ("torchtitan\nFSDP4$\\times$TP2 tied", [0.618, 0.618, 0.618, 0.618],
+        ("torchtitan\nFSDP4×TP2 tied", [0.618, 0.618, 0.618, 0.618],
          ["fp32\n参数＝主参数", "fp32\n梯度", "Adam\nm", "Adam\nv"], "2.47 GB\n不绑定 3.00", C["green"]),
     ]
     y_positions = [3.15, 1.85, 0.55]
@@ -176,9 +176,9 @@ def f6():
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 3.9); ax.axis("off")
     rows = [
-        ("Megatron\nTP2$\\times$PP2$\\times$DP2", "megatron", "色条＝TP 组\nTP [0,1] [2,3] [4,5] [6,7]\nDP [0,2] [1,3] [4,6] [5,7]\nPP [0,4] [1,5] [2,6] [3,7]", C["blue"]),
+        ("Megatron\nTP2×PP2×DP2", "megatron", "色条＝TP 组\nTP [0,1] [2,3] [4,5] [6,7]\nDP [0,2] [1,3] [4,6] [5,7]\nPP [0,4] [1,5] [2,6] [3,7]", C["blue"]),
         ("DeepSpeed\nZeRO-3 DP8", "deepspeed", "色条＝同一 DP 组\nDP [0,1,2,3,4,5,6,7]", C["orange"]),
-        ("torchtitan\ndp_shard4$\\times$TP2", "torchtitan", "色条＝dp_shard 组\nTP [0,1] [2,3] [4,5] [6,7]\ndp_shard [0,2,4,6] [1,3,5,7]", C["green"]),
+        ("torchtitan\ndp_shard4×TP2", "torchtitan", "色条＝dp_shard 组\nTP [0,1] [2,3] [4,5] [6,7]\ndp_shard [0,2,4,6] [1,3,5,7]", C["green"]),
     ]
     ys = [2.95, 1.85, 0.75]
     for (name, grouping, desc, color), y in zip(rows, ys):

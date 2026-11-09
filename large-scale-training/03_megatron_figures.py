@@ -95,7 +95,7 @@ def f2():
     layers = [
         ("parallel_state（模块级全局变量 + RankGenerator）", "给上面每一层提供进程组：TP / DP / PP / …", "#444444"),
         ("tensor_parallel：ColumnParallel / RowParallel / mappings", "模型由切开的层搭成；通信是手写的 autograd.Function", C["blue"]),
-        ("_ParamAndGradBuffer + Bucket(Group)", "两段连续内存；参数与 main_grad 是视图；通信单位是 bucket", C["orange"]),
+        ("ParamAndGradBuffer + Bucket(Group)", "两段连续内存；参数与 main_grad 是视图；通信单位是 bucket", C["orange"]),
         ("DistributedDataParallel", "包装模型，注册 hook：梯度就绪发 reduce-scatter、前向等 all-gather", C["green"]),
         ("DistributedOptimizer", "按 buffer 字节区间切 fp32 主参数与 m、v（ZeRO-1）", C["purple"]),
         ("schedules.py + P2PCommunicator", "驱动前向 / 反向时序；只通过 config 回调碰 DDP", C["red"]),

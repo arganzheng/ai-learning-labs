@@ -195,8 +195,8 @@ def alert_timeline():
 
     a1.plot(T, thr, color=C["blue"], lw=1.6)
     a1.axhline(850, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(31.6, 838, "record 阈值：-15%（850 tok/s）", fontsize=10,
-            color="#555555", va="top", ha="right")
+    a1.text(0.5, 1060, "record 阈值：−15%（850 tok/s）", fontsize=10,
+            color="#555555", va="top", ha="left")
     a1.set_ylim(700, 1080)
     a1.set_xlim(0, 32)
     a1.set_yticks([700, 850, 1000])

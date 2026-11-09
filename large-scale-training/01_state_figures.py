@@ -61,7 +61,7 @@ def f1_budget():
         text(ax, tx, 1.68, str(tick), ha="center", va="center", fontsize=10)
     text(ax, x0 + 100 * scale, 1.38, "显存（GB）", ha="center", va="center", fontsize=10)
 
-    text(ax, 3.8, 0.75, "$s=8192$，$b=1$；激活含 32 层与 logits。单卡装不下，下一篇看怎么切。",
+    text(ax, 3.8, 0.75, "s=8192，b=1；激活含 32 层与 logits。单卡装不下，下一篇看怎么切。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-budget-overview")
 
@@ -77,19 +77,19 @@ def f2_ledgers():
     for yy, label in [(2.78, "参数 + 梯度 + 优化器状态"), (2.31, "+ 激活 + 非张量开销"),
                       (1.78, "≤ 每卡可用显存（约 70 GiB）")]:
         text(ax, 1.97, yy, label, in_box=left, ha="center", va="center", fontsize=11)
-    text(ax, 1.97, 1.15, "8B：$16N=128.5$ GB，单卡先放不下", in_box=left,
+    text(ax, 1.97, 1.15, "8B：16N=128.5 GB，单卡先放不下", in_box=left,
          ha="center", va="center", fontsize=10.5, color=C["red"])
 
     box_title(ax, 5.63, 3.34, "FLOP 账：最快要多久？", right, color=C["orange"])
-    text(ax, 5.63, 2.76, "$\mathrm{tokens}/\mathrm{step} \\times \mathrm{FLOP}/\mathrm{token}$", in_box=right,
+    text(ax, 5.63, 2.76, "tokens/step × FLOP/token", in_box=right,
          ha="center", va="center", fontsize=11)
-    text(ax, 5.63, 2.42, "$\div$（卡数 $\\times$ 峰值 FLOPS）", in_box=right,
+    text(ax, 5.63, 2.42, "÷（卡数 × 峰值 FLOPS）", in_box=right,
          ha="center", va="center", fontsize=11)
-    text(ax, 5.63, 1.93, "$=$ step 时间下限 1.86 s", in_box=right,
+    text(ax, 5.63, 1.93, "= step 时间下限 1.86 s", in_box=right,
          ha="center", va="center", fontsize=11)
     text(ax, 5.63, 1.36, "70B · 4M token · 1024 H100", in_box=right,
          ha="center", va="center", fontsize=10)
-    text(ax, 5.63, 0.98, "实测 4.5 s $\\to$ MFU $=41.3\%$", in_box=right,
+    text(ax, 5.63, 0.98, "实测 4.5 s → MFU = 41.3%", in_box=right,
          ha="center", va="center", fontsize=10.5, color=C["orange"])
     text(ax, 3.8, 0.28, "左边约束放得下，右边给出理论下限；实测与下限的差才是调优空间。",
          ha="center", va="center", fontsize=10)
@@ -101,13 +101,13 @@ def f3_four_states():
     fig, ax = plt.subplots(figsize=(7.6, 4.75))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.75); ax.axis("off")
     ax.set_title("四种状态：哪些常驻，哪些在 step 里来去")
-    text(ax, 1.95, 4.18, "常驻：大小只与 $N$ 有关", ha="center", va="center", fontsize=11, color=C["blue"])
+    text(ax, 1.95, 4.18, "常驻：大小只与 N 有关", ha="center", va="center", fontsize=11, color=C["blue"])
     text(ax, 5.55, 4.18, "瞬态：一个 step 内产生又释放", ha="center", va="center", fontsize=11, color=C["orange"])
     cards = [
-        (0.20, 2.55, "参数 $\\theta$", "bf16 计算副本\n$2N$ 字节\n前向、反向都读", C["blue"]),
-        (2.00, 2.55, "优化器状态", "$12N$：主参数 $4N$\nAdam $m$ $4N$ + $v$ $4N$", C["purple"]),
-        (3.80, 2.55, "梯度", "$2N$ bf16 / $4N$ fp32\n反向逐层产生\nstep 后清零", C["orange"]),
-        (5.60, 2.55, "激活 $A$", "$\\approx 34\\,s\\,b\\,h\\,L$\n字节\n前向堆高，反向释放", C["green"]),
+        (0.20, 2.55, "参数 θ", "bf16 计算副本\n2N 字节\n前向、反向都读", C["blue"]),
+        (2.00, 2.55, "优化器状态", "12N：主参数 4N\nAdam m 4N + v 4N", C["purple"]),
+        (3.80, 2.55, "梯度", "2N bf16 / 4N fp32\n反向逐层产生\nstep 后清零", C["orange"]),
+        (5.60, 2.55, "激活 A", "≈ 34sbhL\n字节\n前向堆高，反向释放", C["green"]),
     ]
     for x, y, title, detail, color in cards:
         p = box(ax, x, y, 1.70, 1.34, "", fc="#ffffff", ec=color, lw=1.0)
@@ -122,7 +122,7 @@ def f3_four_states():
         (0.42, "① 前向", "读参数\n逐层留下激活\n末端算 loss"),
         (2.17, "② 反向", "从 loss 往回算\n读参数 + 激活\n产梯度、释放激活"),
         (3.92, "③ 更新", "读梯度\n更新 m、v、主参数"),
-        (5.67, "④ cast 回 bf16", "主参数\n$\\to$ 计算参数"),
+        (5.67, "④ cast 回 bf16", "主参数\n→ 计算参数"),
     ]
     for x, title, detail in steps:
         p = box(ax, x, 0.78, 1.48, 1.22, "", fc="#f7f8fa", ec="#777777")
@@ -130,7 +130,7 @@ def f3_four_states():
         text(ax, x + 0.74, 1.22, detail, in_box=p, ha="center", va="center", fontsize=10.5)
     for x in [1.90, 3.65, 5.40]:
         _arrow(ax, (x + 0.02, 1.40), (x + 0.25, 1.40), lw=1.4)
-    text(ax, 3.8, 0.38, "70B、$s=8192$、$b=1$：参数 141 GB，优化器 847 GB，梯度 141 / 282 GB，激活 182 GB。",
+    text(ax, 3.8, 0.38, "70B、s=8192、b=1：参数 141 GB，优化器 847 GB，梯度 141 / 282 GB，激活 182 GB。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-four-states-overview")
 
@@ -282,7 +282,7 @@ def f7_activations():
         ax.add_patch(Rectangle((cursor, y), seg_w, h, facecolor=color, edgecolor="#ffffff", linewidth=1.0))
         seg_labels.append((cursor + seg_w / 2, name))
         cursor += seg_w
-    text(ax, x0 + base_w / 2, y + h + 0.06, "$34sbh = 2.28$ GB", ha="center", va="bottom", fontsize=10.5)
+    text(ax, x0 + base_w / 2, y + h + 0.06, "34sbh = 2.28 GB", ha="center", va="bottom", fontsize=10.5)
     ax.add_patch(Rectangle((x0 + base_w, y), w - base_w, h, facecolor="#eeeeee", edgecolor="#888888", linewidth=1.0, hatch="///"))
     text(ax, x0 + base_w + (w - base_w) / 2, y + h / 2, "$5as^2b = 21.5$ GB（不使用 FlashAttention）", ha="center", va="center", fontsize=10.5)
     # 窄段标签引出到条下，交错两行；MLP 引线取段右端，绕开左边「注意力 11」的宽度
@@ -291,16 +291,16 @@ def f7_activations():
         text(ax, lx, ly, name, ha="center", va="center", fontsize=10)
 
     rows = [
-        ("注意力", "Q/K/V 投影输入 $2h$ · $QK^{\\!\\!\\top}$ 输入 $4h$ · $V$ / 输出投影输入 $4h$ · dropout mask $h$", C["blue"]),
-        ("MLP", "第一线性输入 $2h$ · GELU 输入 $8h$ · 第二线性输入 $8h$ · dropout mask $h$", C["green"]),
-        ("LayerNorm", "两份输入 $4h$", C["orange"]),
-        ("注意力分数", "softmax 输出 $2as$ · dropout mask $as$ · dropout 输出 $2as$", C["purple"]),
+        ("注意力", "Q/K/V 投影输入 2h · $QK^{\\!\\!\\top}$ 输入 4h · V / 输出投影输入 4h · dropout mask h", C["blue"]),
+        ("MLP", "第一线性输入 2h · GELU 输入 8h · 第二线性输入 8h · dropout mask h", C["green"]),
+        ("LayerNorm", "两份输入 4h", C["orange"]),
+        ("注意力分数", "softmax 输出 2as · dropout mask as · dropout 输出 2as", C["purple"]),
     ]
     for i, (name, detail, color) in enumerate(rows):
         yy = 2.32 - i * 0.47
         p = box(ax, 0.55, yy, 1.26, 0.34, name, fc="#ffffff", ec=color, fs=10)
         text(ax, 2.02, yy + 0.17, detail, ha="left", va="center", fontsize=10.5)
-    text(ax, 3.8, 0.42, "Llama 3 70B，$s=8192$、$b=1$；FlashAttention 不保存灰色斜线部分，反向时分块重算。",
+    text(ax, 3.8, 0.42, "Llama 3 70B，s=8192、b=1；FlashAttention 不保存灰色斜线部分，反向时分块重算。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-activation-breakdown")
 
@@ -318,9 +318,9 @@ def f8_memory_nesting():
     box_title(ax, 3.78, 3.25, "PyTorch allocator reserved（分配器向驱动申请的 segment）", reserved, color=C["blue"])
     alloc = box(ax, 0.82, 1.56, 4.05, 1.26, "", fc="#eff5fc", ec=C["green"], lw=0.9)
     box_title(ax, 2.84, 2.55, "allocated：活着的张量 block", alloc, color=C["green"])
-    text(ax, 2.84, 2.11, "参数 $2N$ · 梯度 $2N/4N$ · 优化器状态 $12N$", in_box=alloc,
+    text(ax, 2.84, 2.11, "参数 2N · 梯度 2N/4N · 优化器状态 12N", in_box=alloc,
          ha="center", va="center", fontsize=10.5)
-    text(ax, 2.84, 1.76, "激活 $\\approx 34\,s\,b\,h\,L$ + logits $6\,s\,b\,V$", in_box=alloc,
+    text(ax, 2.84, 1.76, "激活 ≈ 34sbhL + logits 6sbV", in_box=alloc,
          ha="center", va="center", fontsize=10.5)
     text(ax, 5.82, 2.57, "库 workspace\n0.2–0.5 GiB", in_box=reserved,
          ha="center", va="center", fontsize=10)
@@ -339,9 +339,9 @@ def f9_flops():
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.2); ax.axis("off")
     ax.set_title("6N 从哪来：前向一个 GEMM，反向两个")
     cols = [
-        (0.55, "前向", "$y = xW$", ["$x$ ($\\mathrm{tokens}, n$)", "$W$ ($n, k$)"], C["blue"]),
-        (2.95, "dgrad（求 dX）", "$dX = dY\,W^{\\!\\!\\top}$", ["$dY$ ($\\mathrm{tokens}, k$)", "$W$ ($n, k$)"], C["blue"]),
-        (5.35, "wgrad（求 dW）", "$dW = x^{\\!\\!\\top}\,dY$", ["$x$ ($\\mathrm{tokens}, n$)", "$dY$ ($\\mathrm{tokens}, k$)"], C["orange"]),
+        (0.55, "前向", "y = xW", ["x (tokens, n)", "W (n, k)"], C["blue"]),
+        (2.95, "dgrad（求 dX）", "$dX = dY\,W^{\\!\\!\\top}$", ["dY (tokens, k)", "W (n, k)"], C["blue"]),
+        (5.35, "wgrad（求 dW）", "$dW = x^{\\!\\!\\top}\,dY$", ["x (tokens, n)", "dY (tokens, k)"], C["orange"]),
     ]
     for cx, title, formula, inputs, color in cols:
         gemm = box(ax, cx - 0.04, 1.55, 1.78, 1.30, "", fc="#ffffff", ec=color, lw=1.1)
@@ -353,7 +353,7 @@ def f9_flops():
             text(ax, cx + 0.555 + j * 1.13, 3.27, inp, in_box=chip, ha="center", va="center", fontsize=10.5)
             _arrow(ax, (cx + 0.555 + j * 1.13, 3.08), (cx + 0.555 + j * 1.13, 2.88), lw=0.9)
     text(ax, 3.8, 0.75, "前向 2 + 反向 dgrad 2 + wgrad 2 = 6 FLOP / 参数 / token", ha="center", va="center", fontsize=11)
-    text(ax, 3.8, 0.34, "注意力另有 $QK^{\\!\\!\\top}$ 与 $PV$：每层每 token 全 mask $12sh$，因果 mask 减半为 $6sh$。",
+    text(ax, 3.8, 0.34, "注意力另有 $QK^{\\!\\!\\top}$ 与 PV：每层每 token 全 mask 12sh，因果 mask 减半为 6sh。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-flops-per-parameter")
 
@@ -404,7 +404,7 @@ def f11_activation_who_uses():
     def chip(xc, y, w, h, s, fc, ec="#555555", fs=10, dash=False):
         rects.append((xc - w / 2, y, xc + w / 2, y + h))
         return box(ax, xc - w / 2, y, w, h, s, fc=fc, ec=ec, lw=0.9, fs=fs,
-                   linestyle="--" if dash else "-")
+                   linestyle="--" if dash else "-", linespacing=1.5)
 
     cols = [1.95, 4.05, 6.15, 8.25, 10.35]
 
@@ -437,7 +437,7 @@ def f11_activation_who_uses():
 
     # ---- 前向行 ----
     yf, fw, fh = 7.9, 1.35, 0.8
-    for xc, name in zip(cols, ["$x$", "$H$", "$A$", "$Z$", "loss"]):
+    for xc, name in zip(cols, ["x", "H", "A", "Z", "loss"]):
         chip(xc, yf, fw, fh, name, "#dce9f7", C["blue"], 10.5)
     ops = ["Linear $W_1$", "ReLU", "Linear $W_2$", "CE"]
     for i, op in enumerate(ops):
@@ -450,9 +450,9 @@ def f11_activation_who_uses():
 
     # ---- 保存行 ----
     ys = 6.0
-    chip(cols[0], ys, 1.35, 0.66, "存 $x$", "#fae6d6", C["orange"], 10.5)
-    chip(cols[1], ys, 2.55, 0.66, "存 $H$ 的符号", "#fae6d6", C["orange"], 10.5)
-    chip(cols[2], ys, 1.35, 0.66, "存 $A$", "#fae6d6", C["orange"], 10.5)
+    chip(cols[0], ys, 1.35, 0.66, "存 x", "#fae6d6", C["orange"], 10.5)
+    chip(cols[1], ys, 2.55, 0.66, "存 H 的符号", "#fae6d6", C["orange"], 10.5)
+    chip(cols[2], ys, 1.35, 0.66, "存 A", "#fae6d6", C["orange"], 10.5)
     text(ax, 0.12, ys + 0.33, "保存", ha="left", va="center",
          fontsize=10.5, color=C["orange"])
 
@@ -466,7 +466,7 @@ def f11_activation_who_uses():
     yc, cw, ch = 3.6, 1.7, 1.16
     for xc, label in [(cols[1], "$G_H$\n$G_A \\odot \\mathrm{mask}$"),
                       (cols[2], "$G_A$\n$G_Z \\cdot W_2^{\\!\\!\\top}$"),
-                      (cols[3], "$G_Z$\n$(P-Y)/m$")]:
+                      (cols[3], "$G_Z$\n(P−Y)/m")]:
         chip(xc, yc, cw, ch, label, "#fff3e0", C["orange"], 10.5)
     _arrow(ax, (cols[3] - cw / 2 - 0.04, yc + ch / 2),
            (cols[2] + cw / 2 + 0.04, yc + ch / 2), lw=1.2)
@@ -508,10 +508,10 @@ def f11_activation_who_uses():
 
     text(ax, 6.0, 0.95,
          "反向走到哪一步，就用掉并释放对应的保存量："
-         "$G_H$ 用掉 mask，$dW_2$ 用掉 $A$，$dW_1$ 用掉 $x$",
+         "$G_H$ 用掉 mask，$dW_2$ 用掉 A，$dW_1$ 用掉 x",
          ha="center", va="center", fontsize=10.5)
     text(ax, 6.0, 0.52,
-         "$dX = G_H \\cdot W_1^{\\!\\!\\top}$ 在数学上存在，但 $x$ 是数据不求导，框架跳过"
+         "$dX = G_H \\cdot W_1^{\\!\\!\\top}$ 在数学上存在，但 x 是数据不求导，框架跳过"
          "（W1 被那一步读，图中未画）",
          ha="center", va="center", fontsize=10.5, color="#555555")
     save(fig, "training-state-activation-who-uses")
@@ -528,8 +528,8 @@ def f12_activation_three_meanings():
             rows[m.group(1)] = float(m.group(2))
     total = sum(rows.values())
     groups = [
-        ("$a=f(z)$：狭义激活值", ["fc2"], C["orange"] + "88"),
-        ("$z$：$f$ 的输入", ["gelu"], "#f0d98a"),
+        ("a=f(z)：狭义激活值", ["fc2"], C["orange"] + "88"),
+        ("z：f 的输入", ["gelu"], "#f0d98a"),
         ("线性层输入", ["qkv", "out_proj", "fc1"], C["blue"] + "66"),
         ("注意力中间量", ["qk^t", "pv"], C["purple"] + "55"),
         ("softmax 输出", ["softmax"], C["green"] + "55"),
@@ -546,7 +546,7 @@ def f12_activation_three_meanings():
 
     # ① 激活函数：一个函数
     p1 = box(ax, 0.3, 6.75, 3.6, 1.85, "", fc="#f5f8fc", ec=C["blue"], lw=1.0)
-    box_title(ax, 2.1, 8.25, "① 函数 $f$", p1, color=C["blue"])
+    box_title(ax, 2.1, 8.25, "① 函数 f", p1, color=C["blue"])
     xs = np.linspace(-1, 1, 60)
     ax.plot(1.35 + xs * 0.65, 7.42 + np.maximum(xs, 0) * 0.45, color=C["blue"],
             lw=1.6)
@@ -555,7 +555,7 @@ def f12_activation_three_meanings():
 
     # ② 激活值 a = f(z)
     p2 = box(ax, 4.2, 6.75, 3.6, 1.85, "", fc="#f7f6ec", ec="#a08c1f", lw=1.0)
-    box_title(ax, 6.0, 8.25, "② 值 $a=f(z)$", p2, color="#a08c1f")
+    box_title(ax, 6.0, 8.25, "② 值 a=f(z)", p2, color="#a08c1f")
     text(ax, 6.0, 7.4, "某层过 f 的输出\n也是下一层输入", in_box=p2,
          ha="center", va="center", fontsize=10)
 
@@ -602,12 +602,12 @@ def f12_activation_three_meanings():
         text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
              ha="left", va="center", fontsize=10.5)
     text(ax, 6.0, 2.75,
-         f"实测一层共 {total/1024:.2f} MB（$s=64$、$b=2$、$h=256$、$f=1024$，bf16）；"
-         f"狭义的 $a=f(z)$ 只占 {narrow:.0f}%",
+         f"实测一层共 {total/1024:.2f} MB（s=64、b=2、h=256、f=1024，bf16）；"
+         f"狭义的 a=f(z) 只占 {narrow:.0f}%",
          ha="center", va="center", fontsize=10.5)
     text(ax, 6.0, 2.32, "本系列说的「激活」是第 ③ 种：把所有段一起算",
          ha="center", va="center", fontsize=10)
-    text(ax, 6.0, 1.92, "「激活 $=a=f(z)$」只是第 ② 种狭义口径，会漏掉 8 成",
+    text(ax, 6.0, 1.92, "「激活 = a=f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-activation-three-meanings")
 

@@ -57,7 +57,7 @@ def ledger_chain():
         ("每卡显存", "≈ 49 GB（A）", "", "第七篇", GREEN),
         ("理论 step 下限", "≈ 1.9 s", "", "第一篇·七", BLUE),
         ("MFU 目标", "42% ≈ 4.75 s", "", "第七篇", GREEN),
-        ("落盘与间隔", "δ = 2 s", "τ_opt ≈ 3.5 min", "第八篇", ORANGE),
+        ("落盘与间隔", "δ = 2 s", "$\tau_{opt}$ ≈ 3.5 min", "第八篇", ORANGE),
         ("有效训练时间", "G 71% → 94%", "（16K 卡场景）", "第九篇", ORANGE),
         ("成本单位", "1 MFU 点", "≈ 4.4 万美元", "第十一篇", RED),
     ]
@@ -77,10 +77,10 @@ def ledger_chain():
             _label(ax, x + w / 2, y + h - 0.3, title, 10.5, weight="bold",
                    in_box=p)
             if sub:
-                _label(ax, x + w / 2, y + h - 0.72, val, 10, in_box=p)
-                _label(ax, x + w / 2, y + h - 1.04, sub, 10, in_box=p)
+                _label(ax, x + w / 2, y + h - 0.72, val, 10.5, in_box=p)
+                _label(ax, x + w / 2, y + h - 1.04, sub, 10.5, in_box=p)
             else:
-                _label(ax, x + w / 2, y + h - 0.85, val, 10, in_box=p)
+                _label(ax, x + w / 2, y + h - 0.85, val, 10.5, in_box=p)
             _label(ax, x + w / 2, y + 0.26, src, 10, color="#555555",
                    in_box=p)
             if j < cnt - 1:

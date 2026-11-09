@@ -222,7 +222,7 @@ def f4():
                         arrowprops=dict(arrowstyle="-|>", mutation_scale=13,
                                         color="#555555", lw=1.1))
 
-    text(ax, 3.8, 0.50, "2-rank toy 每 rank 实测；meta $\\to$ to_empty 后才申请存储",
+    text(ax, 3.8, 0.50, "2-rank toy 每 rank 实测；meta → to_empty 后才申请存储",
          ha="center", va="center", fontsize=11, color="#111111")
     save(fig, "torchtitan-f4-meta-stages")
 

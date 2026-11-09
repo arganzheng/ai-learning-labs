@@ -117,7 +117,7 @@ def f4():
     text(ax, 0.88, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=11, color="#111111")
 
     comm_events = {0: "前向\nall-gather", 3: "反向\nall-gather", 5: "reduce-\nscatter"}
-    compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n$\\to$ ds_tensor"}
+    compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n→ ds_tensor"}
     for i in range(7):
         x = start + i * step
         if i in comm_events:
@@ -130,7 +130,7 @@ def f4():
                     event_w, event_h, label if i != 6 else "", fc="#ffffff", ec="#555555", fs=11)
             if i == 6:
                 box_title(ax, centers[i], compute_y + 0.70, "step", in_box=p)
-                text(ax, centers[i], compute_y + 0.31, "Adam fp32\n$\\to$ ds_tensor",
+                text(ax, centers[i], compute_y + 0.31, "Adam fp32\n→ ds_tensor",
                      in_box=p, ha="center", va="center", fontsize=11)
 
     states = [("完整 bf16", C["blue"] + "44"), ("完整 bf16", C["blue"] + "44"),
@@ -147,8 +147,8 @@ def f4():
          fontsize=ARROW_LABEL_SIZE, color="#111111")
     ax.annotate("", xy=(centers[-1], 0.73), xytext=(centers[0], 0.73),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=0.9))
-    text(ax, 3.95, 0.31, "ds_tensor 常驻 1/N_d；完整 param.data 用前取回、用完释放",
-         ha="center", va="center", fontsize=10, color="#111111")
+    text(ax, 3.95, 0.31, "ds_tensor 常驻 $1/N_d$；完整 param.data 用前取回、用完释放",
+         ha="center", va="center", fontsize=10.5, color="#111111")
     save(fig, "deepspeed-f4-param-lifecycle")
 
 

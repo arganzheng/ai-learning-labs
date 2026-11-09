@@ -90,7 +90,7 @@ def states_grid():
 def mesh_8cards():
     fig, ax = _canvas(7.6, 4.55, (0, 12), (0.7, 10))
     _label(ax, 6, 6.95, "一张 8 卡的五元组摆法", 13)
-    _label(ax, 6, 6.55, "TP=2 $\\times$ DP=2 $\\times$ PP=2；$rank = tp + 2\,dp + 4\,pp$；节点 = rank // 4", 10.5)
+    _label(ax, 6, 6.55, "TP=2 × DP=2 × PP=2；rank = tp + 2·dp + 4·pp；节点 = rank // 4", 10.5)
     nodes = [[0, 1, 2, 3], [4, 5, 6, 7]]
     xnode = [0.8, 6.65]
     for ni, ranks in enumerate(nodes):

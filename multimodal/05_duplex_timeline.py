@@ -8,18 +8,18 @@ fig, axes = plt.subplots(2, 1, figsize=(7.6, 3.6), gridspec_kw={"height_ratios":
 # ---- 半双工：串联管线
 ax = axes[0]
 ax.barh(1, 2.0, left=0, color=C["blue"], height=0.5); ax.text(1.0, 1, "用户说话 2.0 s", ha="center", va="center", color="white", fontsize=10.5)
-segs = [("VAD\n0.5", 0.5), ("ASR\n0.3", 0.3), ("LLM\n0.6", 0.6), ("TTS\n0.4", 0.4)]
+segs = [("VAD 0.5", 0.5), ("ASR 0.3", 0.3), ("LLM 0.6", 0.6), ("TTS 0.4", 0.4)]
 t = 2.0
-label_y = [0.55, 1.05, 0.55, 1.05]              # 错两行放条上方空隙
+label_y = [0.55, 1.0, 0.55, 1.0]                # 错两行放条上方空隙，上行用引线指到条
 for i, (name, w) in enumerate(segs):
     ax.barh(0, w, left=t, color=C["light"], height=0.5, edgecolor="white")
     ax.text(t + w / 2, label_y[i], name, ha="center", va="center", fontsize=10.5)
-    ax.annotate("", xy=(t + w / 2, 0.27), xytext=(t + w / 2, label_y[i] - 0.14),
-                arrowprops=dict(arrowstyle="-", color="#aaaaaa", lw=0.8))
+    if label_y[i] > 0.6:
+        ax.plot([t + w / 2] * 2, [0.27, 0.8], color="#aaaaaa", lw=0.8)
     t += w
 ax.barh(0, 1.6, left=t, color=C["orange"], height=0.5); ax.text(t + 0.8, 0, "模型说话", ha="center", va="center", color="white", fontsize=10.5)
 ax.annotate("", xy=(t, -0.45), xytext=(2.0, -0.45), arrowprops=dict(arrowstyle="<->", color=C["red"], lw=1))
-ax.text((2.0 + t) / 2, -0.78, f"时延 {t - 2.0:.1f} s", ha="center", color=C["red"], fontsize=10.5)
+ax.text((2.0 + t) / 2, -0.58, f"时延 {t - 2.0:.1f} s", ha="center", va="top", color=C["red"], fontsize=10.5)
 ax.set_yticks([0, 1]); ax.set_yticklabels(["模型", "用户"]); ax.set_xlim(0, 6); ax.set_ylim(-1.1, 1.75); ax.set_title("半双工：等静音（VAD）→ ASR → LLM → TTS 串联，用户说完才开始算（单位：秒）", fontsize=11.5)
 ax.set_xlabel("秒")
 

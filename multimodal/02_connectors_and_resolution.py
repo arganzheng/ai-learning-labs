@@ -175,33 +175,35 @@ def run_diagrams():
     print(f"  MLP：Linear({dv}→{d}) + GELU + Linear({d}→{d})，参数 {p:,} ≈ {p/1e6:.0f}M")
     print(f"  输出 {n_patch} 个 {d} 维 token，与文本 token 首尾相接进 decoder")
 
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
-    ax.set_xlim(0, 72); ax.set_ylim(0, 25); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 3.9))
+    ax.set_xlim(0, 72); ax.set_ylim(0, 30); ax.axis("off")
     patches, inner = [], []
     # 上行：图 → ViT 切块 → 576 行 1024 维
-    box(ax, patches, inner, (1, 14), 16, 8, "一张图\n336×336×3", L["gray"])
-    arrow(ax, 17.5, 18, 19.5, 18)
-    box(ax, patches, inner, (20, 14), 20, 8, "ViT 切块\n24×24 = 576\n个 patch", L["blue"])
-    arrow(ax, 40.5, 18, 42.5, 18)
-    box(ax, patches, inner, (43, 14), 17, 8, "576 行\n每行 1024 维", L["blue"])
-    arrow(ax, 51.5, 13.5, 17.5, 14.3)
+    box(ax, patches, inner, (1, 21), 16, 8, "一张图\n336×336×3", L["gray"])
+    arrow(ax, 17.5, 25, 19.5, 25)
+    box(ax, patches, inner, (20, 21), 20, 8, "ViT 切块\n24×24 = 576\n个 patch", L["blue"])
+    arrow(ax, 40.5, 25, 42.5, 25)
+    box(ax, patches, inner, (43, 21), 17, 8, "576 行\n每行 1024 维", L["blue"])
+    # 折线：576×1024 底部 → 行间空隙 → MLP 顶部
+    ax.plot([51.5, 51.5, 16], [20.6, 19, 19], color="#888888", linewidth=1.2)
+    arrow(ax, 16, 19, 16, 17.4)
     # 下行：MLP（外框 + 三个堆叠子框）→ 576 行 4096 维 → 与文本 token 拼接
-    big = FancyBboxPatch((0.5, 0.5), 31, 13.3, boxstyle="round,pad=0.02",
+    big = FancyBboxPatch((0.5, 0.5), 31, 16.5, boxstyle="round,pad=0.02",
                          facecolor=L["orange"], edgecolor="#999999", linewidth=1)
     ax.add_patch(big); patches.append(big)
-    ax.text(16, 12.6, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
+    ax.text(16, 14.8, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
             fontsize=10.5, color=L["dark"])
     inner.append(ax.texts[-1])
     for i, sub in enumerate(["Linear 1024→4096", "GELU", "Linear 4096→4096"]):
-        sp = FancyBboxPatch((4.5, 9.6 - i * 3.9), 24, 3.0, boxstyle="round,pad=0.02",
+        sp = FancyBboxPatch((4.5, 10 - i * 4.3), 23, 3.0, boxstyle="round,pad=0.02",
                             facecolor="white", edgecolor="#999999", linewidth=1)
         ax.add_patch(sp); patches.append(sp)
-        inner.append(ax.text(16.5, 11.1 - i * 3.9, sub, ha="center", va="center",
+        inner.append(ax.text(16, 11.5 - i * 4.3, sub, ha="center", va="center",
                              fontsize=10.5, color=L["dark"]))
-    arrow(ax, 32.5, 11, 34.5, 11)
-    box(ax, patches, inner, (35, 3), 17, 8, "576 行\n每行 4096 维", L["green"])
-    arrow(ax, 52.5, 7, 55.5, 7)
-    box(ax, patches, inner, (56, 3), 14, 8, "与文本 token\n序列拼接", L["green"])
+    arrow(ax, 32, 8.5, 34.5, 8.5)
+    box(ax, patches, inner, (35, 4.5), 17, 8, "576 行\n每行 4096 维", L["green"])
+    arrow(ax, 52.5, 8.5, 55.5, 8.5)
+    box(ax, patches, inner, (56, 4.5), 14, 8, "与文本 token\n序列拼接", L["green"])
     check_layout(fig, ax, patches, inner)
     save(fig, "02-mlp-projector")
 

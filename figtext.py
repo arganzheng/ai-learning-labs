@@ -428,10 +428,24 @@ def check_arrows(fig, min_shaft=16.0):
         raise AssertionError(f"{len(errs)} 处箭头过短：\n" + "\n".join(errs))
 
 
+def fix_math_eq_spacing(fig):
+    """math run 后面接正体 " =" 时，CM 斜体的右悬伸会吃掉空格
+    （渲染成 V= 50257）。在 math run 尾巴里补一个 \\, 细空格，
+    让视觉间距接近正常空格。"""
+    for t in fig.findobj(matplotlib.text.Text):
+        s = t.get_text()
+        if not s.strip() or not t.get_visible():
+            continue
+        n = re.sub(r"\$([^$]*[^$\s])\$ =", r"$\1\,$ =", s)
+        if n != s:
+            t.set_text(n)
+
+
 def checks(fig):
     """save() 前的全部文字检查。"""
     center_in_rects(fig)
     check_arrows(fig)
+    fix_math_eq_spacing(fig)
     style_titles(fig)
     check_math_needed(fig)
     check_plain_text(fig)
@@ -454,6 +468,7 @@ def enable_embed(mod):
     def wrapped(fig, name, *a, **k):
         center_in_rects(fig)
         check_arrows(fig)
+        fix_math_eq_spacing(fig)
         style_titles(fig)
         check_math_needed(fig)
         check_plain_text(fig)

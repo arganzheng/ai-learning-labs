@@ -116,9 +116,9 @@ def train_mlp(hidden_size, seed):
 
 
 def plot_case(perceptron, adaline, selected_mlp):
-    plt.rcParams.update({"font.size": 15, "axes.titlesize": 16,
-                         "axes.labelsize": 15.5, "legend.fontsize": 15,
-                         "xtick.labelsize": 15.5, "ytick.labelsize": 15.5})
+    plt.rcParams.update({"font.size": 16, "axes.titlesize": 17,
+                         "axes.labelsize": 16.5, "legend.fontsize": 16,
+                         "xtick.labelsize": 16.5, "ytick.labelsize": 16.5})
     p_weights, p_bias = perceptron
     a_weights, a_bias = adaline
     mlp_parameters, mlp_seed, mlp_losses = selected_mlp
@@ -126,7 +126,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     xx, yy = np.meshgrid(grid, grid)
     grid_points = np.column_stack((xx.ravel(), yy.ravel()))
 
-    fig = plt.figure(figsize=(14, 7.5))
+    fig = plt.figure(figsize=(9.0, 4.8))
     layout = fig.add_gridspec(2, 6, height_ratios=(1.05, 1.0))
     axes = [
         fig.add_subplot(layout[0, 0:2]),
@@ -141,7 +141,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     titles = [
         "感知机：XOR 最后一轮",
         "ADALINE：线性输出",
-        f"两层 MLP：H=4，seed={mlp_seed}",
+        f"两层 MLP：$H$ = 4，seed = {mlp_seed}",
     ]
     for index, (ax, surface, title) in enumerate(zip(axes, surfaces, titles)):
         if index == 0:
@@ -193,7 +193,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     adaline_ax.plot(steps[sampled], np.asarray(adaline_losses)[sampled],
                     color=C["orange"], label="ADALINE MSE")
     adaline_ax.plot(mlp_sampled, np.asarray(mlp_losses)[mlp_sampled],
-                    color=C["blue"], label="MLP H=4 BCE")
+                    color=C["blue"], label="MLP $H$ = 4 BCE")
     adaline_ax.set_title("平方误差与交叉熵")
     adaline_ax.set_xlabel("更新步")
     adaline_ax.set_ylabel("loss")
@@ -231,7 +231,7 @@ def main():
     )
 
     print(
-        f"MLP XOR：tanh → sigmoid，BCE，η=0.5，{MLP_STEPS} full-batch steps；"
+        f"MLP XOR：tanh → sigmoid，BCE，$\eta$ = 0.5，{MLP_STEPS} full-batch steps；"
         "uniform ±1/√fan_in，seed=0…19"
     )
     selected_mlp = None

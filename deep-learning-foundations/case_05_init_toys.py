@@ -302,7 +302,7 @@ def figure_scale_inv():
     # 左：x 与 2x 归一化到同一组格子
     text(ax, .2, 5.15, r"LN(x)", fontsize=10.5)
     text(ax, .2, 4.45, r"LN(2x)", fontsize=10.5)
-    text(ax, 2.75, 5.55, r"x=[2,4,6,8]", fontsize=10.5, ha="center")
+    text(ax, 2.75, 5.55, r"$x$ = [2, 4, 6, 8]", fontsize=10.5, ha="center")
     text(ax, 5.3, 5.55, "输出相同", fontsize=10.5, ha="center",
          color=C["green"])
     out = [round(v, 3) for v in ln(x).tolist()]
@@ -320,11 +320,11 @@ def figure_scale_inv():
         wbar = bw * nrm / norms[0]
         ax.add_patch(Rectangle((bx + .7, yy - .3), wbar, .5,
                                facecolor=col, alpha=.75, edgecolor="none"))
-        text(ax, bx + .12, yy - .05, f"c={c}", fontsize=10.5)
+        text(ax, bx + .62, yy - .05, rf"$c$ = {c}", fontsize=10.5, ha="right")
         ax.text(bx + .75 + wbar, yy - .05,
-                rf"$\|dL/dW\|={nrm:.3f}$", fontsize=10.5, va="center")
+                rf"$\|dL/dW\|$ = {nrm:.3f}", fontsize=10.5, va="center")
     text(ax, bx + .12, 3.08,
-         rf"c=2 的梯度范数 =c=1 的 {norms[1] / norms[0]:.3f}=1/c；"
+         rf"$c$ = 2 的梯度范数 = $c$ = 1 的 {norms[1] / norms[0]:.3f}，即 1/c；"
          r"相对更新缩小 $c^2$ 倍", fontsize=10.5, color="#555555")
     text(ax, bx + .12, 2.68, "前向输出逐位相同；权重越大有效学习率越小",
          fontsize=10.5, color="#555555")

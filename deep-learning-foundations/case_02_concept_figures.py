@@ -69,7 +69,7 @@ def plot_chain():
 
     # ---- 面板 A：前向，方差逐层乘 a_l；两行对照 ----
     ax.text(X, 129, "前向：方差逐层乘 $a_l$", ha="center", fontsize=18,
-            weight="bold")
+            fontname="Noto Sans SC Medium")
     ax.text(X, 123,
             r"$\mathrm{Var}(h_L) = \mathrm{Var}(x)\, a_1 a_2 \cdots a_L$",
             ha="center", fontsize=17)
@@ -80,7 +80,7 @@ def plot_chain():
             color=BLUE)
     # 与行 2 共用列网格：x | f_1 | 归一化槽位(空) | h_1 | ⋯ | f_L | 槽位(空) | h_L
     xs = {"x": 18, "f1": 28, "h1": 72, "dots": 80, "fL": 92, "hL": 136}
-    ax.text(xs["x"], y1, "x", ha="center", va="center", fontsize=18)
+    ax.text(xs["x"], y1, "$x$", ha="center", va="center", fontsize=18)
     for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
         bx_((xs[key], y1), label, width=7, height=6, fontsize=17)
         ax.text(xs[key], y1 - 8, "Linear\n+ 非线性", ha="center",
@@ -106,7 +106,7 @@ def plot_chain():
             weight="bold")
     ax.text(a1_mid, 97.6, "选 W 的标准差，",
             ha="center", va="top", fontsize=17.0, color=BLUE)
-    ax.text(a1_mid, 91.4, "让 t=0 时每个 $a_l \\approx 1$",
+    ax.text(a1_mid, 91.4, "让 $t$ = 0 时每个 $a_l \\approx 1$",
             ha="center", va="top", fontsize=17.0, color=BLUE)
     arrow(ax, (a1_mid, 102.6), (a1_mid, y1 - 7.2), color=BLUE)
 
@@ -116,7 +116,7 @@ def plot_chain():
             color=ORANGE)
     xs2 = {"x": 18, "f1": 28, "n1": 50, "h1": 72, "dots": 80, "fL": 92,
            "nL": 114, "hL": 136}
-    ax.text(xs2["x"], y2, "x", ha="center", va="center", fontsize=18)
+    ax.text(xs2["x"], y2, "$x$", ha="center", va="center", fontsize=18)
     for key, label in (("f1", "$f_1$"), ("fL", "$f_L$")):
         bx_((xs2[key], y2), label, width=7, height=6, fontsize=17)
         ax.text(xs2[key], y2 - 8, "Linear\n+ 非线性", ha="center",
@@ -154,7 +154,7 @@ def plot_chain():
 
     # ---- 面板 B：反向，Jacobian 连乘；两行对照 ----
     ax.text(X, 53, "反向：梯度是 Jacobian 的连乘", ha="center",
-            fontsize=18, weight="bold")
+            fontsize=18, fontname="Noto Sans SC Medium")
     ax.text(X, 47,
             r"$\partial L / \partial x \;=\; J_1^{\!\!\top} J_2^{\!\!\top} \cdots"
             r" J_L^{\!\!\top}\;\partial L / \partial h_L$",
@@ -234,7 +234,7 @@ def plot_product():
     ]
     for a, color in curves:
         ax.plot(L, a ** L.astype(float), color=color, linewidth=LW,
-                label=rf"a={a}")
+                label=rf"$a$ = {a}")
     ax.set_yscale("log")
     ax.set_xlabel("Depth L", fontsize=15)
     ax.set_ylabel("$a^L$", fontsize=15)
@@ -356,7 +356,7 @@ def plot_ln_vs_rms():
     ax.set_xticks(groups)
     ax.set_xticklabels(["$x_1$", "$x_2$", "$x_3$", "$x_4$"], fontsize=14)
     ax.set_ylabel("value", fontsize=15)
-    ax.set_title(r"LayerNorm vs RMSNorm on x=[2,4,6,8]", fontsize=15)
+    ax.set_title(r"LayerNorm vs RMSNorm on $x$ = [2, 4, 6, 8]", fontsize=15)
     ax.tick_params(labelsize=13)
     ax.legend(frameon=True, framealpha=0.9, fontsize=12)
     ax.grid(alpha=0.2, axis="y")

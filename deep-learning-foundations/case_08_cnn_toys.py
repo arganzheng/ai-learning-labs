@@ -246,7 +246,7 @@ def cmd_sliding_window():
 
 def figure_conv_matrix():
     out, M = conv_matrix()
-    fig, ax = base_fig(r"卷积 = 稀疏矩阵 y=Mx："
+    fig, ax = base_fig(r"卷积 = 稀疏矩阵 $y=Mx$："
                        r"局部性（每行 9 个非零）+ 参数共享（同色同一权重）",
                        h=4.6, xlim=(0, 12.6), ylim=(0.0, 7.0))
     cw = .62
@@ -268,7 +268,7 @@ def figure_conv_matrix():
     box(ax, 7.0, 6.1 - .62, .7, .6, fc="none", ec=C["orange"], lw=1.6, r=.01)
     # ---- 下行：y = Mx 的矩阵乘排版
     # x 拉直成横条放 M 上方（列对齐），y 拉直成竖条放 M 右侧（行对齐）
-    text(ax, .3, 3.4, r"拉直后就是矩阵乘 y=Mx：", fontsize=10.5)
+    text(ax, .3, 3.4, r"拉直后就是矩阵乘 $y=Mx$：", fontsize=10.5)
     cmap = {v: c for v, c in zip(
         (1, 2, 3, 4, 5, 6, 7, 8, 9),
         ("#d6e6f5", "#c2d8f0", "#aecdee", "#9ac2ea",
@@ -311,8 +311,8 @@ def figure_conv_matrix():
          fontsize=10.5, va="center", color="#555555")
     # ---- 底注
     text(ax, .3, .38,
-         r"参数量：卷积 =9（核的 3×3）"
-         r"vs 等价全连接 =4×16=64",
+         r"参数量：卷积 = 9（核的 3×3）"
+         r"vs 等价全连接 = 4 × 16 = 64",
          fontsize=10.5, color="#555555")
     finish(fig, "cnn-conv-as-matrix")
 
@@ -326,7 +326,7 @@ def figure_receptive_field():
     x0 = (12 - n * cw) / 2
     center = n // 2
     # 从下到上：输入 / 第 1 层 / 第 2 层 / 第 3 层
-    rows = [(1.6, 7, r"输入：影响顶端输出的格子数 7=1+3×2"),
+    rows = [(1.6, 7, r"输入：影响顶端输出的格子数 7 = 1 + 3 × 2"),
             (2.9, 5, r"第 1 层：5"),
             (4.2, 3, r"第 2 层：3"),
             (5.5, 1, r"第 3 层输出：1 个位置")]
@@ -417,7 +417,7 @@ def figure_sliding_window():
          va="center", fontsize=10.5)
     arrow(ax, (px + 3 * pw + 1.975, 2.65), (ox + 1.5 * cw, oy - 3 * cw - .12),
           color="#c98a00")
-    text(ax, 6.2, 1.08, "全连接 $25\\to9$ 需要 25×9=225 个权重，"
+    text(ax, 6.2, 1.08, "全连接 $25\\to9$ 需要 25 × 9 = 225 个权重，"
          "卷积只有 9 个：只看局部、处处共享",
          ha="center", fontsize=10.5, color="#333333")
     finish(fig, "cnn-convolution-sliding-window")

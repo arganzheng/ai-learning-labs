@@ -375,7 +375,7 @@ def figure_backward():
         grid(ax, 9.0, y, [[round(v, 3) for v in G_A * fp]], cw=.85, fs=10.5,
              fc="#fae6d6", ec=C["orange"], zero_grey=False)
         y -= 1.0
-    text(ax, 6, 0.75, r"H=(−1,0.5,2)，$G_A=(0.3,-0.2,0.5)$；"
+    text(ax, 6, 0.75, r"$H$ = (−1, 0.5, 2)，$G_A$ = (0.3, −0.2, 0.5)；"
          "ReLU 把负位置的梯度直接挡成 0。", ha="center", va="center", fontsize=10.5)
     finish(fig, "activation-backward-fprime")
 
@@ -411,9 +411,9 @@ def figure_dead_relu():
     z0 = x * 1.0 + 0.5
     z1 = x * 1.0 - 9.5
     fig, axs = plt.subplots(1, 2, figsize=(7.6, 3.2), sharey=True)
-    for ax, z, t, c, xt, xl in ((axs[0], z0, "更新前 b=0.5：67.2% 的输入能激活",
+    for ax, z, t, c, xt, xl in ((axs[0], z0, "更新前 $b$ = 0.5：67.2% 的输入能激活",
                                  C["blue"], [-2, 0, 2], None),
-                                (axs[1], z1, "b -= 10 后：预激活全为负，输出与梯度全 0",
+                                (axs[1], z1, "$b \leftarrow b-10$ 后：预激活全为负，输出与梯度全 0",
                                  C["orange"], [-12, -8, -4, 0], (-13, 1))):
         ax.hist(z.numpy(), bins=24, color=c, alpha=.75)
         ax.axvline(0, color="#111111", lw=1)
@@ -435,7 +435,7 @@ def figure_dead_relu():
 
 
 def figure_glu_example():
-    fig, ax = base_fig("GLU 的逐维放行：门分支先过 σ，再与值分支逐元素乘",
+    fig, ax = base_fig("GLU 的逐维放行：门分支先过 $\\sigma$，再与值分支逐元素乘",
                        7.6, 3.4, (0, 10.9), (0.5, 6.0))
     # 值分支
     text(ax, 1.6, 5.3, r"值分支 xV", ha="center", va="center", fontsize=10.5)
@@ -475,21 +475,22 @@ def figure_ffn_position():
     for a, b in ((1.12, 1.28), (2.62, 2.78), (3.82, 4.18), (5.32, 5.43)):
         arrow(ax, (a, y + .4), (b, y + .4), color=C["blue"], lw=.9)
     # FFN 大框（未登记容器：内部元素仍各自参与检查）
-    ax.add_patch(Rectangle((6.85, 4.3), 3.75, 1.9, facecolor="#f5f8fc",
-                           edgecolor=C["blue"], lw=1.0))
-    text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
-         fontsize=11.5)
+    pframe = box(ax, 6.85, 4.3, 3.75, 1.9, "", fc="#f5f8fc",
+                 ec=C["blue"], lw=1.0)
+    pframe._no_center = True          # 容器框：不做框内文字组整体居中
+    text(ax, 8.72, 6.0, "FFN（SwiGLU）", in_box=pframe, ha="center",
+         va="center", fontsize=10.5)
     ax.plot([6.77, 6.83], [y + .4, y + .4], color=C["blue"], lw=.9)
     text(ax, 6.45, 5.88, r"d", ha="center", va="center", fontsize=11.5)
     # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
     arrow(ax, (6.9, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
     arrow(ax, (6.9, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
     p2 = box(ax, 7.1, 5.35, 1.02, .42, "", fc="#ffffff", ec="#888888")
-    text(ax, 7.61, 5.56, r"xW 门", in_box=p2, ha="center", va="center", fontsize=11.5)
+    text(ax, 7.61, 5.56, r"xW 门", in_box=p2, ha="center", va="center", fontsize=10.5)
     p2 = box(ax, 8.35, 5.35, .82, .42, "", fc="#ffffff", ec="#888888")
-    text(ax, 8.76, 5.56, "SiLU", in_box=p2, ha="center", va="center", fontsize=11.5)
+    text(ax, 8.76, 5.56, "SiLU", in_box=p2, ha="center", va="center", fontsize=10.5)
     p2 = box(ax, 7.1, 4.55, 1.02, .42, "", fc="#ffffff", ec="#888888")
-    text(ax, 7.61, 4.76, r"xV 值", in_box=p2, ha="center", va="center", fontsize=11.5)
+    text(ax, 7.61, 4.76, r"xV 值", in_box=p2, ha="center", va="center", fontsize=10.5)
     arrow(ax, (8.14, 5.56), (8.33, 5.56), color=C["orange"], lw=.8)
     arrow(ax, (9.2, 5.45), (9.3, 5.38), color=C["orange"], lw=.8)
     arrow(ax, (8.14, 4.76), (9.04, 5.1), color=C["orange"], lw=.8)
@@ -500,9 +501,9 @@ def figure_ffn_position():
     text(ax, 10.11, 4.97, "down", in_box=p2, ha="center", va="center",
          fontsize=11.5)
     # 形状标注：d → d_g（两支）→ d
-    text(ax, 7.5, 5.9, r"$d_g$", ha="center", va="center", fontsize=11.5)
-    text(ax, 7.5, 5.12, r"$d_g$", ha="center", va="center", fontsize=11.5)
-    text(ax, 10.68, 5.72, r"d", ha="center", va="center", fontsize=11.5)
+    text(ax, 7.5, 5.9, r"$d_g$", in_box=pframe, ha="center", va="center", fontsize=10.5)
+    text(ax, 7.5, 5.12, r"$d_g$", in_box=pframe, ha="center", va="center", fontsize=10.5)
+    text(ax, 10.68, 5.72, r"$d$", in_box=pframe, ha="center", va="center", fontsize=10.5)
     arrow(ax, (10.6, 5.1), (10.76, 5.1), color=C["orange"], lw=.8)
     # +残差 → 输出
     p = box(ax, 10.78, 4.7, .88, .8, "", fc="#dce9f7", ec=C["blue"])

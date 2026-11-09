@@ -13,7 +13,7 @@ from dlf.layers import DEEP_CONFIGS, make_deep_mlp
 
 COLORS = {"plain-naive": C["gray"], "plain-kaiming": C["purple"], "ln": C["teal"], "res-nonorm": C["red"],
           "res-nonorm-scaled": C["orange"], "prenorm": C["green"], "postnorm": C["blue"]}
-LABEL = {"plain-naive": "plain，σ=1/√n（忘了 ReLU 的 2）", "plain-kaiming": "plain，Kaiming", "ln": "Linear → LN → ReLU",
+LABEL = {"plain-naive": r"plain，$\sigma=1/\sqrt{n}$（忘了 ReLU 的 2）", "plain-kaiming": "plain，Kaiming", "ln": "Linear → LN → ReLU",
          "res-nonorm": "残差，无归一化", "res-nonorm-scaled": "残差，无归一化，out-proj / √2L", "prenorm": "Pre-Norm 残差", "postnorm": "Post-Norm 残差"}
 
 

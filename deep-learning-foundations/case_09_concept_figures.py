@@ -329,12 +329,12 @@ def plot_negsample():
     mid = top / 2
     bx_((16, mid), f"中心词\n{center}", width=15, height=7,
         fontsize=14, fc="#eef3fa")
-    bx_((60, top), f"正样本：{pos}\nσ = {after[pos]:.2f}",
+    bx_((60, top), f"正样本：{pos}\n$\sigma$ = {after[pos]:.2f}",
         width=24, height=6.2, fontsize=14, fc="#ffffff", ec=GREEN)
     arrow(ax, (24.5, mid + 1.6), (46.5, top - 0.4), color=GREEN)
     for i, w in enumerate(negs):
         y = top - pitch * (i + 1) - 1.0
-        bx_((60, y), f"负样本 {i + 1}：{w}  σ = {after[w]:.2f}",
+        bx_((60, y), f"负样本 {i + 1}：{w}  $\sigma$ = {after[w]:.2f}",
             width=27, height=5.2, fontsize=14, fc="#ffffff", ec=VERMILION)
         ax.plot([24.5, 45.5], [mid - 1.2, y + 0.6],
                 color=VERMILION, lw=1.1, zorder=1, alpha=0.6)
@@ -342,7 +342,7 @@ def plot_negsample():
         height=11, fontsize=14)
     arrow(ax, (74.5, top), (78, mid + 3), color=GREEN)
     arrow(ax, (74.5, 0), (78, mid - 3), color=VERMILION)
-    ax.text(50, top + 6.8, "随机初始化 + 15 步 SGD 之后的 σ 分数",
+    ax.text(50, top + 6.8, "随机初始化 + 15 步 SGD 之后的 $\sigma$ 分数",
             ha="center", va="center", fontsize=14, color="#444444")
 
     check_layout(fig, ax, patches, inner)

@@ -78,7 +78,7 @@ def main():
     B["layer"] = (7.0, 5.0, 5.4, 3.9)
     ax.add_patch(mp.FancyBboxPatch((7.0, 5.0), 5.4, 3.9, boxstyle="round,pad=0.02,rounding_size=0.06",
                                    fc="#f2f8f3", ec=STRUCT, lw=1.4))
-    ax.text(9.7, 8.55, "层（堆叠 L 次）", ha="center", fontsize=13, color=STRUCT, weight="bold")
+    ax.text(9.7, 8.55, "层（堆叠 L 次）", ha="center", fontsize=13, color=STRUCT)
     for i, t in enumerate(["线性 / 卷积 / 循环 / attention", "激活函数", "归一化 + 残差"]):
         box(ax, f"sub{i}", 7.3, 7.15 - i * 0.98, 4.8, 0.78, [t], "white", STRUCT, fontsize=13)
     box(ax, "head", 13.2, TY, 2.4, TH, ["输出头", "logits"], "#eef3fa", MAIN)

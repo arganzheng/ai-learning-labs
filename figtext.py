@@ -338,7 +338,7 @@ def center_in_rects(fig, tol=1.5):
         rects = []
         for p in ax.patches:
             if not isinstance(p, (mp.Rectangle, mp.FancyBboxPatch)) \
-                    or p is ax.patch:
+                    or p is ax.patch or getattr(p, "_no_center", False):
                 continue
             try:
                 b = p.get_window_extent(renderer=ren)
@@ -399,9 +399,39 @@ def center_in_rects(fig, tol=1.5):
             f"{len(errs)} 处矩形文字组未居中：\n" + "\n".join(errs))
 
 
+def check_arrows(fig, min_shaft=16.0):
+    """箭头的可见杆长（总长 − 头部）不足 16px 显示像素报错——
+    只剩个三角头，读者看不出这里有连线。"""
+    import matplotlib.patches as mp
+    import numpy as np
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    errs = []
+    for ax in fig.axes:
+        for p in ax.patches:
+            if not isinstance(p, mp.FancyArrowPatch):
+                continue
+            try:
+                verts = p.get_path().transformed(ax.transData).vertices
+            except Exception:
+                continue
+            if len(verts) < 2:
+                continue
+            L = sum(float(np.hypot(*(verts[i + 1] - verts[i])))
+                    for i in range(len(verts) - 1))
+            head = p.get_mutation_scale() * ren.points_to_pixels(1)
+            shaft = L - head
+            if shaft < min_shaft:
+                errs.append(f"箭头杆长 {shaft:.0f}px<16px："
+                            f"{verts[0]!r} -> {verts[-1]!r}")
+    if errs:
+        raise AssertionError(f"{len(errs)} 处箭头过短：\n" + "\n".join(errs))
+
+
 def checks(fig):
     """save() 前的全部文字检查。"""
     center_in_rects(fig)
+    check_arrows(fig)
     style_titles(fig)
     check_math_needed(fig)
     check_plain_text(fig)
@@ -423,6 +453,7 @@ def enable_embed(mod):
 
     def wrapped(fig, name, *a, **k):
         center_in_rects(fig)
+        check_arrows(fig)
         style_titles(fig)
         check_math_needed(fig)
         check_plain_text(fig)

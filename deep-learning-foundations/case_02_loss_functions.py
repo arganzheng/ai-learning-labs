@@ -50,16 +50,16 @@ def fig_classification_gradient():
     ax = axes[0]
     ax.plot(z, 0.5 * (p - 1) ** 2, lw=LW, c=C["orange"], label="MSE $\\frac{1}{2}(p-1)^2$")
     ax.plot(z, -np.log(p), lw=LW, c=C["blue"], label="CE $-\\log p$")
-    ax.set_xlabel("logit z（真标签 y=1，越往左错得越狠）"); ax.set_ylabel("loss")
+    ax.set_xlabel("logit $z$（真标签 $y$ = 1，越往左错得越狠）"); ax.set_ylabel("loss")
     ax.set_title("损失"); ax.legend()
     ax = axes[1]
     g_mse = np.abs(p * (1 - p) * (p - 1))                       # σ'(z)·(p−y)
     g_ce = np.abs(p - 1)                                       # p − y
     ax.plot(z, g_mse, lw=LW, c=C["orange"], label="MSE：$|\\sigma'(z)(p-1)|$")
     ax.plot(z, g_ce, lw=LW, c=C["blue"], label="CE：|p−1|")
-    ax.set_xlabel("logit z"); ax.set_ylabel("$|\\partial L / \\partial z|$")
+    ax.set_xlabel("logit $z$"); ax.set_ylabel("$|\\partial L / \\partial z|$")
     ax.set_title("对 logit 的梯度：MSE 在饱和区 ≈ 0"); ax.legend()
-    ax.annotate("z=−6 时 MSE 梯度只有 CE 的\n$\\sigma'(-6)\\approx 0.0025$ 倍", xy=(-6, g_mse[np.argmin(np.abs(z + 6))]),
+    ax.annotate("$z$ = −6 时 MSE 梯度只有 CE 的\n$\\sigma'(-6)\\approx 0.0025$ 倍", xy=(-6, g_mse[np.argmin(np.abs(z + 6))]),
                 xytext=(-2.5, 0.55), fontsize=10.5,
                 arrowprops=dict(arrowstyle="->", color="#666666", lw=0.8))
     save(fig, "loss-classification-gradient")

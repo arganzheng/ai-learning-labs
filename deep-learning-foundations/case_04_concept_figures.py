@@ -37,9 +37,9 @@ def nd_axis():
     ax.axvspan(2e-4, 1, ymin=0.30, ymax=0.54, color=BLUE, alpha=0.14)
     ax.axvspan(1, 8e3, ymin=0.30, ymax=0.54, color=ORANGE, alpha=0.14)
     ax.text(1.4e-2, 0.86, "数据主导区间：背不下数据，\n过拟合不是主要风险",
-            ha="center", fontsize=16, color=BLUE, weight="bold")
+            ha="center", fontsize=16, color=BLUE)
     ax.text(280, 0.86, "过参数化区间：能背下数据，\n会不会过拟合看训多久、有没有噪声",
-            ha="center", fontsize=16, color=ORANGE, weight="bold")
+            ha="center", fontsize=16, color=ORANGE)
 
     # 上下交错标注，避免重叠；只给上面的标注留一层高度
     layout = {0: -1, 1: -1, 2: 1, 3: -1, 4: 1, 5: -1}
@@ -72,10 +72,9 @@ def double_descent_schematic():
                 xytext=(4.35, 3.5), ha="left", fontsize=10.5, color="#333333",
                 arrowprops=dict(arrowstyle="-", color="#555555", lw=0.8))
     ax.text(1.1, 0.45, "欠拟合：经典 U 形", ha="center", fontsize=10.5,
-            color="#333333",
-            weight="bold")
+            color="#333333")
     ax.annotate("经典过拟合峰", (3.35, 3.08), xytext=(1.35, 3.4),
-                ha="center", fontsize=10.5, color="#c0392b", weight="bold",
+                ha="center", fontsize=10.5, color="#c0392b",
                 arrowprops=dict(arrowstyle="-", color="#c0392b", lw=0.8))
     ax.text(7.3, 1.05, "过参数化区：\n继续加参数，测试误差继续降",
             ha="center", fontsize=10.5, color="#333333")
@@ -128,7 +127,7 @@ def min_norm():
             fontsize=10.5, color=ORANGE, linespacing=1.5)
     ax.plot(*w_other, "o", ms=8, color=RED)
     ax.text(w_other[0] + 0.15, w_other[1] + 0.42,
-            "另一个插值解 (5,0)，范数 =5", fontsize=10.5, color=RED,
+            "另一个插值解 (5, 0)，范数 = 5", fontsize=10.5, color=RED,
             ha="left")
     ax.set_xlabel("$w_1$"); ax.set_ylabel("$w_2$")
     ax.set_xlim(-1.2, 6.8); ax.set_ylim(-1.2, 4.6)
@@ -157,7 +156,7 @@ def label_smoothing():
     fig, ax = plt.subplots(figsize=(6.8, 3.4))
     ax.plot(g, ce_onehot, color=BLUE, lw=LW, label="one-hot 目标")
     ax.plot(g, ce_smooth, color=ORANGE, lw=LW,
-            label="平滑目标（ε = 0.1）")
+            label=r"平滑目标（$\varepsilon$ = 0.1）")
     i = np.argmin(np.abs(g - g_star))
     ax.plot(g[i], ce_smooth[i], "o", ms=7, color=ORANGE)
     ax.annotate(f"最小点 $g^*=\\ln 81\\approx{g_star:.3f}$",

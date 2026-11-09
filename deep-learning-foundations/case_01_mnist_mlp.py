@@ -39,7 +39,7 @@ def draw_mlp(sizes=(784, 256, 10), names=("输入：28×28 像素", "隐藏层�
         ax.text(XC[col], 1.18, f"{name}\n[B, {n}]", ha="center", fontsize=10.5)
     ax.text(0.9, -1.3, f"$W_1$ [784, 256] + $b_1$ [256]\n= {784 * 256 + 256:,} 个参数\n矩阵乘 + ReLU", ha="center", fontsize=10.5, color=C["blue"])
     ax.text(2.7, -1.3, f"$W_2$（256×10）+ $b_2$（10）\n= {256 * 10 + 10:,} 个参数\n矩阵乘 → softmax → 交叉熵", ha="center", fontsize=10.5, color=C["orange"])
-    ax.text(3.95, ys[2][7], "← 标签 y=7：\n这一格的概率要大", va="center", fontsize=10.5, color=C["red"])
+    ax.text(3.95, ys[2][7], "← 标签 $y$ = 7：\n这一格的概率要大", va="center", fontsize=10.5, color=C["red"])
     ax.set_title(f"两层 MLP：784 → 256 → 10，共 {784 * 256 + 256 + 256 * 10 + 10:,} 个参数", fontsize=10.5)
     save(fig, "case-01-mlp-structure")
 

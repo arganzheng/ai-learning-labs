@@ -196,6 +196,7 @@ def figure_weight_decay():
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
     ax.set_xlim(-0.03, 1.03); ax.set_ylim(-2.0, 2.0)
     ax.set_xticks([0, .5, 1.0]); ax.set_yticks([-2, -1, 0, 1, 2])
+    ax.set_yticklabels(["−2", "−1", "0", "1", "2"])
     ax.set_xlabel(r"x", fontsize=10.5); ax.set_ylabel(r"y", fontsize=10.5)
     ax.tick_params(labelsize=10.5)
     for s in ("top", "right"):
@@ -207,8 +208,8 @@ def figure_weight_decay():
     for lam, tr, te, nw, w in poly_rows():
         yh = np.vander(x_te, 10, increasing=True) @ w
         ax.plot(x_te, np.clip(yh, -2.1, 2.1), color=cols[lam], lw=1.6,
-                label=rf"$\lambda={lam:g}$：$\|w\|={sci(nw, math=False)}$，"
-                      rf"测试MSE={sci(te)}")
+                label=rf"$\lambda$ = {lam:g}：$\|w\|$ = {sci(nw)}，"
+                      rf"测试 MSE = {sci(te)}")
     ax.scatter(x_tr, y_tr, s=22, color="#222222", zorder=5,
                label="10 个训练点（含噪声）")
     ax.set_title(r"9 次多项式拟合 10 个带噪点：$\lambda$ 越大曲线越平、"
@@ -223,7 +224,7 @@ def figure_weight_decay():
 def figure_dropout():
     m = dropout_mask().astype(int)
     out = m * 2
-    fig, ax = base_fig(r"inverted dropout：p=0.5，输入全 1 → "
+    fig, ax = base_fig(r"inverted dropout：$p$ = 0.5，输入全 1 → "
                        r"幸存位置输出 2，被丢位置 0",
                        h=4.1, xlim=(0, 12), ylim=(0, 7.1))
     x0, cw, ch, pitch = 1.9, .72, .55, .62

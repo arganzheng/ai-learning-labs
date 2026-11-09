@@ -290,7 +290,7 @@ def sci(v):
 
 def figure_one_step():
     rows = one_step_rows()
-    fig, ax = base_fig(r"同一个梯度 g=0.500 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta=0.1$）",
+    fig, ax = base_fig(r"同一个梯度 $g$ = 0.500 的第 1 步：四种优化器的中间量与 $\Delta\theta$（$\eta$ = 0.1）",
                        h=4.0, xlim=(0, 12), ylim=(0, 6.9))
     cols = dict(g=(1.95, 1.5), mid=(4.2, 2.5), hat=(7.4, 2.5), d=(10.25, 1.7))
     ch = .85
@@ -299,11 +299,11 @@ def figure_one_step():
         y0 = yc - ch / 2
         text(ax, .1, yc, name, fontsize=10.5, color="#111111")
         box(ax, cols["g"][0], y0, cols["g"][1], ch,
-            rf"g={rows[name][0]['g']:.3f}", fs=10.5)
+            rf"$g$ = {rows[name][0]['g']:.3f}", fs=10.5)
         r = rows[name][0]
         if name == "SGD":
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta$ = {r['d']:+.3f}".replace("-", "−"), fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["d"][0], yc))
             text(ax, 6.5, yc + .18, r"$-\eta\,g$：步长与梯度成正比", fontsize=10.5,
                  ha="center", color="#555555")
@@ -311,7 +311,7 @@ def figure_one_step():
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
                 rf"$m=\beta_1 m_0+g={r['m']:.3f}$", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta$ = {r['d']:+.3f}".replace("-", "−"), fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["d"][0], yc))
             text(ax, 8.2, yc + .18, r"$-\eta\,m$", fontsize=10.5,
@@ -332,7 +332,7 @@ def figure_one_step():
                  rf"$\hat v={r['vh']:.3f}$", in_box=p_, ha="center",
                  va="center", fontsize=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta$ = {r['d']:+.3f}".replace("-", "−"), fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["hat"][0], yc))
             arrow(ax, (cols["hat"][0] + cols["hat"][1], yc), (cols["d"][0], yc))
@@ -371,7 +371,7 @@ def figure_bias_correction():
     ax.set_xlabel("步 t"); ax.set_ylabel(r"对真值 $g^2$ 的比值（对数）")
     ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 v 从 $0.001\,g^2$ 慢慢爬",
                  fontweight=600, color="#111111")
-    ax.text(2.4, 1.2e-2, r"t=1：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])
+    ax.text(2.4, 1.2e-2, r"$t$ = 1：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])
     ax.add_patch(FancyArrowPatch((2.2, 1e-2), (1.15, 1.4e-3),
                                  arrowstyle="-|>", mutation_scale=10,
                                  color=C["red"], lw=.8,

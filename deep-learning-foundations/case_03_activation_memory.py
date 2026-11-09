@@ -249,8 +249,8 @@ def fig_one_iteration():
         ("step", r"$W \leftarrow W-\eta\,dW$", "#eee1f3", C["purple"]),
         ("zero", "梯度清零", "#e8e8e8", "#777777"),
     ]
-    ws = [2.6, 1.35, 2.6, 2.15, 1.6]
-    x, y, h = 0.3, 4.75, 1.6
+    ws = [2.4, 1.25, 2.4, 2.0, 1.45]
+    x, y, h = 0.15, 4.75, 1.6
     pos = []
     for (name, sub, fc, ec), w in zip(phases, ws):
         p = box(ax, x, y, w, h, "", fc=fc, ec=ec, lw=1.0)
@@ -259,11 +259,11 @@ def fig_one_iteration():
              va="center", fontsize=10.5)
         pos.append((x, x + w))
         if w is not ws[-1]:
-            ax.add_patch(FancyArrowPatch((x + w + 0.03, y + h / 2),
-                                         (x + w + 0.22, y + h / 2),
+            ax.add_patch(FancyArrowPatch((x + w + 0.04, y + h / 2),
+                                         (x + w + 0.51, y + h / 2),
                                          arrowstyle="-|>", mutation_scale=16,
                                          color="#555555", lw=1.4))
-        x += w + 0.25
+        x += w + 0.55
 
     # 泳道 1：保存的激活量：前向线性升到峰，反向线性降回 0
     y1 = 2.7
@@ -379,7 +379,8 @@ def fig_checkpointing():
             ax.add_patch(r2)
         text(ax, lx + 0.38, 6.47, name, ha="left", va="center",
              fontsize=10.5, color="#444444")
-        lx += 0.42 + 0.16 * len(name) + 0.55
+        lx += 1.0 + sum(0.20 if ord(c) > 0x2E7F else 0.11
+                        for c in name)
 
     # ---- 全存 ----
     y1 = 4.85
@@ -454,13 +455,13 @@ def fig_one_layer():
                  fontweight=600, color="#111111")
 
     boxes = [
-        (r"x", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
-        (r"z=Wx+b", "线性", "W, b",
+        (r"$x$", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
+        (r"$z=Wx+b$", "线性", "$W$, $b$",
          "#f5f8fc", "#555555", 2.6),
-        (r"z", "加权和", "(\u22121, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
-        (r"f", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
-        (r"a", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
-        ("下一层", r"它的 x", "", "#f5f5f5", "#888888", 1.6),
+        (r"$z$", "加权和", "(\u22121, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
+        (r"$f$", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
+        (r"$a$", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
+        ("下一层", r"它的 $x$", "", "#f5f5f5", "#888888", 1.6),
     ]
     h, y, gap = 1.62, 2.7, 0.3
     x = 0.1
@@ -478,11 +479,11 @@ def fig_one_layer():
                                          color="#555555", lw=1.2))
         x += w + gap
     text(ax, 6.0, 2.1,
-         r"取值：W=[[1,−1],[0.5,0.5]]，b=(0,−1)",
+         r"取值：$W$ = [[1, −1], [0.5, 0.5]]，$b$ = (0, −1)",
          ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.55,
-         r"z=(−1,0.5)：线性这一步的输出还带着负数；"
-         r"ReLU 把它压成 a=(0,0.5)",
+         r"$z$ = (−1, 0.5)：线性这一步的输出还带着负数；"
+         r"ReLU 把它压成 $a$ = (0, 0.5)",
          ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.05,
          "术语对照：f 是「激活函数」（第①义），a 是「激活值」（第②义）；",

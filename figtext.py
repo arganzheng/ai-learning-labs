@@ -224,18 +224,23 @@ def check_plain_text(fig):
         s = t.get_text()
         if not s.strip() or not t.get_visible():
             continue
-        if re.search(r"[\x00-\x08\x0b-\x1f\x7f]", s):
+        if re.search(r"[\x00-\x08\x0b-\x1f\x7f\x09]", s):
             bad.append(("控制字符", s))
         plain = re.sub(r"\$[^$]*\$", "", s)
         if "\\" in plain:
             bad.append(("反斜杠", s))
         for m_ in re.finditer(r"\w*[_^]\w*", plain):
-            # next_functions 这类代码标识符（两侧都 ≥2 字符）豁免
-            if not re.fullmatch(r"\w{2,}[_^]\w{2,}", m_.group(0)):
+            # 代码标识符豁免：两侧都 ≥2 字符（next_functions、to_empty），或 _ 开头的
+            # 私有名（_ParamAndGradBuffer）；d_g、e^2 这类漏排仍报错
+            if not re.fullmatch(r"\w{2,}[_^]\w{2,}|[_^]\w{2,}", m_.group(0)):
                 bad.append(("_ 或 ^", s))
                 break
         if re.search(r"(?<![A-Za-z0-9])-\d", plain):
             bad.append(("ASCII 负号/减号", s))
+        # 希腊字母作为变量必须走 mathtext（$\tau$、$\delta$），不要写成平文本 Unicode——
+        # 无衬线希腊字母和 CM 数学混在一起不齐。μ 例外：多半是 μs/μm 单位前缀。
+        if re.search(r"[α-ωΑ-Ω]", plain.replace("μ", "")):
+            bad.append(("希腊字母应为 mathtext", s))
     if bad:
         raise AssertionError(
             f"{len(bad)} 处正文含非法字符（\\\\ / _ / ^ / ASCII 负号）：\n"

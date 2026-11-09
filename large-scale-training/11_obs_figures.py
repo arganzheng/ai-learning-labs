@@ -183,24 +183,24 @@ def alert_timeline():
     a2 = fig.add_subplot(gs[3])          # 告警泳道
     for a in (a0, al):
         a.axis("off")
-        a.set_xlim(0, 32)
         a.set_ylim(0, 1)
+    for a in (a0, al, a1, a2):
+        a.set_xlim(-10.5, 43)
     # 三个事件：dip、心跳停、重启窗口，各居其事件中心
-    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=10,
+    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=11,
             ha="center", color="#8a5a00")
-    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=10, ha="center",
+    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=11, ha="center",
             color=C["red"])
-    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=10, ha="center",
+    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=11, ha="center",
             color="#1d4ed8")
 
     a1.plot(T, thr, color=C["blue"], lw=1.6)
     a1.axhline(850, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(0.5, 1060, "record 阈值：−15%（850 tok/s）", fontsize=10,
+    a1.text(-10, 1060, "record 阈值：−15%（850 tok/s）", fontsize=11,
             color="#555555", va="top", ha="left")
     a1.set_ylim(700, 1080)
-    a1.set_xlim(0, 32)
     a1.set_yticks([700, 850, 1000])
-    a1.set_ylabel("tok/s", fontsize=10)
+    a1.set_ylabel("tok/s", fontsize=11)
     a1.tick_params(labelsize=10)
     a1.set_xticklabels([])
     a1.axvspan(10, 15, color="#fdecea", alpha=0.7)
@@ -217,39 +217,38 @@ def alert_timeline():
                      .Rectangle((hx, 0.3), 1.6, 0.4, fc=FCS[st],
                                 ec="#888888", lw=0.6,
                                 hatch="///" if st == "suppressed" else None))
-        al.text(hx + 1.9, 0.5, lab, fontsize=10, va="center", ha="left")
+        al.text(hx + 1.9, 0.5, lab, fontsize=11, va="center", ha="left")
         hx += 1.9 + len(lab) * 0.62 + 1.2
 
     # 泳道：一行一个规则名；细则放右侧备注列
     lanes = [("TrainingMfuDegraded", 3,
-              [(10, 15, "pending")], "page · for 30m；未到即消失"),
+              [(10, 15, "pending")], "page·30m；未到即消失"),
              ("ThroughputDip", 2,
               [(10, 12, "pending"), (12, 15, "firing")],
-              "record · for 2m；firing 白天看"),
+              "record·2m；firing 白天看"),
              ("TrainingStepStalled", 1,
               [(23.5, 25.25, "pending"), (25.25, 30, "suppressed")],
-              "page · for 0m；落在重启窗口→被抑制")]
+              "page·0m；重启窗口内被抑制")]
     for name, row, segs, note in lanes:
         for x0, x1, st in segs:
             a2.barh(row, x1 - x0, left=x0, height=0.55, color=FCS[st],
                     edgecolor="#888888", lw=0.6,
                     hatch="///" if st == "suppressed" else None)
-        a2.text(-0.4, row, name, fontsize=10, ha="right", va="center")
-        a2.text(30.6, row, note, fontsize=10, ha="left", va="center",
+        a2.text(-0.4, row, name, fontsize=11, ha="right", va="center")
+        a2.text(30.6, row, note, fontsize=11, ha="left", va="center",
                 color="#555555")
     a2.axvspan(10, 15, color="#fdecea", alpha=0.5)
     a2.axvline(23.5, color=C["red"], lw=1.1, ls="--")
     a2.axvspan(25, 28, color="#dbeafe", alpha=0.8)
     a2.set_yticks([])
-    a2.set_xlim(-10.5, 43)
     a2.set_ylim(0.4, 3.7)
     a2.set_xticks(range(0, 31, 5))
     a2.set_xticklabels([f"{t:02d}:00" for t in range(0, 31, 5)],
-                       fontsize=10)
-    a2.set_xlabel("时间", fontsize=10)
+                       fontsize=11)
+    a2.set_xlabel("时间", fontsize=11)
     a2.spines[["left", "right", "top"]].set_visible(False)
     fig.suptitle("告警规则评估的模拟：for: 语义、page/record、抑制（toy 数据）",
-                 fontsize=11.5, fontweight=600)
+                 fontsize=12, fontweight=600)
     save(fig, "long-running-training-alert-timeline")
 
 

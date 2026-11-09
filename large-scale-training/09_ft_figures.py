@@ -64,19 +64,19 @@ def five_terms():
     # 图例行（色块→文字间距 ≥0.25u）
     lx = 1.2
     names = {"T_d": "检测 $T_d$", "T_r": "重启 $T_r$", "T_l": "加载 $T_l$",
-             "τ/2": "回退 τ/2", "δ/τ": "保存 δ/τ"}
+             "τ/2": "回退 $\\tau/2$", "δ/τ": "保存 $\\delta/\\tau$"}
     for sname, fc, ec in segs:
         _card(ax, lx, 5.32, 0.28, 0.28, "", fc=fc, ec=ec, lw=0.6)
         _label(ax, lx + 0.72, 5.46, names[sname], 10.5, ha="left")
         lx += 0.72 + len(names[sname]) * 0.17 + 0.55
-    ys = [4.1, 2.3]
+    ys = [4.1, 3.05]
     for r, (name, vals, tot) in enumerate(rows):
         y = ys[r]
         _label(ax, 1.55, y + 0.28, name, 10.5, ha="right", color="#333333")
         x = mx(0)
         narrow = []
         seg_disp = {"T_d": "$T_d$", "T_r": "$T_r$", "T_l": "$T_l$",
-                    "τ/2": "τ/2", "δ/τ": "δ/τ"}
+                    "τ/2": "$\\tau/2$", "δ/τ": "$\\delta/\\tau$"}
         for (sname, fc, ec), v in zip(segs, vals):
             w = v / 14 * 8.8
             p = _card(ax, x, y, w, 0.56, "", fc=fc, ec=ec, lw=0.6)
@@ -106,7 +106,7 @@ def five_terms():
         _label(ax, x + 0.3, y + 0.28, tot, 10.5, ha="left", weight="bold")
         if r == 1:
             _label(ax, mx(0) + 0.05, y - 0.42,
-                   "$T_d$ 0.5% · $T_r$ 0.3% · $T_l$ 0.5% · τ/2 2.1% · δ/τ 2.0%",
+                   "$T_d$ 0.5% · $T_r$ 0.3% · $T_l$ 0.5% · $\\tau/2$ 2.1% · $\\delta/\\tau$ 2.0%",
                    10.5, ha="left", color="#444444")
             _label(ax, mx(0) + 0.05, y - 0.78,
                    "$T_d$ 600 s → 60 s：5.5% → 0.5%（§三.3 心跳检测）",

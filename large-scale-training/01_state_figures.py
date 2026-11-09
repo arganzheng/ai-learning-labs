@@ -104,7 +104,7 @@ def f3_four_states():
     text(ax, 1.95, 4.18, "常驻：大小只与 N 有关", ha="center", va="center", fontsize=11, color=C["blue"])
     text(ax, 5.55, 4.18, "瞬态：一个 step 内产生又释放", ha="center", va="center", fontsize=11, color=C["orange"])
     cards = [
-        (0.20, 2.55, "参数 θ", "bf16 计算副本\n2N 字节\n前向、反向都读", C["blue"]),
+        (0.20, 2.55, "参数 $\\theta$", "bf16 计算副本\n2N 字节\n前向、反向都读", C["blue"]),
         (2.00, 2.55, "优化器状态", "12N：主参数 4N\nAdam m 4N + v 4N", C["purple"]),
         (3.80, 2.55, "梯度", "2N bf16 / 4N fp32\n反向逐层产生\nstep 后清零", C["orange"]),
         (5.60, 2.55, "激活 A", "≈ 34sbhL\n字节\n前向堆高，反向释放", C["green"]),

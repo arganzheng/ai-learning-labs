@@ -179,7 +179,7 @@ def figure_training_step():
     arrow(ax, (9.9, 5.9), (9.9, 5.35), style="-")
     # 可替换结构块：三格顶边括号 → 竖线连到 模型盒底
     cell(ax, .5, 1.1, 2.3, 1.2, "08 CNN\ny=Mx 稀疏共享", fs=10.5)
-    cell(ax, 2.95, 1.1, 2.3, 1.2, "09 Embedding\n$e_i^{\\!\\top}W$ 查表",
+    cell(ax, 2.95, 1.1, 2.3, 1.2, "09 Embedding\none-hot×W 查表",
          fs=10.5)
     cell(ax, 5.4, 1.1, 3.0, 1.2,
          "10 RNN\n$h_t=\\tanh(Wh_{t-1}\\!+\\!Ux_t)$", fs=10.5)

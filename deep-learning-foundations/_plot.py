@@ -288,12 +288,15 @@ def check_plain_text(fig):
     """$...$ 之外的正文必须是干净的 Unicode 文字：
     不允许出现反斜杠（\\times、\\n 漏排）、_ / ^（d_g 漏排）、
     以及当作负号/减号的 ASCII -（-1、(−1) 应写 −）。
-    单词里的连字符（next-token）与代码标识符不受影响。"""
+    单词里的连字符（next-token）与代码标识符不受影响。
+    控制字符（\\t 等，常见于非 raw 串里 \\to 被吃成 TAB+o）一律报错。"""
     bad = []
     for t in fig.findobj(matplotlib.text.Text):
         s = t.get_text()
         if not s.strip() or not t.get_visible():
             continue
+        if re.search(r"[\x00-\x08\x0b-\x1f\x7f]", s):
+            bad.append(("控制字符", s))
         plain = re.sub(r"\$[^$]*\$", "", s)
         if "\\" in plain:
             bad.append(("反斜杠", s))

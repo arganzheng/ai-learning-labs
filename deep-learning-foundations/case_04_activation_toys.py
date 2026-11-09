@@ -480,7 +480,7 @@ def figure_ffn_position():
     text(ax, 8.72, 6.0, "FFN（SwiGLU）", ha="center", va="center",
          fontsize=11.5)
     ax.plot([6.77, 6.83], [y + .4, y + .4], color=C["blue"], lw=.9)
-    text(ax, 7.0, 5.9, r"d", ha="center", va="center", fontsize=11.5)
+    text(ax, 6.45, 5.88, r"d", ha="center", va="center", fontsize=11.5)
     # 框内两条并行支路：gate xW→SiLU / up xV，汇合 ⊙ → W2 down
     arrow(ax, (6.9, 5.1), (7.08, 5.42), color=C["orange"], lw=.8)
     arrow(ax, (6.9, 5.1), (7.08, 4.78), color=C["orange"], lw=.8)
@@ -511,7 +511,7 @@ def figure_ffn_position():
     p = box(ax, 11.68, 4.7, .68, .8, "", fc="#dce9f7", ec=C["blue"])
     text(ax, 12.02, 5.1, "输出", in_box=p, ha="center", va="center", fontsize=11.5)
     text(ax, 6, 3.55, "每个 token 各自过同一个 FFN；激活函数在 gate/up 之间，"
-         "形状变化 $d \to d_g \to d$。", ha="center", va="center", fontsize=11.5)
+         r"形状变化 $d \to d_g \to d$。", ha="center", va="center", fontsize=11.5)
     text(ax, 6, 2.9, "注意力混合 token 之间信息；FFN 只在单 token 内部算。",
          ha="center", va="center", fontsize=11.5, color="#555555")
     finish(fig, "activation-ffn-position")

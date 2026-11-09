@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 plt.rcParams.update({
     "axes.unicode_minus": True,
     "svg.fonttype": "none",          # 真文字 + 内嵌字体子集（embed_fonts）
+    "mathtext.fontset": "cm",        # 公式用 Computer Modern，跟 KaTeX 一致
     "font.size": 10.5,
     "axes.titlesize": 11.5,
     "axes.labelsize": 10.5,

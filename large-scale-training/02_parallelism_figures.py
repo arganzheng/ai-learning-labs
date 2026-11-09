@@ -90,25 +90,26 @@ def states_grid():
 def mesh_8cards():
     fig, ax = _canvas(7.6, 4.55, (0, 12), (0.7, 10))
     _label(ax, 6, 6.95, "一张 8 卡的五元组摆法", 13)
-    _label(ax, 6, 6.55, "TP=2 × DP=2 × PP=2；rank = tp + 2·dp + 4·pp；节点 = rank // 4", 10.5)
+    _label(ax, 6, 6.55, "TP = 2 × DP = 2 × PP = 2；rank = tp + 2·dp + 4·pp；节点 = rank // 4", 10.5)
     nodes = [[0, 1, 2, 3], [4, 5, 6, 7]]
     xnode = [0.8, 6.65]
     for ni, ranks in enumerate(nodes):
-        ax.add_patch(plt.Rectangle((xnode[ni], 3.45), 4.55, 2.6, fc="#f8fafc", ec="#aab5c2", lw=0.9, zorder=0))
-        _label(ax, xnode[ni] + 2.275, 5.75, f"节点 {ni} · 4 卡", 10.5)
+        node_p = plt.Rectangle((xnode[ni], 3.38), 4.55, 2.67, fc="#f8fafc", ec="#aab5c2", lw=0.9, zorder=0)
+        ax.add_patch(node_p)
+        _label(ax, xnode[ni] + 2.275, 5.75, f"节点 {ni} · 4 卡", 10.5, in_box=node_p)
         for k, rank in enumerate(ranks):
             x = xnode[ni] + 0.22 + k * 1.04
             _card(ax, x, 4.32, 0.98, 0.72, f"rank {rank}", fc=BLUE, ec=C["blue"], size=10)
             tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
-            _label(ax, x + 0.45, 4.1, f"t{tp} d{dp} p{pp}", 10)
-        _label(ax, xnode[ni] + 2.275, 3.7, f"pp={ni}，节点内 TP / DP 走 NVLink", 10)
+            _label(ax, x + 0.45, 4.1, f"t{tp} d{dp} p{pp}", 10, in_box=node_p)
+        _label(ax, xnode[ni] + 2.275, 3.72, f"$pp$ = {ni}，节点内 TP / DP 走 NVLink", 10.5, in_box=node_p)
     for k in range(4):
         y = 4.48 + k * 0.17
         _arrow(ax, (xnode[0] + 4.55, y), (xnode[1], y), color=C["red"], lw=1.3, ms=9)
-    _label(ax, (xnode[0] + 4.55 + xnode[1]) / 2, 5.36, "PP 组：跨节点 IB", 10)
+    _label(ax, xnode[1] - 0.65, 5.42, "PP 组\n跨节点 IB", 10, linespacing=1.4)
     _label(ax, 6, 2.92, "PP 组 {0,4} · {1,5} · {2,6} · {3,7}：rank i 与 rank i+4 配对，跨节点 IB", 10)
     _label(ax, 6, 2.45, "TP 组 {0,1} · {2,3} · {4,5} · {6,7}　DP 组 {0,2} · {1,3} · {4,6} · {5,7}：节点内 NVLink", 10)
-    _label(ax, 6, 1.35, "Megatron 顺序 tp-cp-ep-dp-pp：TP 变化最快，PP 最慢；8 卡/节点且 TP=8 时，DP 组会跨节点", 10)
+    _label(ax, 6, 1.35, "Megatron 顺序 tp-cp-ep-dp-pp：TP 变化最快，PP 最慢；8 卡/节点且 TP = 8 时，DP 组会跨节点", 10)
     save(fig, "parallelism-mesh-8cards")
 
 
@@ -122,9 +123,9 @@ def bubble_curve():
     ax.grid(axis="y", color="#d9dde2", lw=0.6)
     xs = list(range(4, 65))
     for p, color in [(4, C["blue"]), (8, C["green"]), (16, C["orange"])]:
-        ax.plot(xs, [(p - 1) / m for m in xs], color=color, lw=1.7, label=f"p={p}：v=1，(p-1)/m")
-        ax.plot(xs, [(p - 1) / (2 * m) for m in xs], color=color, lw=1.3, ls="--", label=f"p={p}：v=2")
-    ax.legend(loc="upper right", frameon=False, ncol=2, fontsize=10, title="实线 v=1　虚线 v=2（气泡约减半，通信约翻倍）", title_fontsize=10)
+        ax.plot(xs, [(p - 1) / m for m in xs], color=color, lw=1.7, label=f"$p$ = {p}：$v$ = 1，$(p-1)/m$")
+        ax.plot(xs, [(p - 1) / (2 * m) for m in xs], color=color, lw=1.3, ls="--", label=f"$p$ = {p}：$v$ = 2")
+    ax.legend(loc="upper right", frameon=False, ncol=2, fontsize=10, title="实线 $v$ = 1　虚线 $v$ = 2（气泡约减半，通信约翻倍）", title_fontsize=10)
     save(fig, "parallelism-bubble-rate")
 
 

@@ -148,7 +148,7 @@ def f4():
     ax.annotate("", xy=(centers[-1], 0.73), xytext=(centers[0], 0.73),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=0.9))
     text(ax, 3.95, 0.31, "ds_tensor 常驻 $1/N_d$；完整 param.data 用前取回、用完释放",
-         ha="center", va="center", fontsize=10.5, color="#111111")
+         ha="center", va="center", fontsize=11, color="#111111")
     save(fig, "deepspeed-f4-param-lifecycle")
 
 

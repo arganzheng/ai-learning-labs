@@ -315,7 +315,10 @@ def collide(fig, margin=6.0):
             offs = getattr(c, "get_offsets", lambda: None)()
             if offs is None or len(offs) == 0:
                 continue
-            sizes = _np.resize(c.get_sizes(), len(offs))
+            get_sizes = getattr(c, "get_sizes", None)
+            if get_sizes is None:
+                continue
+            sizes = _np.resize(get_sizes(), len(offs))
             if len(sizes) == 0:
                 continue
             pts = c.get_offset_transform().transform(_np.asarray(offs))

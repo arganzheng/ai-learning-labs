@@ -56,9 +56,9 @@ if __name__ == "__main__":
         b = min(rs, key=lambda r: r["val"])
         ax.plot(b["N"], b["val"], "*", color=col, ms=14)
         for r in rs:
-            ax.annotate(f"{r['D']/1e6:.1f}M tok", (r["N"], r["val"]), (0, 6), textcoords="offset points", fontsize=6.5, ha="center", color=col)
+            ax.annotate(f"{r['D']/1e6:.1f}M tok", (r["N"], r["val"]), (0, 6), textcoords="offset points", fontsize=10, ha="center", color=col)
     Ns = sorted(set(r["N"] for r in results))
     ax.set(xscale="log", xlabel="模型大小 N（全部参数，对数刻度）", ylabel="val loss", title="同样的算力：模型太小学不动，太大没喂饱——中间有个最优点（★）")
     ax.set_xticks(Ns, [f"{n/1e6:.2f}M" if n < 1e6 else f"{n/1e6:.1f}M" for n in Ns]); ax.minorticks_off()
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=10)
     save(fig, "e2e-6-isoflop")

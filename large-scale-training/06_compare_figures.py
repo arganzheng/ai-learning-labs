@@ -32,9 +32,10 @@ def f1():
             # Same palette meanings across bars: parameter, gradient, master, m, v.
             color_idx = (0, 1, 2, 3, 4)[idx] if n == 5 else (0, 1, 3, 4)[idx]
             color = PALETTE[color_idx]
-            ax.add_patch(patches.Rectangle((x, y), w, h, fc=color, ec="white", lw=1.2))
+            seg = patches.Rectangle((x, y), w, h, fc=color, ec="white", lw=1.2)
+            ax.add_patch(seg)
             text(ax, x + w / 2, y + h + 0.06, segname, ha="center", va="bottom", fontsize=10)
-            text(ax, x + w / 2, y + h / 2, f"{val:g}", ha="center", va="center", fontsize=10)
+            text(ax, x + w / 2, y + h / 2, f"{val:g}", ha="center", va="center", fontsize=10, in_box=seg)
             x += w
         text(ax, 6.55, y + h / 2, total, ha="left", va="center", fontsize=10, color=accent)
     text(ax, 3.8, 0.10, "不含激活与临时 all-gather；torchtitan fp32 分片就是主参数。", ha="center", va="center", fontsize=10)
@@ -61,15 +62,16 @@ def f2():
             ax.plot([yr(y), yr(y)], [y0, y1], color="#d4d4d4", lw=0.6, zorder=0)
         text(ax, yr(y), 4.55, str(y), ha="center", va="center", fontsize=10, color="#888888")
     for (name, color, tint, events), y in zip(lanes, ys):
-        ax.add_patch(patches.Rectangle((0.85, y - band_h), 6.55, band_h * 2, fc=tint, ec="none", zorder=0))
+        band = patches.Rectangle((0.85, y - band_h), 6.55, band_h * 2, fc=tint, ec="none", zorder=0)
+        ax.add_patch(band)
         text(ax, 0.72, y, name, ha="right", va="center", fontsize=10, color=color)
         ax.plot([x0 - 0.10, yr(2026) + 0.28], [y, y], color=color, lw=1.2)
         for year, label, below in events:
             ax.plot([yr(year), yr(year)], [y - 0.08, y + 0.08], color=color, lw=1.4)
             if below:
-                text(ax, yr(year), y - 0.10, label, ha="center", va="top", fontsize=10, color=color)
+                text(ax, yr(year), y - 0.10, label, ha="center", va="top", fontsize=10, color=color, in_box=band)
             else:
-                text(ax, yr(year), y + 0.16, label, ha="center", va="bottom", fontsize=10, color=color)
+                text(ax, yr(year), y + 0.16, label, ha="center", va="bottom", fontsize=10, color=color, in_box=band)
     text(ax, 3.8, 0.06, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)
     ax.set_title("三条线怎么走到今天：每次演进都在解决新的规模瓶颈")
     save(fig, "compare-f2-timeline")
@@ -115,10 +117,11 @@ def f4():
     bar_x0, bar_x1, bar_mid = 1.15, 6.35, 3.75
     for y, name, color in zip(row_y, labels, colors):
         text(ax, 1.0, y + 0.29, name, ha="right", va="center", fontsize=10, color=color)
-        ax.add_patch(patches.Rectangle((bar_x0, y + 0.12), bar_mid - bar_x0, 0.34, fc="#f4f6f8", ec="#cccccc", lw=0.5))
-        ax.add_patch(patches.Rectangle((bar_mid, y + 0.12), bar_x1 - bar_mid, 0.34, fc="#eceff2", ec="#cccccc", lw=0.5))
-        text(ax, (bar_x0 + bar_mid) / 2, y + 0.29, "前向", ha="center", va="center", fontsize=10, color="#555555")
-        text(ax, (bar_mid + bar_x1) / 2, y + 0.29, "反向", ha="center", va="center", fontsize=10, color="#555555")
+        fwd = patches.Rectangle((bar_x0, y + 0.12), bar_mid - bar_x0, 0.34, fc="#f4f6f8", ec="#cccccc", lw=0.5)
+        bwd = patches.Rectangle((bar_mid, y + 0.12), bar_x1 - bar_mid, 0.34, fc="#eceff2", ec="#cccccc", lw=0.5)
+        ax.add_patch(fwd); ax.add_patch(bwd)
+        text(ax, (bar_x0 + bar_mid) / 2, y + 0.29, "前向", ha="center", va="center", fontsize=10, color="#555555", in_box=fwd)
+        text(ax, (bar_mid + bar_x1) / 2, y + 0.29, "反向", ha="center", va="center", fontsize=10, color="#555555", in_box=bwd)
     # Megatron: one reduce-scatter at the end of backward, one all-gather before next forward.
     box(ax, 4.85, row_y[0] - 0.66, 1.25, 0.62, "反向末尾\nRS 梯度", fc=C["orange"] + "22", ec=C["orange"], fs=10)
     box(ax, 6.42, row_y[0] - 0.66, 1.05, 0.62, "下一步前\nAG 参数", fc=C["green"] + "22", ec=C["green"], fs=10)
@@ -167,7 +170,7 @@ def f5():
                 cursor += 1
             text(ax, pos - n * cell_w / 2, y + cell_h + 0.08, pname, ha="center", va="bottom", fontsize=10)
         text(ax, 6.5, y + cell_h / 2, f"rank0 {sizes[0]} 个｜rank1 {sizes[1]} 个", ha="left", va="center", fontsize=10)
-    text(ax, 3.8, 0.24, "每格 1 个元素；填充色＝属于哪个参数（A/B/c），灰格是 padding；边框色：蓝=r0、橙=r1", ha="center", fontsize=10)
+    text(ax, 3.8, 0.24, "每格 1 个元素；填充色＝属于哪个参数（A/B/c），灰格是 padding；边框色：蓝 = r0、橙 = r1", ha="center", fontsize=10)
     ax.set_title("23 个元素放进两张卡：分片边界取决于容器")
     save(fig, "compare-f5-shard-layouts")
 

@@ -123,7 +123,7 @@ def f3():
                 text(ax, gx + CW / 2, gy + RH / 2, str(v), in_box=in_box,
                      ha="center", va="center", fontsize=11)
 
-    def label(x, y_, s, in_box):
+    def label(x, y_, s, in_box=None):
         t = text(ax, x, y_, s, in_box=in_box, ha="center", va="bottom",
                  fontsize=ARROW_LABEL_SIZE, color="#111111")
         _labels.append(t)
@@ -144,30 +144,33 @@ def f3():
     # Partial：每 rank 的 local 是 4×4，只填自己那两行的部分和，其余为 0（阴影只标这些补 0 格）。
     xp, wp = 0.10, 2.55
     p = box(ax, xp, y, wp, h, "", fc="#ffffff", ec="#444444")
+    p._no_center = True
     box_title(ax, xp + wp / 2, y + h - 0.22, "Partial", in_box=p)
     gx0 = xp + (wp - 2 * W4 - 0.15) / 2
-    grid(gx0, 1.15, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 0, 0, 0], [0, 0, 0, 0]], in_box=p, shade_zero=True)
-    grid(gx0 + W4 + 0.15, 1.15, [[0, 0, 0, 0], [0, 0, 0, 0], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p, shade_zero=True)
-    label(gx0 + W4 / 2, 2.43, "r0", in_box=p)
-    label(gx0 + W4 + 0.15 + W4 / 2, 2.43, "r1", in_box=p)
+    grid(gx0, 0.95, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 0, 0, 0], [0, 0, 0, 0]], in_box=p, shade_zero=True)
+    grid(gx0 + W4 + 0.15, 0.95, [[0, 0, 0, 0], [0, 0, 0, 0], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p, shade_zero=True)
+    label(gx0 + W4 / 2, 2.38, "r0", in_box=p)
+    label(gx0 + W4 + 0.15 + W4 / 2, 2.38, "r1", in_box=p)
 
     # Shard(0)：每 rank 的 local 是自己那两行的 2×4 分片。
     xs_, ws_ = 3.75, 1.30
     p = box(ax, xs_, y, ws_, h, "", fc="#ffffff", ec="#444444")
+    p._no_center = True
     box_title(ax, xs_ + ws_ / 2, y + h - 0.22, "Shard(0)", in_box=p)
     gx = xs_ + (ws_ - W4) / 2
-    grid(gx, 1.82, [[0, 1, 2, 3], [4, 5, 6, 7]], in_box=p)
-    label(gx + W4 / 2, 2.43, "r0", in_box=p)
-    grid(gx, 0.84, [[8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
-    label(gx + W4 / 2, 1.46, "r1", in_box=p)
+    grid(gx, 1.62, [[0, 1, 2, 3], [4, 5, 6, 7]], in_box=p)
+    label(gx + W4 / 2, 2.26, "r0", in_box=p)
+    grid(gx, 0.78, [[8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    label(gx + W4 / 2, 1.42, "r1", in_box=p)
 
     # Replicate：两 rank 的 local 都是完整 4×4。
     xr, wr = 6.15, 1.30
     p = box(ax, xr, y, wr, h, "", fc="#ffffff", ec="#444444")
+    p._no_center = True
     box_title(ax, xr + wr / 2, y + h - 0.22, "Replicate", in_box=p)
     gx = xr + (wr - W4) / 2
-    grid(gx, 1.15, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
-    label(gx + W4 / 2, 2.43, "r0 / r1 相同", in_box=p)
+    grid(gx, 0.95, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], in_box=p)
+    label(gx + W4 / 2, 2.38, "r0 / r1 相同", in_box=p)
 
     check_grid_labels()
 

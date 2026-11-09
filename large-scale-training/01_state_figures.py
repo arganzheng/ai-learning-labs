@@ -36,12 +36,13 @@ def f1_budget():
     narrow_cx = None
     for label, gb, color in parts:
         width = gb * scale
-        ax.add_patch(Rectangle((cursor, y), width, h, facecolor=color, edgecolor="#ffffff", linewidth=0.8))
+        seg = Rectangle((cursor, y), width, h, facecolor=color, edgecolor="#ffffff", linewidth=0.8)
+        ax.add_patch(seg)
         if width < 0.6:
             narrow_cx = cursor + width / 2
             narrow_label = f"{label} {gb:g}"
         else:
-            text(ax, cursor + width / 2, y + h / 2, f"{gb:g}", ha="center", va="center", fontsize=10)
+            text(ax, cursor + width / 2, y + h / 2, f"{gb:g}", ha="center", va="center", fontsize=10, in_box=seg)
             text(ax, cursor + width / 2, y + h + 0.14, label, ha="center", va="bottom", fontsize=10)
         cursor += width
     # 窄段：值与名字一起引出到条下
@@ -61,7 +62,7 @@ def f1_budget():
         text(ax, tx, 1.68, str(tick), ha="center", va="center", fontsize=10)
     text(ax, x0 + 100 * scale, 1.38, "显存（GB）", ha="center", va="center", fontsize=10)
 
-    text(ax, 3.8, 0.75, "s=8192，b=1；激活含 32 层与 logits。单卡装不下，下一篇看怎么切。",
+    text(ax, 3.8, 0.75, "$s$ = 8192，$b$ = 1；激活含 32 层与 logits。单卡装不下，下一篇看怎么切。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-budget-overview")
 
@@ -77,7 +78,7 @@ def f2_ledgers():
     for yy, label in [(2.78, "参数 + 梯度 + 优化器状态"), (2.31, "+ 激活 + 非张量开销"),
                       (1.78, "≤ 每卡可用显存（约 70 GiB）")]:
         text(ax, 1.97, yy, label, in_box=left, ha="center", va="center", fontsize=11)
-    text(ax, 1.97, 1.15, "8B：16N=128.5 GB，单卡先放不下", in_box=left,
+    text(ax, 1.97, 1.15, "8B：16$N$ = 128.5 GB，单卡先放不下", in_box=left,
          ha="center", va="center", fontsize=10.5, color=C["red"])
 
     box_title(ax, 5.63, 3.34, "FLOP 账：最快要多久？", right, color=C["orange"])
@@ -130,7 +131,7 @@ def f3_four_states():
         text(ax, x + 0.74, 1.22, detail, in_box=p, ha="center", va="center", fontsize=10.5)
     for x in [1.90, 3.65, 5.40]:
         _arrow(ax, (x + 0.02, 1.40), (x + 0.25, 1.40), lw=1.4)
-    text(ax, 3.8, 0.38, "70B、s=8192、b=1：参数 141 GB，优化器 847 GB，梯度 141 / 282 GB，激活 182 GB。",
+    text(ax, 3.8, 0.38, "70B、$s$ = 8192、$b$ = 1：参数 141 GB，优化器 847 GB，梯度 141 / 282 GB，激活 182 GB。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-four-states-overview")
 
@@ -283,8 +284,9 @@ def f7_activations():
         seg_labels.append((cursor + seg_w / 2, name))
         cursor += seg_w
     text(ax, x0 + base_w / 2, y + h + 0.06, "34sbh = 2.28 GB", ha="center", va="bottom", fontsize=10.5)
-    ax.add_patch(Rectangle((x0 + base_w, y), w - base_w, h, facecolor="#eeeeee", edgecolor="#888888", linewidth=1.0, hatch="///"))
-    text(ax, x0 + base_w + (w - base_w) / 2, y + h / 2, "$5as^2b = 21.5$ GB（不使用 FlashAttention）", ha="center", va="center", fontsize=10.5)
+    hatched = Rectangle((x0 + base_w, y), w - base_w, h, facecolor="#eeeeee", edgecolor="#888888", linewidth=1.0, hatch="///")
+    ax.add_patch(hatched)
+    text(ax, x0 + base_w + (w - base_w) / 2, y + h / 2, "$5as^2b = 21.5$ GB（不使用 FlashAttention）", ha="center", va="center", fontsize=10.5, in_box=hatched)
     # 窄段标签引出到条下，交错两行；MLP 引线取段右端，绕开左边「注意力 11」的宽度
     for (cx, name), (fx, lx, ly) in zip(seg_labels, [(0.65, 0.55, 3.32), (1.06, 0.92, 3.10), (1.10, 1.30, 3.32)]):
         ax.plot([fx, fx], [y, ly + 0.16], color="#888888", lw=0.8)
@@ -300,7 +302,7 @@ def f7_activations():
         yy = 2.32 - i * 0.47
         p = box(ax, 0.55, yy, 1.26, 0.34, name, fc="#ffffff", ec=color, fs=10)
         text(ax, 2.02, yy + 0.17, detail, ha="left", va="center", fontsize=10.5)
-    text(ax, 3.8, 0.42, "Llama 3 70B，s=8192、b=1；FlashAttention 不保存灰色斜线部分，反向时分块重算。",
+    text(ax, 3.8, 0.42, "Llama 3 70B，$s$ = 8192、$b$ = 1；FlashAttention 不保存灰色斜线部分，反向时分块重算。",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-activation-breakdown")
 
@@ -528,8 +530,8 @@ def f12_activation_three_meanings():
             rows[m.group(1)] = float(m.group(2))
     total = sum(rows.values())
     groups = [
-        ("a=f(z)：狭义激活值", ["fc2"], C["orange"] + "88"),
-        ("z：f 的输入", ["gelu"], "#f0d98a"),
+        ("$a=f(z)$：狭义激活值", ["fc2"], C["orange"] + "88"),
+        ("$z$：f 的输入", ["gelu"], "#f0d98a"),
         ("线性层输入", ["qkv", "out_proj", "fc1"], C["blue"] + "66"),
         ("注意力中间量", ["qk^t", "pv"], C["purple"] + "55"),
         ("softmax 输出", ["softmax"], C["green"] + "55"),
@@ -555,7 +557,7 @@ def f12_activation_three_meanings():
 
     # ② 激活值 a = f(z)
     p2 = box(ax, 4.2, 6.75, 3.6, 1.85, "", fc="#f7f6ec", ec="#a08c1f", lw=1.0)
-    box_title(ax, 6.0, 8.25, "② 值 a=f(z)", p2, color="#a08c1f")
+    box_title(ax, 6.0, 8.25, "② 值 $a=f(z)$", p2, color="#a08c1f")
     text(ax, 6.0, 7.4, "某层过 f 的输出\n也是下一层输入", in_box=p2,
          ha="center", va="center", fontsize=10)
 
@@ -579,15 +581,16 @@ def f12_activation_three_meanings():
         for k in keys:
             kw_ = rows[k]
             w = wmax * kw_ / total
-            ax.add_patch(Rectangle((cursor, y0), w, bh, facecolor=color,
-                                   edgecolor="#ffffff", linewidth=0.8))
-            seg_label.append((cursor + w / 2, k, kw_, w, gname))
+            seg = Rectangle((cursor, y0), w, bh, facecolor=color,
+                            edgecolor="#ffffff", linewidth=0.8)
+            ax.add_patch(seg)
+            seg_label.append((cursor + w / 2, k, kw_, w, gname, seg))
             cursor += w
     # 段内标签：宽 ≥1.3 的画原名
     seg_disp = {"qk^t": "$qk^{\\!\\!\\top}$"}
-    for xc, k, kb, w, gname in seg_label:
+    for xc, k, kb, w, gname, seg in seg_label:
         if w >= 1.3:
-            text(ax, xc, y0 + bh / 2, seg_disp.get(k, k), ha="center", va="center", fontsize=10)
+            text(ax, xc, y0 + bh / 2, seg_disp.get(k, k), ha="center", va="center", fontsize=10, in_box=seg)
     # 颜色分组：每格一个小色块 + 组名 + KB，左右两列避免长名互撞
     ginfo = []
     for gname, keys, color in groups:
@@ -602,12 +605,12 @@ def f12_activation_three_meanings():
         text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
              ha="left", va="center", fontsize=10.5)
     text(ax, 6.0, 2.75,
-         f"实测一层共 {total/1024:.2f} MB（s=64、b=2、h=256、f=1024，bf16）；"
-         f"狭义的 a=f(z) 只占 {narrow:.0f}%",
+         f"实测一层共 {total/1024:.2f} MB（$s$ = 64、$b$ = 2、$h$ = 256、$f$ = 1024，bf16）；"
+         f"狭义的 $a=f(z)$ 只占 {narrow:.0f}%",
          ha="center", va="center", fontsize=10.5)
     text(ax, 6.0, 2.32, "本系列说的「激活」是第 ③ 种：把所有段一起算",
          ha="center", va="center", fontsize=10)
-    text(ax, 6.0, 1.92, "「激活 = a=f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
+    text(ax, 6.0, 1.92, "「激活 = $a=f(z)$」只是第 ② 种狭义口径，会漏掉 8 成",
          ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-activation-three-meanings")
 

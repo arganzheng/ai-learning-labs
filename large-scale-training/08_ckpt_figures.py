@@ -75,7 +75,7 @@ def six_tb():
     _label(ax, 8.8, 2.65, "聚合 500 GB/s → 11 s；1 TB/s → 6 s\nGPU→主机 <10 ms 可忽略", 10,
            in_box=p)
     _label(ax, 6, 1.45, "汇总的路在三个地方同时撞墙：内存、接收带宽、写入带宽——", 10)
-    _label(ax, 6, 1.0, "δ 从分钟级压到秒级后，Young 公式的浪费才压得下去（§九）。", 10)
+    _label(ax, 6, 1.0, "$\\delta$ 从分钟级压到秒级后，Young 公式的浪费才压得下去（§九）。", 11)
     save(fig, "distributed-checkpoint-6tb-breakdown")
 
 

@@ -88,7 +88,7 @@ def spike_rollback():
     ax2.text(bad1 + 1.5, ax2.get_ylim()[1] * 0.55, "坏窗口\n150–155",
              fontsize=10, ha="left", va="top", color="#8a3c3c")
     ax2.set_xlabel("step", fontsize=10)
-    fig.suptitle("坏 batch 注入 → 回退 + 跳过的恢复轨迹（toy 实测，2 层 d=64）",
+    fig.suptitle("坏 batch 注入 → 回退 + 跳过的恢复轨迹（toy 实测，2 层 $d$ = 64）",
                  fontsize=12, fontweight=600)
     save(fig, "training-stability-spike-rollback")
 
@@ -96,7 +96,7 @@ def spike_rollback():
 def clip_2d():
     """F2：二维梯度裁剪：原始 g 长箭头，clip 后落到半径 1 的圆上。"""
     fig, ax = _canvas(7.6, 3.6, (0, 12), (0, 5.4))
-    _label(ax, 6, 5.15, "全局范数裁剪：方向不变，整体缩到阈值（§三.1，max_norm=1.0）",
+    _label(ax, 6, 5.15, "全局范数裁剪：方向不变，整体缩到阈值（§三.1，max_norm = 1.0）",
            12.5, weight="bold")
     cx, cy, r = 4.2, 2.5, 1.55
     circle = plt.Circle((cx, cy), r, fc="none", ec="#999999", ls="--", lw=1.0)
@@ -111,7 +111,7 @@ def clip_2d():
     _arrow(ax, (cx, cy), (cx + dx * k, cy + dy * k), color=C["blue"], lw=2.2, ms=15)
     _label(ax, cx + dx * k / 2 + 1.3, cy + dy * k / 2 - 0.62,
            "clip 后 ‖g‖ = 1.0", 10, color=C["blue"])
-    _label(ax, 9.3, 3.4, "标量系数 c/(‖g‖+ε)", 10, ha="center")
+    _label(ax, 9.3, 3.4, r"标量系数 $c/(|g|+\varepsilon)$", 11, ha="center")
     _label(ax, 9.3, 2.95, "= 1/3315.4 = 0.000302", 10, ha="center")
     _label(ax, 9.3, 2.4, "每个参数张量被", 10, ha="center", color="#555555")
     _label(ax, 9.3, 2.05, "同一个标量缩放", 10, ha="center", color="#555555")
@@ -249,11 +249,11 @@ def resume_number_line():
         xx = x0 + st / 12 * (x1 - x0)
         ax.plot([xx, xx], [y - 0.07, y + 0.07], color="#444444", lw=0.9)
         _label(ax, xx, y - 0.32, str(st * 8), 10, color="#555555")
-    _label(ax, x0, y - 1.5, "样本号（toy：total=96，B=8，每格一步）", 10, ha="left",
+    _label(ax, x0, y - 1.5, "样本号（toy：total = 96，B = 8，每格一步）", 10, ha="left",
            color="#555555")
     xc = x0 + 56 / 96 * (x1 - x0)
     ax.plot([xc, xc], [y - 0.05, y + 0.3], color=C["red"], lw=1.6)
-    _label(ax, xc, y + 0.62, "consumed = 56（7 步 × B=8）", 10,
+    _label(ax, xc, y + 0.62, "consumed = 56（7 步 × B = 8）", 10,
            color=C["red"], weight="bold")
     # ckpt 标记在整数处
     p = _card(ax, xc - 1.0, y - 1.28, 2.0, 0.5, "", fc="#fff4d6",

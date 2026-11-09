@@ -48,7 +48,7 @@ def four_steps():
         ("① TP = 8", "层内切权重\n锁节点内 NVLink", "静态 14.0 GB"),
         ("② PP = 4", "80 层分 4 段\n交错 v = 4", "激活 27 GB"),
         ("③ DP = 32", "补满 1024\nZeRO-1 可重叠", "通信可盖"),
-        ("④ CP = 1", "s=8K 用不上\n留作余量", "余量留这"),
+        ("④ CP = 1", "$s$ = 8K 用不上\n留作余量", "余量留这"),
     ]
     x0, cw, gap = 0.2, 2.1, 0.35
     for i, (t, why, mem) in enumerate(steps):
@@ -57,7 +57,7 @@ def four_steps():
                   fc=[BLUE, GREEN, ORANGE, PURPLE][i],
                   ec=[C["blue"], C["green"], C["orange"], C["purple"]][i], lw=1.1)
         _label(ax, x + cw / 2, 4.1, t, 11.5, in_box=p, weight="bold")
-        _label(ax, x + cw / 2, 3.45, why, 10, color="#333333", in_box=p)
+        _label(ax, x + cw / 2, 3.45, why, 11, color="#333333", in_box=p, linespacing=1.5)
         _label(ax, x + cw / 2, 2.85, mem, 10, color=C["red"], in_box=p)
         if i:
             _arrow(ax, (x - gap + 0.04, 3.5), (x - 0.04, 3.5), color="#888888", lw=1.2, ms=10)
@@ -98,14 +98,14 @@ def microbatch_bounds():
     fig, ax = _canvas(7.6, 3.4, (0, 12), (0, 5.2))
     _label(ax, 6, 4.9, "micro-batch b 的两头约束（b = 1…4，候选 A）", 12.5, weight="bold")
     rows = [
-        ("b = 1", 3.7, GREEN, "GEMM M=8192 才 60–70% · 气泡 4.7% · ~49 GB", "可行"),
+        ("b = 1", 3.7, GREEN, "GEMM $M$ = 8192 才 60–70% · 气泡 4.7% · ~49 GB", "可行"),
         ("b = 2", 2.7, ORANGE, "M 翻倍 · m 8 → 气泡 9.4% · ~76 GB 太紧", "勉强"),
         ("b = 4", 1.7, RED, "气泡 18.8% · ~130 GB 爆显存", "不可行"),
     ]
     for name, y, col, why, tag in rows:
         _label(ax, 0.35, y, name, 10.5, ha="left")
         p = _card(ax, 1.45, y - 0.34, 8.3, 0.68, "", fc=col, ec="#999999", lw=0.7)
-        _label(ax, 5.6, y, why, 10, in_box=p)
+        _label(ax, 5.6, y, why, 11, in_box=p)
         _card(ax, 10.0, y - 0.32, 1.35, 0.64, tag,
               fc="#ffffff",
               ec=C["green"] if tag == "可行" else (C["orange"] if tag == "勉强" else C["red"]),

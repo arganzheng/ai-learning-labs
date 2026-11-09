@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.7))
     axes[0].hist(np.log10(lens), bins=40, color=C["blue"])
-    axes[0].axvline(np.log10(BLOCK), color=C["red"], ls="--", lw=1); axes[0].text(np.log10(BLOCK) + 0.05, axes[0].get_ylim()[1] * 0.9, f"block_size {BLOCK}", color=C["red"], fontsize=8)
+    axes[0].axvline(np.log10(BLOCK), color=C["red"], ls="--", lw=1); axes[0].text(np.log10(BLOCK) + 0.05, axes[0].get_ylim()[1] * 0.9, f"block_size {BLOCK}", color=C["red"], fontsize=10.5)
     axes[0].set_xticks([1.5, 2, 2.5, 3, 3.5, 4], ["30", "100", "300", "1K", "3K", "10K"])
     axes[0].set(xlabel="每篇文档的 token 数（对数刻度）", ylabel="文档数", title="文档长短不一，所以要打包")
     vals, cnts = np.unique(np.minimum(n_eos, 5), return_counts=True)

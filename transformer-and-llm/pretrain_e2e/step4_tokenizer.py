@@ -76,8 +76,8 @@ if __name__ == "__main__":
     ax.plot(sizes, ratio, "o-", color=C["blue"], label="在本语料上训的 BPE")
     if n_gpt2:
         ax.axhline(sub_chars / n_gpt2, color=C["orange"], ls="--", lw=1, label="GPT-2 tokenizer（V = 50257）")
-    ax.axvline(VOCAB, color=C["gray"], ls=":", lw=1); ax.text(VOCAB * 1.1, ratio[0] + 0.1, f"本文用 V = {VOCAB}", fontsize=8, color=C["gray"])
+    ax.axvline(VOCAB, color=C["gray"], ls=":", lw=1); ax.text(VOCAB * 1.1, ratio[0] + 0.1, f"本文用 $V$ = {VOCAB}", fontsize=10.5, color=C["gray"])
     ax.set(xscale="log", xlabel="词表大小 V（对数）", ylabel="字符 / token（越高越省 token）", title="词表越大压缩率越高，但边际收益递减")
-    ax.set_xticks(sizes, [str(s) for s in sizes], fontsize=7)
-    ax.legend(fontsize=7)
+    ax.set_xticks(sizes, [str(s) for s in sizes], fontsize=10); ax.xaxis.set_minor_formatter(plt.NullFormatter())
+    ax.legend(fontsize=10)
     save(fig, "e2e-4-tokenizer")

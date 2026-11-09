@@ -108,11 +108,11 @@ def plot(results):
     ax.plot(ps, [r["code_val"] for r in results], "s-", color=C["orange"], label="代码 val loss")
     for r in results:
         up = r["code_val"] > r["web_val"]                 # 谁在上面，标签就往上放
-        ax.annotate(f"{r['web_val']:.2f}", (r["p_code"] * 100, r["web_val"]), (0, -12 if up else 7), textcoords="offset points", ha="center", fontsize=7.5, color=C["blue"])
-        ax.annotate(f"{r['code_val']:.2f}", (r["p_code"] * 100, r["code_val"]), (0, 7 if up else -12), textcoords="offset points", ha="center", fontsize=7.5, color=C["orange"])
+        ax.annotate(f"{r['web_val']:.2f}", (r["p_code"] * 100, r["web_val"]), (0, -12 if up else 7), textcoords="offset points", ha="center", fontsize=10, color=C["blue"])
+        ax.annotate(f"{r['code_val']:.2f}", (r["p_code"] * 100, r["code_val"]), (0, 7 if up else -12), textcoords="offset points", ha="center", fontsize=10, color=C["orange"])
     ax.set(xlabel="训练 batch 里代码 token 的比例（%）", ylabel="val loss（各自的域）", xticks=ps,
            title="配比是取舍：多给一个域，另一个域就变差——但第一份最值钱")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=10)
     save(fig, "e2e-mixture")
 
 

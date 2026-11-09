@@ -123,17 +123,21 @@ def f3():
 
     lanes = [(2.46, "计算流", "#f4f7fb"), (1.34, "通信流", "#fdf7ef"), (0.28, "常驻", "#f5f5f5")]
     lane_h = {2.46: 0.98, 1.34: 1.04, 0.28: 1.00}
+    lane_p = {}
     for y0, name, fc in lanes:
-        ax.add_patch(mpatches.Rectangle((0, y0), 16, lane_h[y0], fc=fc, ec="#cccccc", lw=0.6))
+        lane_p[y0] = mpatches.Rectangle((0, y0), 16, lane_h[y0], fc=fc, ec="#cccccc", lw=0.6)
+        ax.add_patch(lane_p[y0])
         text(ax, -0.55, y0 + lane_h[y0] / 2, name, ha="right", va="center", fontsize=11, weight="bold")
+    compute_lane = lane_p[2.46]
+    compute_lane._no_center = True  # 泳道是容器：arrow 标签位置是刻意的，不参与组内居中
 
     def cell(x, w, y0, text, fc, fs=11, h=0.62):
         box(ax, x, y0, w, h, text, fc=fc, fs=fs, r=0.03)
 
     # 计算流：m 个 micro-batch 前向/反向 → step
-    cell(0.25, 9.2, 2.62, "8 个 micro-batch 的前向 + 反向\n（dW 直接累加进 main_grad，不通信）", C["blue"] + "22", h=0.66)
-    cell(9.6, 2.9, 2.62, "finalize\nmodel_grads", "#eeeeee", h=0.66)
-    cell(12.5, 3.4, 2.62, "optimizer.step\n本 rank 的 1/2 段", C["purple"] + "22", h=0.66)
+    cell(0.25, 9.2, 2.86, "8 个 micro-batch 的前向 + 反向\n（dW 直接累加进 main_grad，不通信）", C["blue"] + "22", h=0.54)
+    cell(9.6, 2.9, 2.86, "finalize\nmodel_grads", "#eeeeee", h=0.54)
+    cell(12.5, 3.4, 2.86, "optimizer.step\n本 rank 的 1/2 段", C["purple"] + "22", h=0.54)
     # 通信流：reduce-scatter 的盒子和前向+反向盒子的末尾在时间轴上重叠
     cell(8.0, 4.0, 1.38, "reduce-scatter\ngrad_data\n（与末尾反向重叠）", C["orange"] + "33", h=0.96)
     cell(12.3, 3.5, 1.38, "all-gather\nparam_data\n（发出，不等）", C["green"] + "33", h=0.96)
@@ -142,12 +146,12 @@ def f3():
     cell(0.15, 15.7, 0.42, "bf16 参数（完整）· fp32 梯度 buffer（完整）\nfp32 主参数 + m + v（1/2）——整个训练期不释放",
          "#ffffff", h=0.72)
     # 三条带标签的关系：等待（上指）、触发（下指）、发起（下指）。箭头居中对准下方通信盒
-    ax.annotate("", xy=(2.5, 2.62), xytext=(2.5, 2.34), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 2.65, 2.48, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    ax.annotate("", xy=(11.0, 2.34), xytext=(11.0, 2.62), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 10.85, 2.48, "末个 micro-batch 反向触发", ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
-    ax.annotate("", xy=(14.05, 2.34), xytext=(14.05, 2.62), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
-    text(ax, 14.2, 2.48, "step 发起", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111")
+    ax.annotate("", xy=(2.5, 2.86), xytext=(2.5, 2.34), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 2.65, 2.60, "前向 pre-hook 等它完成", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111", in_box=compute_lane)
+    ax.annotate("", xy=(11.0, 2.34), xytext=(11.0, 2.86), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 10.85, 2.60, "末个 micro-batch 反向触发", ha="right", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111", in_box=compute_lane)
+    ax.annotate("", xy=(14.05, 2.34), xytext=(14.05, 2.86), arrowprops=dict(arrowstyle="->", color="#666666", lw=1.0))
+    text(ax, 14.2, 2.60, "step 发起", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color="#111111", in_box=compute_lane)
     ax.set_title("一个 DP rank 的一个 step：两次 DP 通信都与计算重叠（ZeRO-1 的 2N）")
     save(fig, "megatron-f3-step-swimlane")
 
@@ -174,7 +178,7 @@ def f4():
                     arrowprops=dict(arrowstyle="-", color="#555555", lw=1.0))
         ax.plot([x0, x0], [y - 0.06, y], color="#555555", lw=1.0)
         ax.plot([x1, x1], [y - 0.06, y], color="#555555", lw=1.0)
-        text(ax, (x0 + x1) / 2, y + 0.10, name, row=f"phase{seg}", ha="center", fontsize=10, color="#111111")
+        text(ax, (x0 + x1) / 2, y + 0.10, name, row=f"phase{seg}-{name[:4]}", ha="center", fontsize=10, color="#111111")
 
     for seg in range(2):
         t0, t1 = seg * half, min((seg + 1) * half, n)
@@ -208,7 +212,7 @@ def f4():
                 run_start, run_ph = i, ph
 
     text(ax, half / 2, -0.42, "灰格 = 该 stage 此拍等待", ha="center", fontsize=10, color="#111111")
-    ax.set_title("1F1B 调度：PP=2、m=8（全局时钟，每段 9 拍）")
+    ax.set_title("1F1B 调度：PP = 2、$m$ = 8（全局时钟，每段 9 拍）")
     save(fig, "megatron-f4-1f1b-schedule")
 
 

@@ -156,12 +156,14 @@ def run_temperature():
     p0 = [np.exp(0.30 / t) / np.exp(cos / t).sum() for t in taus]
     fig, ax = plt.subplots(figsize=(4.6, 2.6))
     ax.semilogx(taus, p0, color=C["blue"])
-    for t, xy_t in ((1.0, (0.5, 0.14)), (0.1, (0.2, 0.45))):
+    for t in (1.0, 0.1):
         p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"])
-        ax.annotate(f"$\\tau={t}$: {p:.2f}", xy=(t, p), xytext=xy_t, fontsize=10.5,
-                    arrowprops=dict(arrowstyle="->", color="#aaaaaa", lw=0.8))
+    t = 0.1; p = np.exp(0.30 / t) / np.exp(cos / t).sum()
+    ax.annotate(f"$\\tau={t}$：{p:.2f}", xy=(t, p), xytext=(0.2, 0.45), fontsize=10.5,
+                arrowprops=dict(arrowstyle="->", color="#aaaaaa", lw=0.8))
+    ax.text(0.6, 0.65, f"$\\tau=1.0$：{np.exp(0.30) / np.exp(cos).sum():.2f}", fontsize=10.5, ha="center")
     p = np.exp(0.30 / 0.01) / np.exp(cos / 0.01).sum(); ax.plot(0.01, p, "o", color=C["red"])
-    ax.text(0.014, 1.02, f"$\\tau=0.01$: {p:.2f}", fontsize=10.5)
+    ax.text(0.014, 1.02, f"$\\tau=0.01$：{p:.2f}", fontsize=10.5)
     ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.006, 0.30, "$1/4$ = 随机猜", fontsize=10.5, color=C["gray"])
     ax.set_xticks([0.005, 0.01, 0.1, 1]); ax.set_ylim(0, 1.1); ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_xlabel("温度 $\\tau$（对数轴）"); ax.set_ylabel("正确类的 $\\mathrm{softmax}$ 概率"); ax.set_title("余弦只差 0.05，$\\tau$ 决定它算不算「分开了」")

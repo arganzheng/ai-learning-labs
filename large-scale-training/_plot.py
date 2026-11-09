@@ -134,11 +134,11 @@ def text(ax, x, y, s, in_box=None, row=None, **kw):
 
 
 def box_title(ax, x, y, s, in_box, color="#111111", **kw):
-    """盒内主标题：BOX_TITLE_SIZE + 同色描边加重（GB 只到 W6，描边是同一字体里唯一的加粗手段）。"""
+    """盒内主标题：BOX_TITLE_SIZE + Medium 字重（标题类文字用 Medium，正文 Regular）。"""
     kw.setdefault("ha", "center")
     kw.setdefault("va", "center")
+    kw.setdefault("fontname", "Noto Sans SC Medium")
     t = ax.text(x, y, s, fontsize=BOX_TITLE_SIZE, color=color, **kw)
-    t.set_path_effects([_pe.withStroke(linewidth=0.4, foreground=color), _pe.Normal()])
     _TRACKED.append((t, in_box, None))
     return t
 
@@ -151,7 +151,8 @@ def box(ax, x, y, w, h, s=None, fc="white", ec="#444444", fs=BOX_TEXT_SIZE, lw=0
     _PATCHES.append(p)
     if s:
         tkw = {"linespacing": linespacing} if linespacing else {}
-        text(ax, x + w / 2, y + h / 2, s, in_box=p, ha="center", va="center", fontsize=fs, **tkw)
+        t = text(ax, x + w / 2, y + h / 2, s, in_box=p, ha="center", va="center", fontsize=fs, **tkw)
+        t._centered_in_box = True   # 只有盒自己的居中标签才做墨迹重中
     return p
 
 
@@ -197,6 +198,10 @@ def collide(fig, margin=6.0):
     all_patches = [p for p in _PATCHES if p.get_figure() is fig]
     for ax in fig.axes:
         for p in ax.patches:
+            # 只补矩形（图例色块、barh、axvspan）——箭头/线段上的标注是常态
+            import matplotlib.patches as _mp
+            if not isinstance(p, _mp.Rectangle) or p is ax.patch:
+                continue
             if id(p) not in seen:
                 seen.add(id(p))
                 all_patches.append(p)
@@ -209,7 +214,8 @@ def collide(fig, margin=6.0):
             iw = min(e.x1, b.x1) - max(e.x0, b.x0)
             ih = min(e.y1, b.y1) - max(e.y0, b.y0)
             if iw > 1 and ih > 1:
-                errs.append(f"标注压盒：{t.get_text()!r}")
+                errs.append(f"标注压盒：{t.get_text()!r}"
+                            f"（矩形 {b.x0:.0f}–{b.x1:.0f} × {b.y0:.0f}–{b.y1:.0f}px）")
             elif ih > 1 and id(p) in {id(q) for q in _PATCHES}:
                 # 同一行里不在盒内的标注（泳道名等）离盒边至少 16px；
                 # 只约束 box() 画的盒——barh/axvspan 的数据矩形不套这个规则
@@ -468,10 +474,49 @@ def collide(fig, margin=6.0):
         raise AssertionError(f"{len(errs)} 处文字碰撞：\n" + "\n".join(errs))
 
 
+def _center_box_texts(fig, tol=1.5):
+    """盒内文字按字形墨迹居中而不是按字体行盒居中：量出渲染 bbox，
+    反复微调直到盒内上/下边距差 ≤1.5px（显示像素），做不到就抛错。"""
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    errs = []
+    for t, p, _row in _TRACKED:
+        if p is None or t.get_figure() is not fig or not t.get_text().strip():
+            continue
+        if not getattr(t, "_centered_in_box", False):
+            continue
+        ax = p.axes
+        if ax is None:
+            continue
+        for _ in range(4):
+            fig.canvas.draw()
+            ren = fig.canvas.get_renderer()
+            e = t.get_window_extent(renderer=ren)
+            b = p.get_window_extent(renderer=ren)
+            d = ((b.y1 - e.y1) - (e.y0 - b.y0)) / 2.0   # >0：文字偏低，上移
+            if abs(d) <= 0.75:
+                break
+            inv = ax.transData.inverted()
+            (x0, y0), (x1, y1) = inv.transform([(e.x0, e.y0),
+                                                (e.x0, e.y0 + d)])
+            t.set_position((t.get_position()[0] + x1 - x0,
+                            t.get_position()[1] + y1 - y0))
+        fig.canvas.draw()
+        ren = fig.canvas.get_renderer()
+        e = t.get_window_extent(renderer=ren)
+        b = p.get_window_extent(renderer=ren)
+        diff = abs((b.y1 - e.y1) - (e.y0 - b.y0))
+        if diff > tol:
+            errs.append(f"盒内上下边距差 {diff:.1f}px>{tol}px：{t.get_text()!r}")
+    if errs:
+        raise AssertionError(f"{len(errs)} 处盒内文字未垂直居中：\n" + "\n".join(errs))
+
+
 def save(fig, name, dpi=150):
     """散点 / 箭头 / 大量点的折线在 SVG 里按 dpi 栅格化（嵌成 PNG），文字与坐标轴仍是矢量——几千个点的图也能保持在 100 KB 以内。"""
     os.makedirs(OUT, exist_ok=True)
     _dump_texts(fig, name)
+    _center_box_texts(fig)
     _check_text_floor(fig, name)
     if os.environ.get("PLOT_COLLIDE") == "off":                   # 全量扫描用；正常保存一律检查
         try:

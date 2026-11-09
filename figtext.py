@@ -23,7 +23,9 @@ def register_noto():
     from matplotlib import font_manager
     for f in ("NotoSansSC-Medium.otf", "NotoSansSC-Regular.otf"):
         font_manager.fontManager.addfont(os.path.join(FONTS_DIR, f))
-    plt.rcParams["font.family"] = ["Noto Sans SC Medium", "Noto Sans SC"]
+    # 默认正文用 Regular（400）——Medium 只给标题（见 style_titles）；
+    # 否则正文整图发粗，旁边 CM mathtext 显得又细又虚。
+    plt.rcParams["font.family"] = ["Noto Sans SC"]
     plt.rcParams["svg.fonttype"] = "none"
 
 
@@ -83,6 +85,8 @@ def embed_fonts(path):
 
     src = open(path, encoding="utf-8").read()
     before = len(src.encode("utf-8"))
+    if "@font-face" in src:
+        return  # 已内嵌过（包装 save 内部也嵌入时避免重复 defs）
     tree = ET.fromstring(src)
     # (family, weight) -> chars
     used = {}
@@ -148,6 +152,23 @@ def embed_fonts(path):
     style = ("<defs><style type=\"text/css\"><![CDATA["
              + "".join(faces) + "]]></style></defs>")
     m = re.search(r"<svg[^>]*>", src)
+    # CM / STIX 数学字形比 Noto Regular 细——给它们加同色描边对齐 KaTeX 的字重。
+    # stroke-width 以 svg 单位写，换算到 741px 栏宽下的显示像素（~0.3px）。
+    vb = re.search(r'viewBox="[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+[\d.]+"', m.group(0))
+    disp_px = float(os.environ.get("FIGTEXT_MATH_STROKE", "0.3"))
+    sw = disp_px * float(vb.group(1)) / 741 if vb else disp_px
+    _MATH_FAMILIES = ("cmmi10", "cmr10", "cmsy10", "cmex10", "cmss10", "cmti10",
+                      "cmtt10", "cmb10", "STIXGeneral", "STIXNonUnicode",
+                      "STIXSize")
+    def _stroke(mo):
+        st = mo.group(0)
+        if not any(f in st for f in _MATH_FAMILIES):
+            return st
+        fill = re.search(r"fill:\s*([^;\"']+)", st)
+        col = fill.group(1).strip() if fill else "black"
+        return st[:-1] + (f";stroke:{col};stroke-width:{sw:.3f}px;"
+                          f"paint-order:stroke fill\"") if st.endswith('"') else st
+    src = re.sub(r'style="[^"]*"', _stroke, src)
     src = src[:m.end()] + "\n" + style + src[m.end():]
     with open(path, "w", encoding="utf-8") as fp:
         fp.write(src)
@@ -205,7 +226,13 @@ def check_math_needed(fig):
         if not s.strip() or not t.get_visible():
             continue
         for m in re.finditer(r"\$([^$]*)\$", s):
-            if not re.search(r"[_^\\]", _PLAIN_CMDS.sub("", m.group(1))):
+            body = m.group(1)
+            # 变量表达式允许：公式里的变量必须是 CM 斜体——$p$、$z_i$、$dW$、
+            # $dL/dx$、$(P-Y)/m$。不给含 = 或数字开头的（$K=64$、$2h$ 仍拒绝）。
+            if "=" not in body and re.fullmatch(
+                    r"[A-Za-zΑ-Ωα-ω(_{][A-Za-z0-9_^{}\\ ()+\-*/·×]*", body.strip()):
+                continue
+            if not re.search(r"[_^\\]", _PLAIN_CMDS.sub("", body)):
                 bad.append(s)
     if bad:
         raise AssertionError(
@@ -270,8 +297,17 @@ def check_math_line_spacing(fig):
 
 
 
+def style_titles(fig):
+    """标题类文字（suptitle / ax.title）换成 Medium 字重；正文一律 Regular。"""
+    for t in ([fig._suptitle] if fig._suptitle is not None else []) + [
+            ax.title for ax in fig.axes]:
+        if t is not None and t.get_text().strip():
+            t.set_fontname("Noto Sans SC Medium")
+
+
 def checks(fig):
     """save() 前的全部文字检查。"""
+    style_titles(fig)
     check_math_needed(fig)
     check_plain_text(fig)
     check_math_line_spacing(fig)
@@ -291,6 +327,7 @@ def enable_embed(mod):
     orig = mod.save
 
     def wrapped(fig, name, *a, **k):
+        style_titles(fig)
         check_math_needed(fig)
         check_plain_text(fig)
         check_math_line_spacing(fig)

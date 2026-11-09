@@ -1,7 +1,0 @@
-== DPO：一对 (chosen y_w, rejected y_l) ==
-  log πθ(y_w) = -1.2，log πref(y_w) = -1.5   → log ratio_w = +0.30
-  log πθ(y_l) = -2.0，log πref(y_l) = -1.0   → log ratio_l = -1.00
-  margin = ratio_w - ratio_l = +1.30，β = 0.1
-  z = β·margin = 0.130，σ(z) = 0.5325，DPO loss = -log σ(z) = 0.6303
-  梯度符号：dL/d logπθ(y_w) = -0.0468（负 → 下降让 log p 升），dL/d logπθ(y_l) = +0.0468（正 → 下降让 log p 降）
-  读法：对 r_θ = β·log(πθ/πref) 做 logistic 回归——chosen 的 log p 被推高、rejected 的被压低，β 拉住整体不离 reference 太远。

@@ -32,3 +32,4 @@ transformer-and-llm/data/
 
 # LoRA 实验输出（checkpoint 与 json）
 lora/out/
+_site-check/

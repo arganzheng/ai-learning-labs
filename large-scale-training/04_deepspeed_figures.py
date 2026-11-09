@@ -117,20 +117,20 @@ def f4():
     text(ax, 0.88, state_y + box_h / 2, "param.data", ha="right", va="center", fontsize=11, color="#111111")
 
     comm_events = {0: "前向\nall-gather", 3: "反向\nall-gather", 5: "reduce-\nscatter"}
-    compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n→ ds_tensor"}
+    compute_events = {1: "前向\nLinear", 4: "反向\ndW", 6: "step\nAdam fp32\n$\\to$ ds_tensor"}
     for i in range(7):
         x = start + i * step
         if i in comm_events:
             box(ax, x, comm_y, cell_w, box_h, comm_events[i], fc="#ffffff", ec="#555555", fs=11)
         if i in compute_events:
             label = compute_events[i]
-            event_w = 1.18 if i == 6 else cell_w
+            event_w = 1.30 if i == 6 else cell_w
             event_h = 0.94 if i == 6 else compute_h
             p = box(ax, centers[i] - event_w / 2, compute_y + (compute_h - event_h) / 2,
                     event_w, event_h, label if i != 6 else "", fc="#ffffff", ec="#555555", fs=11)
             if i == 6:
                 box_title(ax, centers[i], compute_y + 0.70, "step", in_box=p)
-                text(ax, centers[i], compute_y + 0.31, "Adam fp32\n→ ds_tensor",
+                text(ax, centers[i], compute_y + 0.31, "Adam fp32\n$\\to$ ds_tensor",
                      in_box=p, ha="center", va="center", fontsize=11)
 
     states = [("完整 bf16", C["blue"] + "44"), ("完整 bf16", C["blue"] + "44"),

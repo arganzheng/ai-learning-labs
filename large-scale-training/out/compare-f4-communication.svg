@@ -34,7 +34,7 @@ L 274.239237 72.577011
 L 274.239237 49.840321 
 L 89.092033 49.840321 
 z
-" clip-path="url(#pcb57968109)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 274.239237 72.577011 
@@ -42,7 +42,7 @@ L 459.386441 72.577011
 L 459.386441 49.840321 
 L 274.239237 49.840321 
 z
-" clip-path="url(#pcb57968109)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 89.092033 156.167784 
@@ -50,7 +50,7 @@ L 274.239237 156.167784
 L 274.239237 133.431094 
 L 89.092033 133.431094 
 z
-" clip-path="url(#pcb57968109)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 274.239237 156.167784 
@@ -58,7 +58,7 @@ L 459.386441 156.167784
 L 459.386441 133.431094 
 L 274.239237 133.431094 
 z
-" clip-path="url(#pcb57968109)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 89.092033 239.758557 
@@ -66,7 +66,7 @@ L 274.239237 239.758557
 L 274.239237 217.021867 
 L 89.092033 217.021867 
 z
-" clip-path="url(#pcb57968109)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #f4f6f8; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 274.239237 239.758557 
@@ -74,7 +74,7 @@ L 459.386441 239.758557
 L 459.386441 217.021867 
 L 274.239237 217.021867 
 z
-" clip-path="url(#pcb57968109)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #eceff2; stroke: #cccccc; stroke-width: 0.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 353.425272 124.737653 
@@ -87,7 +87,7 @@ Q 352.570746 83.27663 352.570746 84.079102
 L 352.570746 123.935182 
 Q 352.570746 124.737653 353.425272 124.737653 
 z
-" clip-path="url(#pcb57968109)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_9">
     <path d="M 465.225699 124.737653 
@@ -100,7 +100,7 @@ Q 464.371173 83.27663 464.371173 84.079102
 L 464.371173 123.935182 
 Q 464.371173 124.737653 465.225699 124.737653 
 z
-" clip-path="url(#pcb57968109)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_10">
     <path d="M 150.475452 205.653521 
@@ -113,7 +113,7 @@ Q 149.620926 177.567022 149.620926 178.369493
 L 149.620926 204.85105 
 Q 149.620926 205.653521 150.475452 205.653521 
 z
-" clip-path="url(#pcb57968109)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_11">
     <path d="M 296.456901 205.653521 
@@ -126,7 +126,7 @@ Q 295.602376 177.567022 295.602376 178.369493
 L 295.602376 204.85105 
 Q 295.602376 205.653521 296.456901 205.653521 
 z
-" clip-path="url(#pcb57968109)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_12">
     <path d="M 385.46998 205.653521 
@@ -139,7 +139,7 @@ Q 384.615455 177.567022 384.615455 178.369493
 L 384.615455 204.85105 
 Q 384.615455 205.653521 385.46998 205.653521 
 z
-" clip-path="url(#pcb57968109)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #e0812c; fill-opacity: 0.133333; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_13">
     <path d="M 150.475452 289.244294 
@@ -152,7 +152,7 @@ Q 149.620926 261.157795 149.620926 261.960266
 L 149.620926 288.441823 
 Q 149.620926 289.244294 150.475452 289.244294 
 z
-" clip-path="url(#pcb57968109)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_14">
     <path d="M 296.456901 289.244294 
@@ -165,7 +165,7 @@ Q 295.602376 261.157795 295.602376 261.960266
 L 295.602376 288.441823 
 Q 295.602376 289.244294 296.456901 289.244294 
 z
-" clip-path="url(#pcb57968109)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_15">
     <path d="M 385.46998 289.244294 
@@ -178,7 +178,7 @@ Q 384.615455 261.157795 384.615455 261.960266
 L 384.615455 288.441823 
 Q 384.615455 289.244294 385.46998 289.244294 
 z
-" clip-path="url(#pcb57968109)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#p28d1e13564)" style="fill: #4a9a5b; fill-opacity: 0.133333; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Megatron -->
@@ -783,7 +783,7 @@ z
    </g>
    <g id="text_10">
     <!-- 反向末尾 -->
-    <g style="fill: #111111" transform="translate(378.077286 100.492142) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(377.077286 100.307142) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-b0c" d="M 3501 3866 
 L 5254 3866 
@@ -905,7 +905,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-ec1" transform="translate(300 0)"/>
     </g>
     <!-- RS 梯度 -->
-    <g style="fill: #111111" transform="translate(378.927833 114.742142) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(377.972598 115.307142) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-33" d="M 4762 -77 
 C 4672 96 4512 442 4461 557 
@@ -1114,7 +1114,7 @@ z
    </g>
    <g id="text_11">
     <!-- 下一步前 -->
-    <g style="fill: #111111" transform="translate(482.756667 100.492142) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(481.756667 100.307142) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-f2f" d="M 3398 4384 
 L 5203 4384 
@@ -1205,7 +1205,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-c2d" transform="translate(300 0)"/>
     </g>
     <!-- AG 参数 -->
-    <g style="fill: #111111" transform="translate(483.084714 114.742142) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(482.101979 115.307142) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-22" d="M 5101 -77 
 C 5011 90 4934 269 4774 678 
@@ -1431,7 +1431,7 @@ z
    </g>
    <g id="text_12">
     <!-- RS + AG = 2N -->
-    <g style="fill: #3b6fb6" transform="translate(473.628534 57.489565) scale(0.095 -0.095)">
+    <g style="fill: #3b6fb6" transform="translate(473.628534 57.293822) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-c" d="M 2566 1389 
 L 4083 1389 
@@ -1526,7 +1526,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-2f" transform="translate(649.984375 0)"/>
     </g>
     <!-- 1.1 GB/卡 -->
-    <g style="fill: #3b6fb6" transform="translate(473.628534 71.739565) scale(0.095 -0.095)">
+    <g style="fill: #3b6fb6" transform="translate(473.628534 72.293822) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-12" d="M 2867 -77 
 C 2829 186 2816 416 2816 755 
@@ -1636,7 +1636,7 @@ z
    </g>
    <g id="text_13">
     <!-- 前向 AG -->
-    <g style="fill: #111111" transform="translate(170.114728 195.220272) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(169.131994 195.410272) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-c2d"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1646,7 +1646,7 @@ z
    </g>
    <g id="text_14">
     <!-- 反向 AG -->
-    <g style="fill: #111111" transform="translate(316.096177 195.220272) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(315.113443 195.410272) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-651"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1656,7 +1656,7 @@ z
    </g>
    <g id="text_15">
     <!-- 反向 RS -->
-    <g style="fill: #111111" transform="translate(405.631756 195.220272) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(404.676522 195.410272) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-651"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1666,7 +1666,7 @@ z
    </g>
    <g id="text_16">
     <!-- 每层 ×16 -->
-    <g style="fill: #e0812c" transform="translate(473.628534 141.080337) scale(0.095 -0.095)">
+    <g style="fill: #e0812c" transform="translate(473.628534 140.884595) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-ac4" d="M 5523 1792 
 C 5805 1792 5971 1786 6150 1766 
@@ -1855,7 +1855,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-17" transform="translate(404.5 0)"/>
     </g>
     <!-- 7.9 GB/卡 -->
-    <g style="fill: #e0812c" transform="translate(473.628534 155.330337) scale(0.095 -0.095)">
+    <g style="fill: #e0812c" transform="translate(473.628534 155.884595) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-18" d="M 4160 5050 
 C 3930 5024 3763 5018 3283 5018 
@@ -1910,7 +1910,7 @@ z
    </g>
    <g id="text_17">
     <!-- 前向 AG -->
-    <g style="fill: #111111" transform="translate(170.114728 278.811044) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(169.131994 279.001044) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-c2d"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1920,7 +1920,7 @@ z
    </g>
    <g id="text_18">
     <!-- 反向 AG -->
-    <g style="fill: #111111" transform="translate(316.096177 278.811044) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(315.113443 279.001044) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-651"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1930,7 +1930,7 @@ z
    </g>
    <g id="text_19">
     <!-- 反向 RS -->
-    <g style="fill: #111111" transform="translate(405.631756 278.811044) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(404.676522 279.001044) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-651"/>
      <use xlink:href="#HiraginoSansGB-W6-f5f" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1940,7 +1940,7 @@ z
    </g>
    <g id="text_20">
     <!-- 每层 ×16 -->
-    <g style="fill: #4a9a5b" transform="translate(473.628534 224.67111) scale(0.095 -0.095)">
+    <g style="fill: #4a9a5b" transform="translate(473.628534 224.475368) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-ac4"/>
      <use xlink:href="#HiraginoSansGB-W6-4aa" transform="translate(100 0)"/>
      <use xlink:href="#HiraginoSansGB-W6-1" transform="translate(200 0)"/>
@@ -1949,7 +1949,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-17" transform="translate(404.5 0)"/>
     </g>
     <!-- 3.51 GB/卡 -->
-    <g style="fill: #4a9a5b" transform="translate(473.628534 238.92111) scale(0.095 -0.095)">
+    <g style="fill: #4a9a5b" transform="translate(473.628534 239.475368) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-14" d="M 262 1133 
 C 378 762 461 595 621 416 
@@ -3526,7 +3526,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pcb57968109">
+  <clipPath id="p28d1e13564">
    <rect x="7.2" y="23.76" width="541.19952" height="294.23952"/>
   </clipPath>
  </defs>

@@ -39,7 +39,7 @@ Q 188.786681 50.303952 188.786681 50.303952
 L 188.786681 86.801886 
 Q 188.786681 86.801886 188.786681 86.801886 
 z
-" clip-path="url(#p3f6fc57743)" style="fill: #ffffff; stroke: #555555; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#pd2779bf52c)" style="fill: #ffffff; stroke: #555555; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 49.926278 159.797754 
@@ -52,7 +52,7 @@ Q 49.926278 126.617814 49.926278 126.617814
 L 49.926278 159.797754 
 Q 49.926278 159.797754 49.926278 159.797754 
 z
-" clip-path="url(#p3f6fc57743)" style="fill: #f7f9fc; stroke: #3b6fb6; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#pd2779bf52c)" style="fill: #f7f9fc; stroke: #3b6fb6; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 316.965515 164.442946 
@@ -65,7 +65,7 @@ Q 316.965515 119.318227 316.965515 119.318227
 L 316.965515 164.442946 
 Q 316.965515 164.442946 316.965515 164.442946 
 z
-" clip-path="url(#p3f6fc57743)" style="fill: #fff3e8; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#pd2779bf52c)" style="fill: #fff3e8; stroke: #e0812c; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 21.442093 265.309963 
@@ -78,7 +78,7 @@ Q 21.442093 220.185245 21.442093 220.185245
 L 21.442093 265.309963 
 Q 21.442093 265.309963 21.442093 265.309963 
 z
-" clip-path="url(#p3f6fc57743)" style="fill: #eef4fb; stroke: #3b6fb6; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#pd2779bf52c)" style="fill: #eef4fb; stroke: #3b6fb6; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 203.028774 265.309963 
@@ -91,7 +91,7 @@ Q 203.028774 220.185245 203.028774 220.185245
 L 203.028774 265.309963 
 Q 203.028774 265.309963 203.028774 265.309963 
 z
-" clip-path="url(#p3f6fc57743)" style="fill: #eff8f0; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
+" clip-path="url(#pd2779bf52c)" style="fill: #eff8f0; stroke: #4a9a5b; stroke-width: 0.9; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- 模型能否改写成框架自己的层？ -->
@@ -3267,7 +3267,7 @@ L 141.755086 121.702309
    </g>
    <g id="text_6">
     <!-- 能 -->
-    <g style="fill: #111111" transform="translate(173.355112 108.329054) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(173.105112 108.519054) scale(0.1 -0.1)">
      <use xlink:href="#HiraginoSansGB-W6-b3f"/>
     </g>
    </g>
@@ -3282,7 +3282,7 @@ L 437.105378 122.958742
    </g>
    <g id="text_7">
     <!-- 不能 -->
-    <g style="fill: #111111" transform="translate(389.357547 108.329054) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(388.857547 108.519054) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-482" d="M 5248 4358 
 C 5523 4358 5824 4346 6080 4320 
@@ -3330,7 +3330,7 @@ L 100.70128 215.237842
    </g>
    <g id="text_8">
     <!-- 千卡级极限 MFU -->
-    <g style="fill: #111111" transform="translate(85.543607 193.2697) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(83.595325 193.4597) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-c24" d="M 3533 4301 
 C 4134 4403 4429 4467 5120 4672 
@@ -3652,7 +3652,7 @@ L 280.619328 221.118028
    </g>
    <g id="text_9">
     <!-- 并行策略常改 -->
-    <g style="fill: #111111" transform="translate(235.057667 184.399651) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(233.557667 184.192659) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-469" d="M 4653 3546 
 L 5158 3546 
@@ -3847,7 +3847,7 @@ z
      <use xlink:href="#HiraginoSansGB-W6-6bf" transform="translate(500 0)"/>
     </g>
     <!-- PyTorch 原生 -->
-    <g style="fill: #111111" transform="translate(231.063214 198.649651) scale(0.095 -0.095)">
+    <g style="fill: #111111" transform="translate(229.35298 199.192659) scale(0.1 -0.1)">
      <defs>
       <path id="HiraginoSansGB-W6-5a" d="M 1619 179 
 L 1402 -314 
@@ -5137,7 +5137,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p3f6fc57743">
+  <clipPath id="pd2779bf52c">
    <rect x="7.2" y="23.76" width="541.19952" height="265.43952"/>
   </clipPath>
  </defs>

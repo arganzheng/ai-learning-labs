@@ -15,18 +15,20 @@ from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 # ---------------------------------------------------------------- F1
 def f1():
     """8 卡 TP2×PP2×DP2。rank = tp + 2·dp + 4·pp。
-    布局：行 = PP stage（上 stage1 layers8-15+输出层，下 stage0 layers0-7+embedding），
-          列内每对相邻 rank = 一个 TP 组；左右两半 = 两个 DP 副本。"""
-    fig, ax = plt.subplots(figsize=(10.5, 6.6))
-    ax.set_xlim(0, 1.31); ax.set_ylim(-0.30, 1.56); ax.axis("off")
+    布局：2 列 × 4 行。行序（上→下）：stage1·dp0、stage1·dp1、stage0·dp0、stage0·dp1。
+    同行相邻两张卡 = TP 组；相邻行同列 = DP 组（同 stage）；
+    PP 组走左右外侧拐角箭头，连同一 tp 位的两个 stage。"""
+    fig, ax = plt.subplots(figsize=(7.4, 8.6))
+    ax.set_xlim(0, 1.0); ax.set_ylim(-0.36, 4.00); ax.axis("off")
 
-    cw, ch, gx, gy = 0.28, 0.55, 0.04, 0.11
-    # DP 副本列：dp=0 → ranks 0,1(stage0) 4,5(stage1)；dp=1 → 2,3 / 6,7
+    cw, ch = 0.40, 0.82
+    colx = [0.04, 0.56]                      # tp0 列、tp1 列；外侧各留 PP 走线带
+    rowy = [3.10, 2.15, 1.20, 0.25]          # stage1·dp0, stage1·dp1, stage0·dp0, stage0·dp1
+    row_of = {4: 0, 5: 0, 6: 1, 7: 1, 0: 2, 1: 2, 2: 3, 3: 3}
+
     def rank_xy(rank):
-        tp, dp, pp = rank % 2, (rank // 2) % 2, rank // 4
-        x = 0.02 + dp * (2 * cw + 2 * gx + 0.04) + tp * (cw + gx)
-        y = 0.16 + (1 - pp) * (ch + gy)   # stage0 在下
-        return x, y
+        tp = rank % 2
+        return colx[tp], rowy[row_of[rank]]
 
     card = {
         0: ("GPU 0  tp0 dp0 pp0", "layers 0–7 + embedding\n矩阵左半（tp0）", "bf16 参数（本卡一半）\nfp32 梯度（完整）\nfp32 主参+m+v（×1/2）"),
@@ -41,44 +43,43 @@ def f1():
     for rank, (t1, t2, t3) in card.items():
         x, y = rank_xy(rank)
         p = box(ax, x, y, cw, ch, "", fc="#f7f9fc")
-        box_title(ax, x + cw / 2, y + ch - 0.05, t1, in_box=p)
-        text(ax, x + cw / 2, y + 0.315, t2, in_box=p, ha="center", va="center", fontsize=11)
-        text(ax, x + cw / 2, y + 0.135, t3, in_box=p, ha="center", va="center", fontsize=11, color="#111111")
+        text(ax, x + cw / 2, y + ch - 0.090, t1, in_box=p, ha="center", va="center", fontsize=11, weight="bold", color="#111111")
+        text(ax, x + cw / 2, y + 0.56, t2, in_box=p, ha="center", va="center", fontsize=10.5)
+        text(ax, x + cw / 2, y + 0.24, t3, in_box=p, ha="center", va="center", fontsize=10.5, color="#111111")
 
-    # 分组标注：TP（同 stage 内相邻）、DP（同 stage 同 tp 位、左右跨副本）、PP（同列上下）
     def edge(r, side):
         x, y = rank_xy(r)
         return {"l": (x, y + ch / 2), "r": (x + cw, y + ch / 2),
                 "t": (x + cw / 2, y + ch), "b": (x + cw / 2, y)}[side]
 
-    for a, b, lab in [(0, 1, "TP"), (4, 5, "TP"), (2, 3, "TP"), (6, 7, "TP")]:
+    # TP：同一行内相邻两张卡
+    for a, b in [(4, 5), (6, 7), (0, 1), (2, 3)]:
         (x1, y1), (x2, y2) = edge(a, "r"), edge(b, "l")
         ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["blue"], lw=1.4))
-        chip = box(ax, (x1 + x2) / 2 - 0.023, y1 - 0.05, 0.046, 0.10, "", fc="white", ec=C["blue"], lw=0.8)
-        text(ax, (x1 + x2) / 2, y1, lab, in_box=chip, ha="center", va="center", fontsize=ARROW_LABEL_SIZE, color=C["blue"])
-    # DP：同一 stage 同一 TP 位、跨左右两个副本——弧线走卡片外侧，不穿文字
-    for a, b in [(0, 2), (1, 3)]:
-        (x1, _), (_, yt) = edge(a, "t"), edge(b, "t")
-        (x2, _) = edge(b, "t")
-        ax.annotate("", xy=(x2, yt + 0.008), xytext=(x1, yt + 0.008),
-                    arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
-                                    connectionstyle="arc3,rad=-0.25"))
-        text(ax, (x1 + x2) / 2, yt + 0.05, "DP", ha="center", fontsize=ARROW_LABEL_SIZE, color=C["orange"])
-    for a, b in [(4, 6), (5, 7)]:
-        (x1, _), (_, yb) = edge(a, "b"), edge(b, "b")
-        (x2, _) = edge(b, "b")
-        ax.annotate("", xy=(x2, yb - 0.008), xytext=(x1, yb - 0.008),
-                    arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4,
-                                    connectionstyle="arc3,rad=0.25"))
-        text(ax, (x1 + x2) / 2, yb - 0.085, "DP", ha="center", fontsize=ARROW_LABEL_SIZE, color=C["orange"])
-    for a, b in [(0, 4), (1, 5), (2, 6), (3, 7)]:
+        text(ax, 0.51, y1 + 0.055, "TP", ha="center", va="center", fontsize=10, color=C["blue"])
+    # DP：相邻行同一 TP 位（同 stage 两个副本）
+    for a, b in [(4, 6), (5, 7), (0, 2), (1, 3)]:
         (x1, y1), (x2, y2) = edge(a, "b"), edge(b, "t")
-        ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["green"], lw=1.4))
-        text(ax, x1 + 0.012, (y1 + y2) / 2, "PP", ha="left", va="center", fontsize=ARROW_LABEL_SIZE, color=C["green"])
+        ax.annotate("", xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle="<->", color=C["orange"], lw=1.4))
+        text(ax, x1 + 0.035, (y1 + y2) / 2, "DP", ha="left", va="center", fontsize=10, color=C["orange"])
+    # PP：同一 TP 位的两个 stage——外侧拐角线
+    def pp_elbow(a, b, gx, a_side, b_side, lx, ly, lha):
+        (x1, y1) = edge(a, a_side)
+        (x2, y2) = edge(b, b_side)
+        ax.plot([x1, gx, gx, x2], [y1, y1, y2, y2], color=C["green"], lw=1.4)
+        ax.annotate("", xy=(x2, y2), xytext=(x2 + (0.02 if b_side == "l" else -0.02), y2),
+                    arrowprops=dict(arrowstyle="-|>", color=C["green"], lw=1.4))
+        text(ax, lx, ly, "PP", ha=lha, va="center", fontsize=10, color=C["green"])
 
-    text(ax, 0.56, -0.11, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡　PP = 同一 DP 副本同一 TP 位的两个 stage",
+    # col1（tp0）：左外侧带；col2（tp1）：右外侧带。PP 标签放在行隙里、线旁
+    pp_elbow(0, 4, 0.05, "l", "l", 0.065, 3.035, "left")   # row2 → row0
+    pp_elbow(2, 6, 0.02, "l", "l", 0.035, 1.135, "left")    # row3 → row1
+    pp_elbow(1, 5, 0.965, "r", "r", 0.945, 3.035, "right")  # row2 → row0
+    pp_elbow(3, 7, 0.99, "r", "r", 0.975, 1.135, "right")   # row3 → row1
+
+    text(ax, 0.5, -0.10, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡\nPP = 同一 DP 副本同一 TP 位的两个 stage",
             ha="center", fontsize=10, color="#111111")
-    text(ax, 0.56, -0.19, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　DP 组 [0,2] [1,3] [4,6] [5,7]　·　PP 组 [0,4] [1,5] [2,6] [3,7]",
+    text(ax, 0.5, -0.23, "TP 组 [0,1] [2,3] [4,5] [6,7]　·　DP 组 [0,2] [1,3] [4,6] [5,7]　·　PP 组 [0,4] [1,5] [2,6] [3,7]",
             ha="center", fontsize=10, color="#111111")
     ax.set_title("train-ledger 配置：8 卡 TP2 × PP2 × DP2（Llama-3.2-1B 形状，16 层）")
     save(fig, "megatron-f1-8-gpus")

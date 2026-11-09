@@ -33,12 +33,20 @@ def f1_budget():
         ("非张量开销", 10.7, "#eeeeee"),
     ]
     cursor = x0
+    narrow_cx = None
     for label, gb, color in parts:
         width = gb * scale
         ax.add_patch(Rectangle((cursor, y), width, h, facecolor=color, edgecolor="#ffffff", linewidth=0.8))
-        text(ax, cursor + width / 2, y + h / 2, f"{gb:g}", ha="center", va="center", fontsize=10)
-        text(ax, cursor + width / 2, y + h + 0.14, label, ha="center", va="bottom", fontsize=10)
+        if width < 0.6:
+            narrow_cx = cursor + width / 2
+            narrow_label = f"{label} {gb:g}"
+        else:
+            text(ax, cursor + width / 2, y + h / 2, f"{gb:g}", ha="center", va="center", fontsize=10)
+            text(ax, cursor + width / 2, y + h + 0.14, label, ha="center", va="bottom", fontsize=10)
         cursor += width
+    # 窄段：值与名字一起引出到条下
+    ax.plot([narrow_cx, narrow_cx], [y, y - 0.10], color="#888888", lw=0.8)
+    text(ax, narrow_cx, y - 0.14, narrow_label, ha="center", va="top", fontsize=10)
     capacity_x = x0 + 80 * scale
     ax.plot([capacity_x, capacity_x], [2.02, 3.36], color=C["red"], linewidth=1.8, linestyle="--")
     text(ax, capacity_x, 3.86, "80 GB 容量线", ha="center", va="bottom", fontsize=10, color=C["red"])
@@ -256,27 +264,31 @@ def f6_bytes():
 
 def f7_activations():
     """34sbh + 5as^2b 的逐项来源；灰色斜线表示 FlashAttention 不物化分数矩阵。"""
-    fig, ax = plt.subplots(figsize=(7.6, 5.0))
-    ax.set_xlim(0, 7.6); ax.set_ylim(0, 5.0); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.6, 4.7))
+    ax.set_xlim(0, 7.6); ax.set_ylim(0, 4.9); ax.axis("off")
     ax.set_title("一层 Transformer 的激活：大头来自注意力分数矩阵")
-    text(ax, 3.8, 4.45, "公式：$sbh(34 + 5as/h) = 34sbh + 5as^2b$", ha="center", va="center", fontsize=11)
+    text(ax, 3.8, 4.56, "公式：$sbh(34 + 5as/h) = 34sbh + 5as^2b$", ha="center", va="center", fontsize=11)
     # 70B, s=8192,b=1: 34sbh=2.28 GB, 5as^2b=21.5 GB.
-    x0, y, w, h = 0.55, 3.18, 6.45, 0.62
+    x0, y, w, h = 0.55, 3.55, 6.45, 0.62
     base, score = 2.28, 21.5
     total = base + score
     base_w = w * base / total
     # 34sbh = 注意力 11 + MLP 19 + LayerNorm 4（单位 sbh），与下面三行一一对应
     subs = [(11, "注意力 11", C["blue"] + "55"), (19, "MLP 19", C["green"] + "55"), (4, "LN 4", C["orange"] + "55")]
     cursor = x0
+    seg_labels = []
     for units, name, color in subs:
         seg_w = base_w * units / 34
         ax.add_patch(Rectangle((cursor, y), seg_w, h, facecolor=color, edgecolor="#ffffff", linewidth=1.0))
-        if seg_w >= 0.30:
-            text(ax, cursor + seg_w / 2, y + h / 2, name, ha="center", va="center", fontsize=10)
+        seg_labels.append((cursor + seg_w / 2, name))
         cursor += seg_w
-    text(ax, x0 + base_w / 2, y + h + 0.10, "$34sbh = 2.28$ GB", ha="center", va="bottom", fontsize=10.5)
+    text(ax, x0 + base_w / 2, y + h + 0.06, "$34sbh = 2.28$ GB", ha="center", va="bottom", fontsize=10.5)
     ax.add_patch(Rectangle((x0 + base_w, y), w - base_w, h, facecolor="#eeeeee", edgecolor="#888888", linewidth=1.0, hatch="///"))
     text(ax, x0 + base_w + (w - base_w) / 2, y + h / 2, "$5as^2b = 21.5$ GB（不使用 FlashAttention）", ha="center", va="center", fontsize=10.5)
+    # 窄段标签引出到条下，交错两行；MLP 引线取段右端，绕开左边「注意力 11」的宽度
+    for (cx, name), (fx, lx, ly) in zip(seg_labels, [(0.65, 0.55, 3.32), (1.06, 0.92, 3.10), (1.10, 1.30, 3.32)]):
+        ax.plot([fx, fx], [y, ly + 0.16], color="#888888", lw=0.8)
+        text(ax, lx, ly, name, ha="center", va="center", fontsize=10)
 
     rows = [
         ("注意力", "Q/K/V 投影输入 $2h$ · $QK^{\\!\\!\\top}$ 输入 $4h$ · $V$ / 输出投影输入 $4h$ · dropout mask $h$", C["blue"]),
@@ -285,7 +297,7 @@ def f7_activations():
         ("注意力分数", "softmax 输出 $2as$ · dropout mask $as$ · dropout 输出 $2as$", C["purple"]),
     ]
     for i, (name, detail, color) in enumerate(rows):
-        yy = 2.48 - i * 0.49
+        yy = 2.32 - i * 0.47
         p = box(ax, 0.55, yy, 1.26, 0.34, name, fc="#ffffff", ec=color, fs=10)
         text(ax, 2.02, yy + 0.17, detail, ha="left", va="center", fontsize=10.5)
     text(ax, 3.8, 0.42, "Llama 3 70B，$s=8192$、$b=1$；FlashAttention 不保存灰色斜线部分，反向时分块重算。",
@@ -425,14 +437,14 @@ def f11_activation_who_uses():
 
     # ---- 前向行 ----
     yf, fw, fh = 7.9, 1.35, 0.8
-    for xc, name in zip(cols, ["x", "H", "A", "Z", "loss"]):
+    for xc, name in zip(cols, ["$x$", "$H$", "$A$", "$Z$", "loss"]):
         chip(xc, yf, fw, fh, name, "#dce9f7", C["blue"], 10.5)
-    ops = ["Linear W1", "ReLU", "Linear W2", "CE"]
+    ops = ["Linear $W_1$", "ReLU", "Linear $W_2$", "CE"]
     for i, op in enumerate(ops):
         x1 = cols[i] + fw / 2; x2 = cols[i + 1] - fw / 2
         _arrow(ax, (x1 + 0.04, yf + fh / 2), (x2 - 0.04, yf + fh / 2), lw=1.2)
         text(ax, (x1 + x2) / 2, yf + fh + 0.22, op, ha="center", va="center",
-             fontsize=10)
+             fontsize=10.5)
     text(ax, 0.12, yf + fh / 2, "前向", ha="left", va="center",
          fontsize=10.5, color=C["blue"])
 
@@ -452,9 +464,9 @@ def f11_activation_who_uses():
 
     # ---- 链式梯度行（右→左，每个梯度排在它求导的张量正下方）----
     yc, cw, ch = 3.6, 1.7, 1.16
-    for xc, label in [(cols[1], "G_H\n$G_A \\odot \\mathrm{mask}$"),
-                      (cols[2], "G_A\n$G_Z \\cdot W_2^{\\!\\!\\top}$"),
-                      (cols[3], "G_Z\n$(P-Y)/m$")]:
+    for xc, label in [(cols[1], "$G_H$\n$G_A \\odot \\mathrm{mask}$"),
+                      (cols[2], "$G_A$\n$G_Z \\cdot W_2^{\\!\\!\\top}$"),
+                      (cols[3], "$G_Z$\n$(P-Y)/m$")]:
         chip(xc, yc, cw, ch, label, "#fff3e0", C["orange"], 10.5)
     _arrow(ax, (cols[3] - cw / 2 - 0.04, yc + ch / 2),
            (cols[2] + cw / 2 + 0.04, yc + ch / 2), lw=1.2)
@@ -516,8 +528,8 @@ def f12_activation_three_meanings():
             rows[m.group(1)] = float(m.group(2))
     total = sum(rows.values())
     groups = [
-        ("a = f(z)：狭义激活值", ["fc2"], C["orange"] + "88"),
-        ("z：f 的输入", ["gelu"], "#f0d98a"),
+        ("$a=f(z)$：狭义激活值", ["fc2"], C["orange"] + "88"),
+        ("$z$：$f$ 的输入", ["gelu"], "#f0d98a"),
         ("线性层输入", ["qkv", "out_proj", "fc1"], C["blue"] + "66"),
         ("注意力中间量", ["qk^t", "pv"], C["purple"] + "55"),
         ("softmax 输出", ["softmax"], C["green"] + "55"),
@@ -534,7 +546,7 @@ def f12_activation_three_meanings():
 
     # ① 激活函数：一个函数
     p1 = box(ax, 0.3, 6.75, 3.6, 1.85, "", fc="#f5f8fc", ec=C["blue"], lw=1.0)
-    box_title(ax, 2.1, 8.25, "① 函数 f", p1, color=C["blue"])
+    box_title(ax, 2.1, 8.25, "① 函数 $f$", p1, color=C["blue"])
     xs = np.linspace(-1, 1, 60)
     ax.plot(1.35 + xs * 0.65, 7.42 + np.maximum(xs, 0) * 0.45, color=C["blue"],
             lw=1.6)
@@ -543,7 +555,7 @@ def f12_activation_three_meanings():
 
     # ② 激活值 a = f(z)
     p2 = box(ax, 4.2, 6.75, 3.6, 1.85, "", fc="#f7f6ec", ec="#a08c1f", lw=1.0)
-    box_title(ax, 6.0, 8.25, "② 值 a = f(z)", p2, color="#a08c1f")
+    box_title(ax, 6.0, 8.25, "② 值 $a=f(z)$", p2, color="#a08c1f")
     text(ax, 6.0, 7.4, "某层过 f 的输出\n也是下一层输入", in_box=p2,
          ha="center", va="center", fontsize=10)
 
@@ -571,37 +583,32 @@ def f12_activation_three_meanings():
                                    edgecolor="#ffffff", linewidth=0.8))
             seg_label.append((cursor + w / 2, k, kw_, w, gname))
             cursor += w
-    # 段内标签：宽 ≥0.55 的画原名，窄的画到上方交替两行
-    legend_y = 5.75
-    level2 = []
+    # 段内标签：宽 ≥1.3 的画原名
+    seg_disp = {"qk^t": "$qk^{\\!\\!\\top}$"}
     for xc, k, kb, w, gname in seg_label:
         if w >= 1.3:
-            text(ax, xc, y0 + bh / 2, k, ha="center", va="center", fontsize=10)
-    # 颜色分组：每格一个小色块 + 组名 + KB，短行排列
+            text(ax, xc, y0 + bh / 2, seg_disp.get(k, k), ha="center", va="center", fontsize=10)
+    # 颜色分组：每格一个小色块 + 组名 + KB，左右两列避免长名互撞
     ginfo = []
     for gname, keys, color in groups:
         kb = sum(rows[k] for k in keys)
         ginfo.append((gname, keys, color,
                       f"{kb/1024:.2f}MB" if kb >= 1024 else f"{kb:.0f}KB"))
-    # 两行：3 + 4 个 swatch
-    sw_rows = [(ginfo[:3], 4.05), (ginfo[3:], 3.6)]
-    for glist, gy in sw_rows:
-        n = len(glist)
-        span = 11.2 / n
-        for gi, (gname, keys, color, kb) in enumerate(glist):
-            gx = 0.4 + gi * span
-            ax.add_patch(Rectangle((gx, gy), 0.22, 0.2, facecolor=color,
-                                   edgecolor="#888888", lw=0.5))
-            text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
-                 ha="left", va="center", fontsize=10)
+    for gi, (gname, keys, color, kb) in enumerate(ginfo):
+        gx = 0.5 if gi < 4 else 6.2
+        gy = 4.18 - (gi if gi < 4 else gi - 4) * 0.34
+        ax.add_patch(Rectangle((gx, gy), 0.22, 0.2, facecolor=color,
+                               edgecolor="#888888", lw=0.5))
+        text(ax, gx + 0.32, gy + 0.10, f"{gname} {kb}",
+             ha="left", va="center", fontsize=10.5)
     text(ax, 6.0, 2.75,
-         f"实测一层共 {total/1024:.2f} MB（s=64 b=2 h=256 f=1024，bf16）；"
-         f"狭义的 a = f(z) 只占 {narrow:.0f}%",
-         ha="center", va="center", fontsize=10)
+         f"实测一层共 {total/1024:.2f} MB（$s=64$、$b=2$、$h=256$、$f=1024$，bf16）；"
+         f"狭义的 $a=f(z)$ 只占 {narrow:.0f}%",
+         ha="center", va="center", fontsize=10.5)
     text(ax, 6.0, 2.32, "本系列说的「激活」是第 ③ 种：把所有段一起算",
          ha="center", va="center", fontsize=10)
-    text(ax, 6.0, 1.92, "「激活 = a = f(z)」只是第 ② 种狭义口径，会漏掉 8 成",
-         ha="center", va="center", fontsize=10)
+    text(ax, 6.0, 1.92, "「激活 $=a=f(z)$」只是第 ② 种狭义口径，会漏掉 8 成",
+         ha="center", va="center", fontsize=10.5)
     save(fig, "training-state-activation-three-meanings")
 
 

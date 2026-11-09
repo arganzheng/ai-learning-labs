@@ -67,15 +67,15 @@ def six_tb():
     _label(ax, 6, 3.75, "两条写路径（§三.2–3）", 11, weight="bold")
     p = _card(ax, 0.6, 2.05, 5.3, 1.5, "", fc="#f5dede", ec=C["red"], lw=0.9)
     _label(ax, 3.25, 3.3, "rank-0 汇总：不可行", 10.5, in_box=p, weight="bold")
-    _label(ax, 3.25, 2.65, "单写入者 1–5 GB/s → 19–95 min\n主机内存要装 5.7 TB", 9.5,
+    _label(ax, 3.25, 2.65, "单写入者 1–5 GB/s → 19–95 min\n主机内存要装 5.7 TB", 10,
            in_box=p)
     p = _card(ax, 6.15, 2.05, 5.3, 1.5, "", fc="#dcefe2", ec=C["green"], lw=0.9)
     _label(ax, 8.8, 3.3, "分片写：每卡写自己的 350 MB", 10.5, in_box=p,
            weight="bold")
-    _label(ax, 8.8, 2.65, "聚合 500 GB/s → 11 s；1 TB/s → 6 s\nGPU→主机 <10 ms 可忽略", 9.5,
+    _label(ax, 8.8, 2.65, "聚合 500 GB/s → 11 s；1 TB/s → 6 s\nGPU→主机 <10 ms 可忽略", 10,
            in_box=p)
-    _label(ax, 6, 1.45, "汇总的路在三个地方同时撞墙：内存、接收带宽、写入带宽——", 9.5)
-    _label(ax, 6, 1.0, "δ 从分钟级压到秒级后，Young 公式的浪费才压得下去（§九）。", 9.5)
+    _label(ax, 6, 1.45, "汇总的路在三个地方同时撞墙：内存、接收带宽、写入带宽——", 10)
+    _label(ax, 6, 1.0, "δ 从分钟级压到秒级后，Young 公式的浪费才压得下去（§九）。", 10)
     save(fig, "distributed-checkpoint-6tb-breakdown")
 
 
@@ -96,38 +96,48 @@ def young_curve():
 
     def my(v):
         return 1.1 + v / 35 * 4.4
-    _label(ax, 6, 6.7, "Young 公式：最优 checkpoint 间隔 τ_opt = √(2δM)", 12.5,
+    _label(ax, 6, 6.7, "Young 公式：最优 checkpoint 间隔 $\\tau_{opt} = \\sqrt{2\\delta M}$", 12.5,
            weight="bold")
     ax.plot([mx(t) for t in taus], [my(v) for v in f_save],
-            color=C["blue"], lw=1.4)
+            color=C["blue"], lw=1.4, label="$\\delta/\\tau$（保存开销）")
     ax.plot([mx(t) for t in taus], [my(v) for v in f_lose],
-            color=C["orange"], lw=1.4)
+            color=C["orange"], lw=1.4, label="$\\tau/(2M)$（回退损失）")
     ax.plot([mx(t) for t in taus], [my(v) for v in f_sum],
-            color=C["red"], lw=1.8)
-    _label(ax, 1.75, 4.95, "δ/τ（保存开销）", 9.5, color=C["blue"], ha="left")
-    _label(ax, 10.55, 1.95, "τ/(2M)（回退损失）", 9.5, color=C["orange"],
-           ha="right")
-    _label(ax, mx(29), my(f_sum[np.argmin(np.abs(taus - 29))]) + 0.42, "合计",
-           10, color=C["red"], weight="bold")
+            color=C["red"], lw=1.8, label="合计")
+    # 图例手动放标题下：axes legend 的 upper center 会和标题文字重叠
+    for lx, lc, lt in [(1.4, C["blue"], "$\\delta/\\tau$（保存开销）"),
+                       (4.15, C["orange"], "$\\tau/(2M)$（回退损失）"),
+                       (7.35, C["red"], "合计")]:
+        ax.plot([lx, lx + 0.5], [6.28, 6.28], color=lc, lw=1.6)
+        _label(ax, lx + 0.6, 6.28, lt, 10.5, ha="left")
     ax.plot([mx(t_opt), mx(t_opt)], [1.1, my(f_sum.min())], "--",
             color="#888888", lw=0.9)
     p = _card(ax, 7.15, 4.35, 3.6, 0.85, "", fc="#fff8ee", ec=C["orange"],
               lw=0.8)
-    _label(ax, 8.95, 4.92, f"τ_opt = √(2δM) ≈ {t_opt:.0f} min", 9.5, in_box=p,
+    _label(ax, 8.95, 4.92, f"$\\tau_{{opt}} = \\sqrt{{2\\delta M}} \\approx {t_opt:.0f}$ min", 10.5, in_box=p,
            weight="bold")
-    _label(ax, 8.95, 4.58, "浪费 ≈ 10%", 9.5, in_box=p, color=C["red"])
+    _label(ax, 8.95, 4.58, "浪费 $\\approx 10\\%$", 10.5, in_box=p, color=C["red"])
     _arrow(ax, (7.15, 4.6), (mx(t_opt) + 0.1, my(f_sum.min()) + 0.08),
            color="#888888", lw=0.9, ms=9)
+    # 网格线绕开 τ_opt 标注卡（x 7.15–10.75，y 4.35–5.2）
     for gx in range(0, 45, 5):
-        ax.plot([mx(gx), mx(gx)], [1.1, 5.5], color="#eeeeee", lw=0.5, zorder=0)
-        _label(ax, mx(gx), 0.85, f"{gx}", 9, color="#666666")
+        x = mx(gx)
+        if 7.15 < x < 10.75:
+            for y0, y1 in [(1.1, 4.3), (5.25, 5.5)]:
+                ax.plot([x, x], [y0, y1], color="#eeeeee", lw=0.5, zorder=0)
+        else:
+            ax.plot([x, x], [1.1, 5.5], color="#eeeeee", lw=0.5, zorder=0)
+        _label(ax, x, 0.85, f"{gx}", 10, color="#666666")
     for gy in range(0, 40, 5):
-        ax.plot([1.2, 10.8], [my(gy), my(gy)], color="#eeeeee", lw=0.5, zorder=0)
-        _label(ax, 1.0, my(gy), f"{gy}", 9, color="#666666", ha="right")
-    _label(ax, 6, 0.45, "间隔 τ（min）", 9.5, color="#444444")
-    _label(ax, 0.45, 3.3, "期望浪费比例（%）", 9.5, color="#444444", rotation=90)
-    _label(ax, 6, 0.08, "δ=60 s 同步分片写；δ=600 s → τ_opt 61 min / 32.8%，δ=10 s → 8 min / 4.2%",
-           9.5)
+        y = my(gy)
+        if 4.35 < y < 5.2:
+            ax.plot([1.2, 7.1], [y, y], color="#eeeeee", lw=0.5, zorder=0)
+        else:
+            ax.plot([1.2, 10.8], [y, y], color="#eeeeee", lw=0.5, zorder=0)
+        _label(ax, 1.0, y, f"{gy}", 10, color="#666666", ha="right")
+    _label(ax, 6, 0.45, "间隔 $\\tau$（min）", 10.5, color="#444444")
+    _label(ax, 0.45, 3.3, "期望浪费比例（%）", 10, color="#444444", rotation=90)
+    _label(ax, 6, 0.08, "$\\delta=60$ s 同步分片写；$\\delta=600$ s → $\\tau_{opt}$ 61 min / 32.8%，$\\delta=10$ s → 8 min / 4.2%", 10.5)
     save(fig, "distributed-checkpoint-young-formula")
 
 
@@ -138,21 +148,19 @@ def reshard_blocks():
            12, weight="bold")
     NEL, sw = 24, 0.36
     x0 = 1.6
-    _label(ax, 1.28, 4.9, "磁盘\n4 rank", 9.5, ha="right")
+    _label(ax, 1.28, 4.9, "磁盘\n4 rank", 10, ha="right")
     for i in range(4):
         p = _card(ax, x0 + i * 6 * sw, 4.45, 6 * sw, 0.9, "",
                   fc=[BLUE, GREEN, ORANGE, PURPLE][i],
                   ec=[C["blue"], C["green"], C["orange"], C["purple"]][i])
-        _label(ax, x0 + i * 6 * sw + 3 * sw, 4.9, f"rank{i}\nw[{i*6}:{i*6+6}]",
-               9.5, in_box=p)
-    _label(ax, 1.28, 2.5, "加载\n3 rank", 9.5, ha="right")
+        _label(ax, x0 + i * 6 * sw + 3 * sw, 4.9, f"rank{i}\nw[{i*6}:{i*6+6}]", 10, in_box=p)
+    _label(ax, 1.28, 2.5, "加载\n3 rank", 10, ha="right")
     bounds = [(0, 8), (8, 16), (16, 24)]
     for i, (lo, hi) in enumerate(bounds):
         p = _card(ax, x0 + lo * sw, 2.05, (hi - lo) * sw, 0.9, "",
                   fc="#f8fafc", ec="#888888", lw=0.8)
-        _label(ax, x0 + (lo + hi) / 2 * sw, 2.5, f"rank{i}  w[{lo}:{hi}]",
-               9.5, in_box=p)
-    _label(ax, 1.28, 3.4, "交集", 9.5, ha="right")
+        _label(ax, x0 + (lo + hi) / 2 * sw, 2.5, f"rank{i}  w[{lo}:{hi}]", 10, in_box=p)
+    _label(ax, 1.28, 3.4, "交集", 10, ha="right")
     # 交集标注：rank0 [0:8) 跨旧 rank0 全段 + rank1 前 2 个
     narrow = []
     for i, (lo, hi) in enumerate(bounds):
@@ -164,18 +172,18 @@ def reshard_blocks():
                           fc=["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3"][j],
                           ec="#bbbbbb", lw=0.5)
                 if b - a >= 4:
-                    _label(ax, x0 + (a + b) / 2 * sw, 3.4, f"{a}:{b}", 9,
+                    _label(ax, x0 + (a + b) / 2 * sw, 3.4, f"{a}:{b}", 10,
                            in_box=p)
                 else:
                     narrow.append((a, b))
     for k, (a, b) in enumerate(narrow):
         cx = x0 + (a + b) / 2 * sw
         lx = cx + (0.55 if k == 0 else -0.55)
-        _label(ax, lx, 3.98, f"{a}:{b}", 9, color="#333333")
-        ax.plot([cx, lx], [3.65, 3.9], color="#999999", lw=0.7)
-    _label(ax, 6, 1.35, "rank0 = 0:6 + 6:8；rank1 = 8:12 + 12:16；", 9.5)
-    _label(ax, 6, 0.92, "rank2 = 16:18 + 18:24——交集由 planner 的 ReadItems 算出；", 9.5)
-    _label(ax, 6, 0.5, "toy 实测：3 rank 各 8 元素、2 rank 各 12 元素，误差 0。", 9.5)
+        _label(ax, lx, 3.98, f"{a}:{b}", 10, color="#333333")
+        ax.plot([cx, lx], [3.65, 3.82], color="#999999", lw=0.7)
+    _label(ax, 6, 1.35, "rank0 = 0:6 + 6:8；rank1 = 8:12 + 12:16；", 10)
+    _label(ax, 6, 0.92, "rank2 = 16:18 + 18:24——交集由 planner 的 ReadItems 算出；", 10)
+    _label(ax, 6, 0.5, "toy 实测：3 rank 各 8 元素、2 rank 各 12 元素，误差 0。", 10)
     save(fig, "distributed-checkpoint-reshard-4to3")
 
 

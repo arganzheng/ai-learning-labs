@@ -62,11 +62,11 @@ def fr_rings():
            12.5, weight="bold")
     _label(ax, 6, 6.38, "绿 = 各 rank 一致 · 橙 = rank 3 的最后一条（开始错位）"
            " · 红 = 第一个不一致；红虚框 = 缺席",
-           9.5, color="#555555")
+           10, color="#555555")
     seqs = [1, 2, 3, 4, 5, 6]
-    x0, cw, ch = 2.1, 1.55, 0.72
+    x0, cw, ch = 1.75, 1.70, 0.72
     for i, sq in enumerate(seqs):
-        _label(ax, x0 + i * cw + cw / 2, 6.06, f"seq {sq}", 9.5, color="#555555")
+        _label(ax, x0 + i * cw + cw / 2, 6.06, f"seq {sq}", 10, color="#555555")
     rank_rows = [d[f"rank {r}"] for r in range(4)]
     for r in range(4):
         y = 4.95 - r * 0.98
@@ -78,19 +78,19 @@ def fr_rings():
                 p = _card(ax, x0 + i * cw, y, cw - 0.14, ch, "", fc=fc,
                           ec="#888888", lw=0.8)
                 _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch * 0.66,
-                       "all_reduce", 9.5, in_box=p)
+                       "all_reduce", 10, in_box=p)
                 _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch * 0.28,
-                       hit[0], 9, color="#555555", in_box=p)
+                       hit[0], 10, color="#555555", in_box=p)
             else:
                 p = box(ax, x0 + i * cw, y, cw - 0.14, ch, fc="white",
                         ec=C["red"], lw=1.2, linestyle="--")
                 _label(ax, x0 + i * cw + (cw - 0.14) / 2, y + ch / 2,
-                       "缺席", 9.5, color=C["red"], in_box=p)
+                       "缺席", 10, color=C["red"], in_box=p)
     _arrow(ax, (x0 + 5 * cw + cw / 2 - 0.07, 4.95 - 3 * 0.98 - 0.03),
            (x0 + 5 * cw + cw / 2 - 0.07, 4.95 - 3 * 0.98 - 0.33),
            color=C["red"])
     _label(ax, x0 + 4.4 * cw, 1.5,
-           "rank 3 没有发起 seq 6 的 all_reduce（走了 rank 相关的分支）", 9.5,
+           "rank 3 没有发起 seq 6 的 all_reduce（走了 rank 相关的分支）", 10,
            color=C["red"])
     diag = _card(ax, 1.6, 0.12, 8.8, 1.15, "", fc="#fff8e1", ec="#c58a00",
                  lw=1.0)
@@ -107,7 +107,7 @@ def step_time_phases():
     d = _load("11_obs_timers.json")
     series = d["series"]
     steps = [s["step"] for s in series]
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
+    fig, ax = plt.subplots(figsize=(6.1, 3.8))
     keys = [("data_ms", "data（数据等待）", "#f5b04a"),
             ("fwd_ms", "fwd（前向）", "#7fb3e0"),
             ("bwd_ms", "bwd（反向）", "#4a7fb5"),
@@ -119,22 +119,22 @@ def step_time_phases():
     ax.set_ylabel("step 时间（ms，堆叠）", fontsize=10)
     ax.set_xlim(0, 121)
     ax.set_ylim(0, 240)
-    ax.set_yticks(range(0, 241, 40))
+    ax.set_yticks(range(0, 201, 40))
     ax.set_xticks(range(0, 121, 20))
-    ax.tick_params(labelsize=9.5)
+    ax.tick_params(labelsize=10)
     fire = d["fire_step"]
     ax.axvline(fire, color=C["red"], lw=1.1, ls="--")
     ax.annotate(f"检测器开火：step {fire}\n（20 步中位数 > 基线 100ms × 1.10）",
-                xy=(fire, 195), xytext=(2, 225), fontsize=9.5, color=C["red"],
+                xy=(fire, 195), xytext=(2, 225), fontsize=10, color=C["red"],
                 va="top", ha="left",
                 arrowprops=dict(arrowstyle="->", color=C["red"], lw=0.9,
                                 shrinkB=0))
     ax.annotate("data 从 step 60 起每步 +2ms：\n慢化的嫌疑直接落在数据上",
-                xy=(73, 30), xytext=(18, 172), fontsize=9.5,
+                xy=(73, 30), xytext=(18, 172), fontsize=10,
                 color="#8a5a00", va="top", ha="left",
                 arrowprops=dict(arrowstyle="->", color="#8a5a00", lw=0.9,
                                 connectionstyle="arc3,rad=0.12"))
-    ax.legend(fontsize=9, frameon=False, loc="center left", ncols=1,
+    ax.legend(fontsize=10, frameon=False, loc="center left", ncols=1,
               bbox_to_anchor=(1.02, 0.5))
     ax.set_title("分阶段计时的堆叠面积：渐变慢一眼定位（toy 实测）", fontsize=11.5,
                  fontweight=600)
@@ -151,14 +151,14 @@ def rank_step_heatmap():
                    vmin=10, vmax=60)
     ax.set_yticks(range(4), [f"rank {r}" for r in range(4)], fontsize=10)
     ax.set_xticks(range(0, 20, 2), [str(s + 1) for s in range(0, 20, 2)],
-                  fontsize=9.5)
+                  fontsize=10)
     ax.set_xlabel("step", fontsize=10)
     cb = fig.colorbar(im, ax=ax, pad=0.02)
-    cb.set_label("compute（ms）", fontsize=9.5)
-    cb.ax.tick_params(labelsize=9)
+    cb.set_label("compute（ms）", fontsize=10)
+    cb.ax.tick_params(labelsize=10)
     ax.annotate("rank 1 从 step 8 起 +30ms：step 时间被 all_reduce 等齐，"
                 "只有每 rank 计时能认出它",
-                xy=(12, 0.55), xytext=(4.5, -1.05), fontsize=9.5,
+                xy=(12, 0.55), xytext=(4.5, -1.05), fontsize=10,
                 color="#8a0000",
                 arrowprops=dict(arrowstyle="->", color="#8a0000", lw=0.9,
                                 connectionstyle="arc3,rad=0.15"),
@@ -186,22 +186,22 @@ def alert_timeline():
         a.set_xlim(0, 32)
         a.set_ylim(0, 1)
     # 三个事件：dip、心跳停、重启窗口，各居其事件中心
-    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=9.5,
+    a0.text(12.5, 0.45, "10:00–15:00 掉 20%（5 分钟）", fontsize=10,
             ha="center", color="#8a5a00")
-    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=9.5, ha="center",
+    a0.text(22.3, 0.75, "23:30 心跳停", fontsize=10, ha="center",
             color=C["red"])
-    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=9.5, ha="center",
+    a0.text(28.6, 0.15, "25:00–28:00 自动重启", fontsize=10, ha="center",
             color="#1d4ed8")
 
     a1.plot(T, thr, color=C["blue"], lw=1.6)
     a1.axhline(850, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(0.4, 862, "record 阈值：-15%（850 tok/s）", fontsize=9,
-            color="#555555", va="bottom")
+    a1.text(31.6, 838, "record 阈值：-15%（850 tok/s）", fontsize=10,
+            color="#555555", va="top", ha="right")
     a1.set_ylim(700, 1080)
     a1.set_xlim(0, 32)
     a1.set_yticks([700, 850, 1000])
     a1.set_ylabel("tok/s", fontsize=10)
-    a1.tick_params(labelsize=9.5)
+    a1.tick_params(labelsize=10)
     a1.set_xticklabels([])
     a1.axvspan(10, 15, color="#fdecea", alpha=0.7)
     a1.axvline(23.5, color=C["red"], lw=1.1, ls="--")
@@ -217,7 +217,7 @@ def alert_timeline():
                      .Rectangle((hx, 0.3), 1.6, 0.4, fc=FCS[st],
                                 ec="#888888", lw=0.6,
                                 hatch="///" if st == "suppressed" else None))
-        al.text(hx + 1.9, 0.5, lab, fontsize=9, va="center", ha="left")
+        al.text(hx + 1.9, 0.5, lab, fontsize=10, va="center", ha="left")
         hx += 1.9 + len(lab) * 0.62 + 1.2
 
     # 泳道：一行一个规则名；细则放右侧备注列
@@ -234,8 +234,8 @@ def alert_timeline():
             a2.barh(row, x1 - x0, left=x0, height=0.55, color=FCS[st],
                     edgecolor="#888888", lw=0.6,
                     hatch="///" if st == "suppressed" else None)
-        a2.text(-0.4, row, name, fontsize=9.5, ha="right", va="center")
-        a2.text(30.6, row, note, fontsize=9, ha="left", va="center",
+        a2.text(-0.4, row, name, fontsize=10, ha="right", va="center")
+        a2.text(30.6, row, note, fontsize=10, ha="left", va="center",
                 color="#555555")
     a2.axvspan(10, 15, color="#fdecea", alpha=0.5)
     a2.axvline(23.5, color=C["red"], lw=1.1, ls="--")
@@ -245,7 +245,7 @@ def alert_timeline():
     a2.set_ylim(0.4, 3.7)
     a2.set_xticks(range(0, 31, 5))
     a2.set_xticklabels([f"{t:02d}:00" for t in range(0, 31, 5)],
-                       fontsize=9.5)
+                       fontsize=10)
     a2.set_xlabel("时间", fontsize=10)
     a2.spines[["left", "right", "top"]].set_visible(False)
     fig.suptitle("告警规则评估的模拟：for: 语义、page/record、抑制（toy 数据）",

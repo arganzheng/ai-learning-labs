@@ -5,7 +5,7 @@ from _plot import ARROW_LABEL_SIZE, C, box, box_title, plt, save, text
 def f1():
     fig, ax = plt.subplots(figsize=(7.6, 6.2))
     ax.set_xlim(0, 7.6); ax.set_ylim(0, 6.2); ax.axis("off")
-    ax.set_title("ZeRO-3：每个 rank 常驻 W_k 的 1/8，用时再拼完整")
+    ax.set_title("ZeRO-3：每个 rank 常驻 $W_k$ 的 1/8，用时再拼完整")
     palette = ["#dce9f7", "#dcefe2", "#fae6d6", "#eee1f3",
                "#f7efc9", "#d8edef", "#f3dfe2", "#e5e5d7"]
     card_w, card_h = 1.80, 1.50
@@ -26,7 +26,7 @@ def f1():
 
     card_x2, card_y2, card_w2, card_h2 = 1.30, 0.72, 5.0, 1.62
     p2 = box(ax, card_x2, card_y2, card_w2, card_h2, "", fc="#ffffff", ec="#444444", lw=1.0)
-    box_title(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 W_k（临时）",
+    box_title(ax, card_x2 + card_w2 / 2, card_y2 + 1.36, "每张 rank 都拼出完整 bf16 $W_k$（临时）",
               in_box=p2)
     bar_x, bar_w = card_x2 + 0.55, card_w2 - 1.10
     seg_w = bar_w / 8
@@ -39,8 +39,8 @@ def f1():
     arrow_x = 3.80
     ax.annotate("", xy=(arrow_x, card_y2 + card_h2), xytext=(arrow_x, card_y[1]),
                 arrowprops=dict(arrowstyle="->", color="#555555", lw=1.2))
-    text(ax, arrow_x, 2.66, "前向 pre-hook：all-gather W_k", ha="center", va="center",
-         fontsize=ARROW_LABEL_SIZE, color="#111111", bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
+    text(ax, arrow_x, 2.66, "前向 pre-hook：all-gather $W_k$", ha="center", va="center",
+         fontsize=10.5, color="#111111", bbox={"facecolor": "white", "edgecolor": "none", "pad": 1})
     text(ax, 3.8, 0.32, "算完即 release，回到上排状态", ha="center", va="center",
          fontsize=11, color="#111111")
     save(fig, "deepspeed-f1-8-gpus-zero3")

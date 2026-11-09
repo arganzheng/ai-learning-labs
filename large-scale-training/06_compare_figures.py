@@ -67,7 +67,7 @@ def f2():
         for year, label, below in events:
             ax.plot([yr(year), yr(year)], [y - 0.08, y + 0.08], color=color, lw=1.4)
             if below:
-                text(ax, yr(year), y - 0.16, label, ha="center", va="top", fontsize=10, color=color)
+                text(ax, yr(year), y - 0.10, label, ha="center", va="top", fontsize=10, color=color)
             else:
                 text(ax, yr(year), y + 0.16, label, ha="center", va="bottom", fontsize=10, color=color)
     text(ax, 3.8, 0.06, "三条路线逐渐把并行布局变成参数 / 张量可描述的属性", ha="center", fontsize=10)

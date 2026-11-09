@@ -71,21 +71,22 @@ def spike_rollback():
                 color=C["orange"], lw=1.4, ls="--",
                 label="回退 + 跳过坏窗口")
         ax.axvline(ckpt, color="#8a8a8a", lw=0.9, ls=":")
-        ax.set_ylabel(name, fontsize=10)
-        ax.tick_params(labelsize=9.5)
+        ax.set_ylabel(name, fontsize=10, labelpad=12)
+        ax.tick_params(labelsize=10)
         ax.set_xlim(120, 210)
+        ax.set_xticks([125, 150, 175, 200])
     ax1.set_yscale("log")
     ax2.set_yscale("log")
-    for ax, ticks in ((ax1, [0.01, 0.1, 1, 10]), (ax2, [0.01, 0.1, 1, 10, 100])):
+    for ax, ticks in ((ax1, [0.1, 1, 10]), (ax2, [0.1, 1, 10, 100])):
         ax.set_yticks(ticks)
         ax.set_yticklabels([f"{t:g}" for t in ticks])
     fig.subplots_adjust(hspace=0.45)
-    ax1.legend(fontsize=9.5, loc="lower right", frameon=False)
-    ax1.text(ckpt - 1, ax1.get_ylim()[0] * 1.35, "step-140 ckpt", fontsize=9,
+    leg = ax1.legend(fontsize=10, loc="lower center", frameon=False,
+                     bbox_to_anchor=(0.5, 1.02), ncol=2)
+    ax1.text(ckpt - 1, ax1.get_ylim()[0] * 1.35, "step-140 ckpt", fontsize=10,
              ha="right", va="bottom", color="#555555")
-    ax2.text((bad0 + bad1) / 2, ax2.get_ylim()[1] * 0.55, "坏窗口 150–155",
-             fontsize=9.5, ha="center", va="top", color="#8a3c3c",
-             bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.5))
+    ax2.text(bad1 + 1.5, ax2.get_ylim()[1] * 0.55, "坏窗口\n150–155",
+             fontsize=10, ha="left", va="top", color="#8a3c3c")
     ax2.set_xlabel("step", fontsize=10)
     fig.suptitle("坏 batch 注入 → 回退 + 跳过的恢复轨迹（toy 实测，2 层 d=64）",
                  fontsize=12, fontweight=600)
@@ -100,7 +101,7 @@ def clip_2d():
     cx, cy, r = 4.2, 2.5, 1.55
     circle = plt.Circle((cx, cy), r, fc="none", ec="#999999", ls="--", lw=1.0)
     ax.add_patch(circle)
-    _label(ax, cx + r * 0.72, cy - r * 0.72, "‖g‖ = 1.0", 9.5, color="#555555")
+    _label(ax, cx + r * 0.72, cy - r * 0.72, "‖g‖ = 1.0", 10, color="#555555")
     # 原始梯度（3315 → 归一化成图上的长度）
     dx, dy = 3.6, 1.15
     _arrow(ax, (cx, cy), (cx + dx, cy + dy), color=C["red"], lw=2.2, ms=15)
@@ -112,11 +113,11 @@ def clip_2d():
            "clip 后 ‖g‖ = 1.0", 10, color=C["blue"])
     _label(ax, 9.3, 3.4, "标量系数 c/(‖g‖+ε)", 10, ha="center")
     _label(ax, 9.3, 2.95, "= 1/3315.4 = 0.000302", 10, ha="center")
-    _label(ax, 9.3, 2.4, "每个参数张量被", 9.5, ha="center", color="#555555")
-    _label(ax, 9.3, 2.05, "同一个标量缩放", 9.5, ha="center", color="#555555")
+    _label(ax, 9.3, 2.4, "每个参数张量被", 10, ha="center", color="#555555")
+    _label(ax, 9.3, 2.05, "同一个标量缩放", 10, ha="center", color="#555555")
     _label(ax, 9.3, 1.55, "→ 梯度方向不变", 10, ha="center", weight="bold")
-    _label(ax, 6, 0.85, "范数 ‖g‖ 是全模型的：各卡先算自己分片的平方和，", 9.5)
-    _label(ax, 6, 0.5, "在恰好覆盖所有分片一次的组上 all-reduce 再开方（§三.1 三框架实现）。", 9.5)
+    _label(ax, 6, 0.85, "范数 ‖g‖ 是全模型的：各卡先算自己分片的平方和，", 10)
+    _label(ax, 6, 0.5, "在恰好覆盖所有分片一次的组上 all-reduce 再开方（§三.1 三框架实现）。", 10)
     save(fig, "training-stability-clip-2d")
 
 
@@ -133,15 +134,15 @@ def logit_qkln():
                 label="带 QK-LN")
         ax.set_ylabel(ttl, fontsize=10)
         ax.set_xlabel("step", fontsize=10)
-        ax.tick_params(labelsize=9.5)
+        ax.tick_params(labelsize=10)
         ax.set_xlim(0, 800)
         ax.set_xticks(range(0, 801, 200))
     a1.axhline(100, color="#8a8a8a", lw=0.9, ls=":")
-    a1.text(20, 115, "~100 经验危险线（§二.4）", fontsize=9, color="#555555")
-    a1.legend(fontsize=9.5, frameon=False, loc="upper left")
+    a1.text(20, 115, "~100 经验危险线（§二.4）", fontsize=10, color="#555555")
+    a1.legend(fontsize=10, frameon=False, loc="upper left")
     a1.set_ylim(0, 780)
     a1.set_yticks([0, 100, 200, 300, 400, 500, 600, 700])
-    a2.legend(fontsize=9.5, frameon=False, loc="upper left")
+    a2.legend(fontsize=10, frameon=False, loc="upper left")
     a2.set_ylim(0, 800)
     a2.set_yticks([0, 200, 400, 600, 800])
     fig.suptitle("induction 任务：‖Wq‖·‖Wk‖ 随训练一路增大；不带 QK-LN 时 logit 跟着涨过危险线，带上后被钉住（toy 实测）",
@@ -158,7 +159,7 @@ def packing_vs_padding():
     fig, ax = _canvas(7.6, 4.9, (0, 12), (0, 7.6))
     _label(ax, 6, 7.35, "padding vs packing：12 条长尾序列，容量 4096（toy 实测）",
            12.5, weight="bold")
-    x0, w = 1.7, 8.6
+    x0, w = 1.95, 8.4
 
     def sx(t):
         return x0 + t / cap * w
@@ -170,16 +171,15 @@ def packing_vs_padding():
         p = _card(ax, sx(0), y, l / cap * w, 0.5, "", fc=BLUE, ec=C["blue"],
                   lw=0.6)
         if l / cap * w > 0.8:
-            _label(ax, sx(l / 2), y + 0.25, str(l), 9.5, in_box=p)
+            _label(ax, sx(l / 2), y + 0.25, str(l), 10, in_box=p)
         else:
-            _label(ax, sx(0) - 0.25, y + 0.25, str(l), 9, ha="right",
+            _label(ax, sx(0) - 0.25, y + 0.25, str(l), 10, ha="right",
                    color="#333333")
         pw = (max(lens) - l) / cap * w
         _card(ax, sx(l), y, pw, 0.5, "", fc="white", ec="#bbbbbb", lw=0.6)
         ax.add_patch(Rectangle((sx(l), y), pw, 0.5, fc="none", ec="none",
                                hatch="///", lw=0))
-    _label(ax, x0, 3.72, f"斜线 = pad；…共 12 行，每行都 pad 到 {max(lens)}",
-           9.5, ha="left", color="#333333")
+    _label(ax, x0, 3.72, f"斜线 = pad；…共 12 行，每行都 pad 到 {max(lens)}", 10, ha="left", color="#333333")
     _label(ax, x0, 3.38, f"利用率 {tot}/{pad_used} = {tot/pad_used*100:.1f}%",
            10, ha="left", weight="bold", color=C["red"])
     # --- 下：贪心打包 ---
@@ -194,7 +194,7 @@ def packing_vs_padding():
             p = _card(ax, x, y, wseg, 0.56, "", fc=colors[si % len(colors)],
                       ec="#777777", lw=0.6)
             if wseg > 1.05:
-                _label(ax, x + wseg / 2, y + 0.28, str(l), 9, in_box=p)
+                _label(ax, x + wseg / 2, y + 0.28, str(l), 10, in_box=p)
             else:
                 narrow.append((x + wseg / 2, str(l)))
             x += wseg
@@ -211,29 +211,31 @@ def packing_vs_padding():
             for _ in range(20):
                 ok = True
                 for i in range(1, len(pos)):
-                    if pos[i] < pos[i - 1] + 0.75:
-                        pos[i] = pos[i - 1] + 0.75
+                    if pos[i] < pos[i - 1] + 1.05:
+                        pos[i] = pos[i - 1] + 1.05
                         ok = False
                 if ok:
                     break
+            over = pos[-1] - 11.3
+            if over > 0:
+                pos = [p - over for p in pos]
             for (cx, lab), px in zip(narrow, pos):
                 ax.plot([cx, px], [y + 0.56, y + 0.8], color="#999999", lw=0.7)
-                _label(ax, px, y + 0.92, lab, 9)
-        _label(ax, sx(cap) + 0.35, y + 0.28, f"行 {ri}", 9.5, ha="left",
+                _label(ax, px, y + 0.92, lab, 10)
+        _label(ax, sx(cap) + 0.5, y + 0.28, f"行 {ri}", 10, ha="left",
                color="#333333")
     _label(ax, x0, 1.18, f"利用率 {tot}/{pack_used} = {tot/pack_used*100:.1f}%",
            10, ha="left", weight="bold", color=C["green"])
     _label(ax, x0, 0.82, f"行 0：{'+'.join(str(l) for l in bins[0])} = "
-           f"{sum(bins[0])}（pad {cap - sum(bins[0])}）", 9, ha="left",
+           f"{sum(bins[0])}（pad {cap - sum(bins[0])}）", 10, ha="left",
            color="#444444")
     _label(ax, x0, 0.5, f"行 1：{'+'.join(str(l) for l in bins[1])} = "
-           f"{sum(bins[1])}（pad {cap - sum(bins[1])}）", 9, ha="left",
+           f"{sum(bins[1])}（pad {cap - sum(bins[1])}）", 10, ha="left",
            color="#444444")
     row0_cu = [0]
     for l in bins[0]:
         row0_cu.append(row0_cu[-1] + l)
-    _label(ax, x0, 0.18, f"行 0 的 cu_seqlens = {row0_cu}（每段 position_ids 0..len-1）",
-           9, ha="left", color="#333333")
+    _label(ax, x0, 0.18, f"行 0 的 cu_seqlens = {row0_cu}\n（每段 position_ids 0..len-1）", 10, ha="left", va="top", color="#333333")
     save(fig, "training-stability-packing-vs-padding")
 
 
@@ -246,36 +248,37 @@ def resume_number_line():
     for st in range(13):
         xx = x0 + st / 12 * (x1 - x0)
         ax.plot([xx, xx], [y - 0.07, y + 0.07], color="#444444", lw=0.9)
-        _label(ax, xx, y - 0.32, str(st * 8), 9, color="#555555")
-    _label(ax, x0, y - 0.68, "样本号（toy：total=96，B=8，每格一步）", 9, ha="left",
+        _label(ax, xx, y - 0.32, str(st * 8), 10, color="#555555")
+    _label(ax, x0, y - 1.5, "样本号（toy：total=96，B=8，每格一步）", 10, ha="left",
            color="#555555")
     xc = x0 + 56 / 96 * (x1 - x0)
-    ax.plot([xc, xc], [y - 0.3, y + 0.3], color=C["red"], lw=1.6)
+    ax.plot([xc, xc], [y - 0.05, y + 0.3], color=C["red"], lw=1.6)
     _label(ax, xc, y + 0.62, "consumed = 56（7 步 × B=8）", 10,
            color=C["red"], weight="bold")
     # ckpt 标记在整数处
-    p = _card(ax, xc - 0.85, y - 1.28, 1.7, 0.5, "", fc="#fff4d6",
+    p = _card(ax, xc - 1.0, y - 1.28, 2.0, 0.5, "", fc="#fff4d6",
               ec=C["orange"], lw=0.8)
-    _label(ax, xc, y - 1.03, "ckpt 存这里", 9.5, ha="center", in_box=p)
-    ax.plot([xc, xc], [y - 0.78, y - 0.3], color=C["orange"], lw=0.9, ls=":")
+    _label(ax, xc, y - 1.03, "ckpt 存这里", 10, ha="center", in_box=p)
+    ax.plot([xc, xc], [y - 0.78, y - 0.45], color=C["orange"], lw=0.9, ls=":")
     # 恢复的下一个 batch：56..63
     xn0 = x0 + 56 / 96 * (x1 - x0)
     xn1 = x0 + 64 / 96 * (x1 - x0)
     p2 = _card(ax, xn0, y + 1.0, xn1 - xn0, 0.55, "", fc=BLUE, ec=C["blue"],
                lw=0.8)
     _arrow(ax, (xc, y + 0.9), (xn0 + 0.05, y + 1.0), color=C["blue"], lw=1.1)
-    _label(ax, xn1 + 0.3, y + 1.28, "恢复后第 1 个 batch = [56..63]，与不中断相同",
+    _label(ax, xn1 + 0.5, y + 1.28, "恢复后第 1 个 batch = [56..63]，与不中断相同",
            10, ha="left")
-    _label(ax, xc - 3.1, y + 0.62, "已消费（不再喂）", 9.5, ha="center",
+    _label(ax, xc - 3.8, y + 0.62, "已消费（不再喂）", 10, ha="center",
            color="#555555")
-    _label(ax, 6, 1.15, "跳过 n 个 batch = 这个整数加 n·B；换 DP 度 = 分片方式变、全序不变。", 9.5)
-    _label(ax, 6, 0.78, "StatefulDataLoader 存的是同一位置的迭代器状态，下一个 batch 同样 [56..63]（不可换 DP）。",
-           9.5)
+    _label(ax, 6, 1.15, "跳过 n 个 batch = 这个整数加 n·B；换 DP 度 = 分片方式变、全序不变。", 10)
+    _label(ax, 6, 0.78, "StatefulDataLoader 存的是同一位置的迭代器状态，下一个 batch 同样 [56..63]（不可换 DP）。", 10)
     save(fig, "training-stability-resume-number-line")
 
 
 def main():
-    for f in (spike_rollback, clip_2d, logit_qkln, packing_vs_padding,
+    # logit_qkln 暂缺：expected/10_stab_logit_curve.json 只存了两个标量，
+    # 没有图需要的 logit/wnorm 序列，待 toy 重新产出数据后再加回。
+    for f in (spike_rollback, clip_2d, packing_vs_padding,
               resume_number_line):
         f()
     print("全部 5 张图完成。")

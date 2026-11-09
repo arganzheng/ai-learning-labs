@@ -21,8 +21,8 @@ def f1():
     fig, ax = plt.subplots(figsize=(7.4, 8.6))
     ax.set_xlim(0, 1.0); ax.set_ylim(-0.36, 4.00); ax.axis("off")
 
-    cw, ch = 0.40, 0.82
-    colx = [0.04, 0.56]                      # tp0 列、tp1 列；外侧各留 PP 走线带
+    cw, ch = 0.375, 0.82
+    colx = [0.065, 0.575]                    # tp0 列、tp1 列；外侧各留两条 PP 走线带
     rowy = [3.10, 2.15, 1.20, 0.25]          # stage1·dp0, stage1·dp1, stage0·dp0, stage0·dp1
     row_of = {4: 0, 5: 0, 6: 1, 7: 1, 0: 2, 1: 2, 2: 3, 3: 3}
 
@@ -71,11 +71,12 @@ def f1():
                     arrowprops=dict(arrowstyle="-|>", color=C["green"], lw=1.4))
         text(ax, lx, ly, "PP", ha=lha, va="center", fontsize=10, color=C["green"])
 
-    # col1（tp0）：左外侧带；col2（tp1）：右外侧带。PP 标签放在行隙里、线旁
-    pp_elbow(0, 4, 0.05, "l", "l", 0.065, 3.035, "left")   # row2 → row0
-    pp_elbow(2, 6, 0.02, "l", "l", 0.035, 1.135, "left")    # row3 → row1
-    pp_elbow(1, 5, 0.965, "r", "r", 0.945, 3.035, "right")  # row2 → row0
-    pp_elbow(3, 7, 0.99, "r", "r", 0.975, 1.135, "right")   # row3 → row1
+    # 左右各两条外侧走线带：上行对（row2↔row0）走最外道，下行对（row3↔row1）走靠盒内道；
+    # 标签放进只被本道占用的行隙里：上行对放顶隙、下行对放底隙，互不压线
+    pp_elbow(0, 4, 0.014, "l", "l", 0.018, 3.02, "left")    # row2 → row0，外道
+    pp_elbow(2, 6, 0.034, "l", "l", 0.038, 1.13, "left")    # row3 → row1，内道
+    pp_elbow(1, 5, 0.986, "r", "r", 0.982, 3.02, "right")   # row2 → row0，外道
+    pp_elbow(3, 7, 0.966, "r", "r", 0.970, 1.13, "left")    # row3 → row1，内道
 
     text(ax, 0.5, -0.10, "TP = 相邻两个 rank（同节点）　DP = 同一 stage 同一 TP 位的两张卡\nPP = 同一 DP 副本同一 TP 位的两个 stage",
             ha="center", fontsize=10, color="#111111")

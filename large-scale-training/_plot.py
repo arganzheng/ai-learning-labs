@@ -231,6 +231,7 @@ def collide(fig, margin=6.0):
             if t.get_text().strip() and t.get_visible() and t not in ext:
                 line_texts.append(t)
                 ext[t] = t.get_window_extent(renderer=ren)
+        axbb = ax.get_window_extent(renderer=ren)
         for ln in ax.lines:
             if not ln.get_visible():
                 continue
@@ -240,6 +241,26 @@ def collide(fig, margin=6.0):
             pts = ax.transData.transform(list(zip(xd, yd)))
             for k in range(len(pts) - 1):
                 a, b = tuple(pts[k]), tuple(pts[k + 1])
+                # 轴外的线段渲染时会被裁掉，先做 Liang–Barsky 裁剪再测
+                t0, t1 = 0.0, 1.0
+                ok = True
+                for lo, hi, d0, d1 in ((axbb.x0, axbb.x1, a[0], b[0]),
+                                       (axbb.y0, axbb.y1, a[1], b[1])):
+                    if abs(d1 - d0) < 1e-9:
+                        if not (lo <= d0 <= hi):
+                            ok = False
+                    else:
+                        ta, tb = (lo - d0) / (d1 - d0), (hi - d0) / (d1 - d0)
+                        if ta > tb:
+                            ta, tb = tb, ta
+                        t0, t1 = max(t0, ta), min(t1, tb)
+                    if not ok or t0 > t1:
+                        ok = False
+                        break
+                if not ok or t0 > t1:
+                    continue
+                a, b = ((a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0),
+                        (a[0] + (b[0] - a[0]) * t1, a[1] + (b[1] - a[1]) * t1))
                 for t in line_texts:
                     e = ext[t]
                     if _seg_rect(a, b, (e.x0 + 1, e.y0 + 1, e.x1 - 1, e.y1 - 1)):
@@ -248,6 +269,107 @@ def collide(fig, margin=6.0):
                 else:
                     continue
                 break
+    # 线段/箭头不得穿过或贴着盒内区域：端点搭在盒边可以，盒内穿行不行
+    box_patches = [p for p in _PATCHES if p.get_figure() is fig]
+    bext = {p: p.get_window_extent(renderer=ren) for p in box_patches}
+    is_container = {}
+    for p in box_patches:
+        b = bext[p]
+        is_container[p] = any(
+            q is not p and bext[q].x0 >= b.x0 - 1 and bext[q].y0 >= b.y0 - 1
+            and bext[q].x1 <= b.x1 + 1 and bext[q].y1 <= b.y1 + 1
+            for q in box_patches)
+
+    def _inside(b, x, y, depth=3.0):
+        return b.x0 + depth < x < b.x1 - depth and b.y0 + depth < y < b.y1 - depth
+
+    def _seg_in_box(a, b, r):
+        """线段中段（两端各留 5%）是否进入矩形内部 ≥3px。"""
+        for t in (0.05, 0.18, 0.30, 0.43, 0.55, 0.68, 0.80, 0.95):
+            if _inside(r, a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])):
+                return True
+        return False
+
+    for ax in fig.axes:
+        for ln in ax.lines:
+            if not ln.get_visible():
+                continue
+            xd, yd = ln.get_xdata(), ln.get_ydata()
+            if len(xd) < 2:
+                continue
+            pts = ax.transData.transform(list(zip(xd, yd)))
+            for k in range(len(pts) - 1):
+                a, b = tuple(pts[k]), tuple(pts[k + 1])
+                if a == b:
+                    continue
+                for p in box_patches:
+                    if is_container[p]:
+                        continue
+                    r = bext[p]
+                    # 两端都在盒内的（卡片里的小示意线）不算；从外面穿进来的才算
+                    if _inside(r, a[0], a[1]) and _inside(r, b[0], b[1]):
+                        continue
+                    if _seg_in_box(a, b, r):
+                        errs.append(f"线段穿盒（{r.x0:.0f},{r.y0:.0f}–"
+                                    f"{r.x1:.0f},{r.y1:.0f}）：line@({a[0]:.0f},{a[1]:.0f})")
+                        break
+        from matplotlib.patches import FancyArrowPatch
+        for p in ax.patches:
+            if not isinstance(p, FancyArrowPatch) or not p.get_visible():
+                continue
+            dpts = p.get_path().transformed(ax.transData).vertices
+            for v in dpts[1:-1]:
+                for bp in box_patches:
+                    if is_container[bp]:
+                        continue
+                    r = bext[bp]
+                    if _inside(r, dpts[0][0], dpts[0][1]) and _inside(r, dpts[-1][0], dpts[-1][1]):
+                        continue
+                    if _inside(r, v[0], v[1]):
+                        errs.append(f"箭头穿盒（{r.x0:.0f},{r.y0:.0f}–"
+                                    f"{r.x1:.0f},{r.y1:.0f}）")
+                        break
+    # 图例 swatch 不得与图例文字相交
+    for ax in fig.axes:
+        leg = ax.get_legend()
+        if leg is None:
+            continue
+        for h in (getattr(leg, "legend_handles", None)
+                  or getattr(leg, "legendHandles", []) or []):
+            try:
+                he = h.get_window_extent(renderer=ren)
+            except Exception:
+                continue
+            for lt in leg.get_texts():
+                e = ext.get(lt)
+                if e is None:
+                    e = lt.get_window_extent(renderer=ren)
+                iw = min(he.x1, e.x1) - max(he.x0, e.x0)
+                ih = min(he.y1, e.y1) - max(he.y0, e.y0)
+                if iw > 1 and ih > 1:
+                    errs.append(f"图例手柄压文字：{lt.get_text()!r}")
+    # 落在某个矩形里的文字不得横向溢出该矩形（窄条段标签）
+    text_items = [t for t, _, _ in items] + [t for ax in fig.axes for t in ax.texts
+                                           if t.get_text().strip() and t.get_visible()]
+    for t in text_items:
+        e = ext.get(t) or t.get_window_extent(renderer=ren)
+        cx, cy = (e.x0 + e.x1) / 2, (e.y0 + e.y1) / 2
+        for ax in fig.axes:
+            for p in ax.patches:
+                if not isinstance(p, Rectangle) or isinstance(p, FancyBboxPatch):
+                    continue
+                if p is ax.patch:
+                    continue
+                try:
+                    b = p.get_window_extent(renderer=ren)
+                except Exception:
+                    continue
+                if b.width <= 0 or b.height <= 0:
+                    continue
+                if b.x0 < cx < b.x1 and b.y0 < cy < b.y1:
+                    if e.x0 < b.x0 - 1 or e.x1 > b.x1 + 1:
+                        errs.append(f"文字溢出所在矩形（{b.x0:.0f}–{b.x1:.0f}px）：{t.get_text()!r}")
+                        break
     # 矩形-矩形：不同对象的填充矩形不得相交；一个完整套在另一个里的（内方块、图例 swatch、轴背景）不算
     rects = [p for p in _PATCHES if p.get_figure() is fig]
     for ax in fig.axes:
@@ -266,9 +388,20 @@ def collide(fig, margin=6.0):
                        a.x1 <= b.x1 + 1 and a.y1 <= b.y1 + 1) or
                       (b.x0 >= a.x0 - 1 and b.y0 >= a.y0 - 1 and
                        b.x1 <= a.x1 + 1 and b.y1 <= a.y1 + 1))
-            if not inside:
-                errs.append(f"矩形重叠：({a.x0:.0f},{a.y0:.0f}–{a.x1:.0f},{a.y1:.0f}) "
-                            f"× ({b.x0:.0f},{b.y0:.0f}–{b.x1:.0f},{b.y1:.0f})")
+            if inside:
+                continue
+            # 背景色带（axvspan/axhspan/ax.patch）铺满某个轴方向，不算重叠
+            span = False
+            for q, qb in ((rects[i], a), (rects[j], b)):
+                if q.axes is not None:
+                    aq = q.axes.get_window_extent(renderer=ren)
+                    if (qb.y1 - qb.y0 >= 0.85 * (aq.y1 - aq.y0)
+                            or qb.x1 - qb.x0 >= 0.85 * (aq.x1 - aq.x0)):
+                        span = True
+            if span:
+                continue
+            errs.append(f"矩形重叠：({a.x0:.0f},{a.y0:.0f}–{a.x1:.0f},{a.y1:.0f}) "
+                        f"× ({b.x0:.0f},{b.y0:.0f}–{b.x1:.0f},{b.y1:.0f})")
     # 同一 row 组的标签必须在同一基线上
     groups = {}
     for t, _, row in items:

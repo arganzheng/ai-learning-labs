@@ -64,8 +64,8 @@ def four_steps():
     p = _card(ax, 9.95, 2.5, 1.9, 2.0, "", fc="#ffffff", ec=C["blue"], lw=1.2)
     _arrow(ax, (9.6, 3.5), (9.92, 3.5), color="#888888", lw=1.2, ms=10)
     _label(ax, 10.9, 4.1, "候选 A", 11, in_box=p, weight="bold")
-    _label(ax, 10.9, 3.45, "8·4·32·1\nv4 m16", 9.5, in_box=p)
-    _label(ax, 10.9, 2.8, "MFU 40–45%", 9.5, color=C["red"], in_box=p)
+    _label(ax, 10.9, 3.45, "8·4·32·1\nv4 m16", 10, in_box=p)
+    _label(ax, 10.9, 2.8, "MFU 40–45%", 10, color=C["red"], in_box=p)
     _label(ax, 6, 1.85, "候选 B（TP8/PP2/DP64）也过线：每卡多 13 GB 静态、DP 通信翻倍、气泡略低——", 10)
     _label(ax, 6, 1.4, "本篇以 A 为主线，它的显存余量允许以后加 CP 或拉长 s 而不必重新设计。", 10)
     save(fig, "thousand-gpu-configuration-70b-four-steps")
@@ -75,14 +75,14 @@ def batch_blocks():
     """F2 global batch = micro-batch × 累积 × DP 的积木。"""
     fig, ax = _canvas(7.6, 3.5, (0, 12), (0, 5.3))
     _label(ax, 6, 5.0, "global batch B = micro-batch b × 梯度累积 m × DP d", 12.5, weight="bold")
-    _label(ax, 1.05, 4.2, "一个 micro-batch\nb × s = 8192 token", 9.5)
-    _card(ax, 0.35, 2.9, 1.4, 0.85, "s×b\n8K tok", fc=BLUE, ec=C["blue"], size=9.5)
+    _label(ax, 1.05, 4.2, "一个 micro-batch\nb × s = 8192 token", 10)
+    _card(ax, 0.35, 2.9, 1.4, 0.85, "s×b\n8K tok", fc=BLUE, ec=C["blue"], size=10)
     _arrow(ax, (1.78, 3.3), (2.3, 3.3), color="#555555", lw=1.2)
-    _label(ax, 3.7, 4.2, "m = 16 个累积\n= 128K token / 副本", 9.5)
+    _label(ax, 3.7, 4.2, "m = 16 个累积\n= 128K token / 副本", 10)
     for i in range(16):
         _card(ax, 2.4 + i * 0.16, 2.9, 0.15, 0.85, "", fc=BLUE, ec="#ffffff", lw=0.3)
     _arrow(ax, (5.0, 3.3), (5.5, 3.3), color="#555555", lw=1.2)
-    _label(ax, 7.0, 4.2, "d = 32 个 DP 副本（共 32 列）", 9.5)
+    _label(ax, 7.0, 4.2, "d = 32 个 DP 副本（共 32 列）", 10)
     for i in range(8):
         _card(ax, 5.6 + i * 0.16, 2.9, 0.15, 0.85, "", fc=GREEN, ec="#ffffff", lw=0.3)
     _label(ax, 7.15, 3.3, "…", 12, ha="left")
@@ -109,10 +109,10 @@ def microbatch_bounds():
         _card(ax, 10.0, y - 0.32, 1.35, 0.64, tag,
               fc="#ffffff",
               ec=C["green"] if tag == "可行" else (C["orange"] if tag == "勉强" else C["red"]),
-              size=9.5)
+              size=10)
     _label(ax, 1.5, 0.95, "← b 太小：GEMM M 维不够", 10, ha="left")
     _label(ax, 10.5, 0.95, "b 太大：显存、气泡 →", 10, ha="right")
-    _label(ax, 6, 0.45, "PP 下两头一夹，b 几乎总是 1 或 2；要大 M 只能减 p 或不用 PP。", 9.5)
+    _label(ax, 6, 0.45, "PP 下两头一夹，b 几乎总是 1 或 2；要大 M 只能减 p 或不用 PP。", 10)
     save(fig, "thousand-gpu-configuration-microbatch-bounds")
 
 
@@ -143,8 +143,8 @@ def recompute_bars():
             _label(ax, 2.05 + w2 + 0.3, y - 0.19, flops, 10, ha="left")
         else:
             _label(ax, 2.35, y - 0.19, flops, 10, ha="left")
-    _label(ax, 6, 0.75, "FlashAttention 下 s^2 项已由 kernel 内重算拿走，selective 实际几乎不省；", 9.5)
-    _label(ax, 6, 0.33, "toy recompute 实测：选择性存 36.3% 激活、+14.8% FLOP；全量存 21.2%、+33.3% FLOP。", 9.5)
+    _label(ax, 6, 0.75, "FlashAttention 下 $s^2$ 项已由 kernel 内重算拿走，selective 实际几乎不省；", 10.5)
+    _label(ax, 6, 0.33, "toy recompute 实测：选择性存 36.3% 激活、+14.8% FLOP；全量存 21.2%、+33.3% FLOP。", 10)
     save(fig, "thousand-gpu-configuration-recompute-bars")
 
 
@@ -152,9 +152,14 @@ def mfu_waterfall():
     """F5 MFU 瀑布（横向）：42% 目标 → 七项损失 → 32% 实测。"""
     fig, ax = _canvas(7.6, 4.6, (25.5, 44), (-0.6, 10.2))
     _label(ax, 35, 9.8, "缺的 10 个 MFU 点：构造 trace 的七项拆解（§六.9）", 12.5, weight="bold")
+    rows_y = [8.7 - i * 0.82 for i in range(9)]
+    bh = 0.42
+    gaps = [(1.3, rows_y[-1] - bh)] + [(rows_y[i] + bh, rows_y[i - 1] - bh)
+                                     for i in range(8, 0, -1)] + [(rows_y[0] + bh, 9.2)]
     for g in range(30, 44):
-        ax.plot([g, g], [1.3, 9.2], color="#eeeeee", lw=0.5, zorder=0)
-        _label(ax, g, 0.95, f"{g}", 9.5, color="#666666")
+        for y0, y1 in gaps:
+            ax.plot([g, g], [y0, y1], color="#eeeeee", lw=0.5, zorder=0)
+        _label(ax, g, 0.95, f"{g}", 10, color="#666666")
     items = [
         ("目标", 42.0, 0, BLUE, ""),
         ("kernel 效率", -1.5, 0, GRAY, ""),
@@ -167,8 +172,6 @@ def mfu_waterfall():
         ("实测", 0, 32.0, ORANGE, ""),
     ]
     level = 42.0
-    rows_y = [8.7 - i * 0.82 for i in range(9)]
-    bh = 0.42
     for i, (name, d, endv, col, _) in enumerate(items):
         y = rows_y[i]
         _label(ax, 26.0, y, name, 10, ha="left")
@@ -181,12 +184,12 @@ def mfu_waterfall():
         else:
             level += d
             p = _card(ax, level, y - bh, -d, 2 * bh, "", fc=col, ec="#888888", lw=0.7)
-            if -d >= 0.9:  # 段够宽，点数写进段里
-                _label(ax, level - d / 2, y, f"{d:+.1f}", 9.5, in_box=p)
+            if -d >= 1.4:  # 段够宽，点数写进段里
+                _label(ax, level - d / 2, y, f"{d:+.1f}", 10, in_box=p)
             else:  # 窄段的点数标在段右侧
-                _label(ax, level - d + 0.5, y, f"{d:+.1f}", 9.5, ha="left")
-    _label(ax, 35, 0.35, "四项配置错误（通信、重计算、kernel、CPU）共 6 点先修；straggler 归第九篇；", 9.5)
-    _label(ax, 35, -0.1, "气泡是结构问题；数据等待归第十篇——先修配置错误，再查硬件，最后碰结构。", 9.5)
+                _label(ax, level - d + 0.5, y, f"{d:+.1f}", 10, ha="left")
+    _label(ax, 35, 0.35, "四项配置错误（通信、重计算、kernel、CPU）共 6 点先修；straggler 归第九篇；", 10)
+    _label(ax, 35, -0.1, "气泡是结构问题；数据等待归第十篇——先修配置错误，再查硬件，最后碰结构。", 10)
     save(fig, "thousand-gpu-configuration-mfu-waterfall")
 
 

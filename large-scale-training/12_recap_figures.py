@@ -81,7 +81,7 @@ def ledger_chain():
                 _label(ax, x + w / 2, y + h - 1.04, sub, 10, in_box=p)
             else:
                 _label(ax, x + w / 2, y + h - 0.85, val, 10, in_box=p)
-            _label(ax, x + w / 2, y + 0.26, src, 9, color="#555555",
+            _label(ax, x + w / 2, y + 0.26, src, 10, color="#555555",
                    in_box=p)
             if j < cnt - 1:
                 _arrow(ax, (x + w + 0.05, y + h / 2),
@@ -97,7 +97,7 @@ def ledger_chain():
     _arrow(ax, (x_end2 + 0.05, ymid), (x_end2 + 0.05, y_row2_top + 0.05))
     _label(ax, 6, 0.55,
            "每格都从上一格推出：字节 → 配置 → 理论时间 → MFU 目标 → "
-           "保存间隔 → 有效时间 → GPU 小时与美元", 9.5, color="#555555")
+           "保存间隔 → 有效时间 → GPU 小时与美元", 10, color="#555555")
     save(fig, "large-scale-training-recap-ledger-chain")
 
 
@@ -112,20 +112,20 @@ def state_grid():
         ("参数", ["16N 字节", "复制或切", "三种容器",
                   "落盘", "零通信分片", "bf16 主链",
                   "allocated"]),
-        ("梯度", ["2 或 4 字节", "ZeRO-2 切", "三种容器",
-                   "不落盘", "不落盘重算", "grad norm",
+        ("梯度", ["2 或 4\n字节", "ZeRO-2\n切", "三种容器",
+                   "不落盘", "不落盘重算", "grad\nnorm",
                    "clip 前范数"]),
-        ("优化器状态", ["12N 字节", "ZeRO-1 切", "三种容器",
+        ("优化器状态", ["12N 字节", "ZeRO-1\n切", "三种容器",
                      "落盘", "一并重分片", "fp32 链",
                      "alloc 重试"]),
-        ("激活", ["34sbh / 层", "TP/SP/CP", "在途 O(p)",
+        ("激活", ["34sbh\n/ 层", "TP/SP/CP", "在途 O(p)",
                    "不落盘", "回退重算", "spike 指纹",
                   "step 时间"]),
     ]
     cw, rh = 1.62, 1.15
     x0, y0 = 1.5, 4.95
     for j, c in enumerate(cols):
-        _label(ax, x0 + j * cw + cw / 2, y0 + 0.32, c, 9.5, weight="bold",
+        _label(ax, x0 + j * cw + cw / 2, y0 + 0.32, c, 10, weight="bold",
                color="#243447")
     fcs = [BLUE, GREEN, ORANGE, PURPLE]
     for i, (name, cells) in enumerate(rows):
@@ -134,7 +134,7 @@ def state_grid():
         for j, cell in enumerate(cells):
             p = _card(ax, x0 + j * cw + 0.06, y + 0.06, cw - 0.12, rh - 0.12,
                       "", fc=fcs[i], ec="#888888", lw=0.7)
-            _label(ax, x0 + j * cw + cw / 2, y + rh / 2, cell, 9.5, in_box=p)
+            _label(ax, x0 + j * cw + cw / 2, y + rh / 2, cell, 10, in_box=p)
     save(fig, "large-scale-training-recap-state-grid")
 
 

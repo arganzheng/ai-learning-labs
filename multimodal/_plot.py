@@ -188,6 +188,7 @@ def save(fig, name, dpi=150):
                 line.set_rasterized(True)
     _dump_texts(fig, name)
     _check_text_floor(fig, name)
+    figtext.center_in_rects(fig)
     collide(fig)
     figtext.checks(fig)
     path = os.path.join(OUT, f"{name}.svg")

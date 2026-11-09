@@ -516,6 +516,7 @@ def save(fig, name, dpi=150):
     """散点 / 箭头 / 大量点的折线在 SVG 里按 dpi 栅格化（嵌成 PNG），文字与坐标轴仍是矢量——几千个点的图也能保持在 100 KB 以内。"""
     os.makedirs(OUT, exist_ok=True)
     _dump_texts(fig, name)
+    _ft.center_in_rects(fig)
     _center_box_texts(fig)
     _check_text_floor(fig, name)
     if os.environ.get("PLOT_COLLIDE") == "off":                   # 全量扫描用；正常保存一律检查

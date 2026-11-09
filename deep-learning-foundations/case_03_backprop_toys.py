@@ -391,17 +391,17 @@ def figure_gate():
     for y in (5.85,3.15):
         ax.plot([0.5,11.6],[y,y],color="#d9dee6",lw=1)
     # (行题, 算符, 局部导数 u', v', 输出值, du, dv, du算式, dv算式, 说明)
-    gates=[("加法门",r"o=u+v","1","1","5",r"du=4×1=4",r"dv=4×1=4","原样分发"),
-           ("乘法门",r"o=u v","v=3","u=2","6",r"du=4×3=12",r"dv=4×2=8","乘上另一路输入"),
-           ("max 门",r"$o=\max(u,v)$","0","1","3",r"du=4×0=0",r"dv=4×1=4","只给被选中的一路")]
+    gates=[("加法门",r"$o=u+v$","1","1","5",r"du = 4 × 1 = 4",r"dv = 4 × 1 = 4","原样分发"),
+           ("乘法门",r"$o=uv$","v=3","u=2","6",r"du = 4 × 3 = 12",r"dv = 4 × 2 = 8","乘上另一路输入"),
+           ("max 门",r"$o=\max(u,v)$","0","1","3",r"du = 4 × 0 = 0",r"dv = 4 × 1 = 4","只给被选中的一路")]
     for cy,(op,fo,du_l,dv_l,o,g1,g2,rule) in zip((7.15,4.5,1.85),gates):
         text(ax,.55,cy,op,ha="left",va="center",fontsize=11)
         # 输入 u=2 (上) v=3 (下)
-        cell(ax,1.9,cy+.45,1.15,.75,r"u=2",fc="#dce9f7",ec=C["blue"])
-        cell(ax,1.9,cy-1.3,1.15,.75,r"v=3",fc="#dce9f7",ec=C["blue"])
+        cell(ax,1.9,cy+.45,1.15,.75,r"$u$ = 2",fc="#dce9f7",ec=C["blue"])
+        cell(ax,1.9,cy-1.3,1.15,.75,r"$v$ = 3",fc="#dce9f7",ec=C["blue"])
         p=box(ax,3.85,cy-.6,1.9,1.2,"",fc="#f5f8fc",ec="#777777")
         text(ax,4.8,cy,fo,in_box=p,ha="center",va="center",fontsize=10.5)
-        cell(ax,6.05,cy-.4,1.0,.8,r"o="+o+"",fc="#f5f8fc",ec=C["blue"])
+        cell(ax,6.05,cy-.4,1.0,.8,r"$o$ = "+o,fc="#f5f8fc",ec=C["blue"])
         # 前向箭头（蓝，上侧）与反向箭头（橙，下侧）平行错开
         arrow(ax,(3.1,cy+.8),(3.8,cy+.4),color=C["blue"],lw=1.1)
         arrow(ax,(3.8,cy+.15),(3.1,cy+.55),color=C["orange"],lw=1.0)
@@ -440,9 +440,9 @@ def figure_fanout():
     arrow(ax,(1.25,2.6),(1.25,3.7),color=C["orange"],lw=.9)
     text(ax,4.0,2.15,"1",ha="center",fontsize=10.5,color=C["orange"])
     arrow(ax,(3.3,4.55),(1.9,4.55),color=C["orange"],lw=.9)
-    text(ax,2.6,5.5,r"× $y$ = 3，$g$=3",ha="center",fontsize=10.5,color=C["orange"])
+    text(ax,2.6,5.5,r"× $y$ = 3，$g$ = 3",ha="center",fontsize=10.5,color=C["orange"])
     arrow(ax,(3.3,3.6),(1.95,1.6),color=C["orange"],lw=.9)
-    text(ax,3.15,2.85,r"× $x$ = 2，$g$=2",ha="left",fontsize=10.5,color=C["orange"])
+    text(ax,3.15,2.85,r"× $x$ = 2，$g$ = 2",ha="left",fontsize=10.5,color=C["orange"])
     text(ax,0.3,3.45,"+",ha="center",va="center",fontsize=13,color=C["orange"])
     text(ax,0.6,3.05,"3 + 1 = 4",ha="center",va="center",fontsize=10.5,color=C["orange"])
     text(ax,6,0.85,"加法分叉两路各得 1；乘法门把 1 乘上对方的值；同一输入的两路梯度相加。",ha="center",fontsize=10.5)
@@ -468,7 +468,7 @@ def figure_shapes():
     text(ax,9.85,4.42,r"$y_1$ 的梯度",ha="left",va="center",fontsize=10.5)
     text(ax,9.85,3.92,r"$y_2$ 的梯度",ha="left",va="center",fontsize=10.5)
     text(ax,11.7,3.52,r"$y=(x_1+x_2,\,x_2 x_3)$",ha="right",va="center",fontsize=10.5)
-    text(ax,11.7,3.08,r"$x$=(1,2,3)，$J$ 为 2×3",ha="right",va="center",fontsize=10.5)
+    text(ax,11.7,3.08,r"$x$ = (1,2,3)，$J$ 为 2×3",ha="right",va="center",fontsize=10.5)
     text(ax,6,2.35,r"每格 $g_{ij}$：$W_{ij}$ 增 $\epsilon$，L 约增 $g_{ij}\epsilon$。$W\leftarrow W-\eta\,dW$ 逐元素对应，",ha="center",fontsize=10.5)
     text(ax,6,1.9,"所以标量对参数的梯度必须与参数同形；只有向量对向量才产生 Jacobian。",ha="center",fontsize=10.5)
     finish(fig,"backprop-gradient-shapes")
@@ -476,7 +476,7 @@ def figure_shapes():
 
 def figure_relu_jacobian():
     fig,ax=base_fig("ReLU 的 Jacobian 是对角掩码：VJP 等于逐元素乘",7.6,3.3,(0,12),(0.5,6.6))
-    text(ax,.5,6.0,r"$x$=(−1, 2, 0.5)；mask$_i=1$ 当 $x_i>0$，否则 0",ha="left",fontsize=10.5)
+    text(ax,.5,6.0,r"$x$ = (−1, 2, 0.5)；mask$_i$ = 1 当 $x_i>0$，否则 0",ha="left",fontsize=10.5)
     text(ax,1.25,5.15,r"$J$",ha="center",fontsize=10.5)
     grid(ax,.5,4.95,[[0,0,0],[0,1,0],[0,0,1]],cw=.5)
     text(ax,3.0,5.15,r"$g_y$",ha="center",fontsize=10.5)
@@ -609,7 +609,7 @@ def figure_mini():
     arrow(ax,(8.35,2.55),(7.85,2.15),color=C["orange"],lw=.9)
     text(ax,4.5,.1,"有限差分最大相对误差 = $" + f"{err:.1e}".split("e")[0] + r"\times10^{" + f"{err:.1e}".split("e")[1].lstrip("+").replace("-0","-") + "}" + "$",ha="center",fontsize=10.5)
     p=box(ax,8.35,.30,3.55,1.95,"",fc="#f5f5f5",ec="#888888")
-    text(ax,10.125,1.28,"参数 $W_1$=[[0.5, −0.3], [0.8, 0.4]]\n      $b_1$=[1.0, 0.0]\n      $W_2$=[[0.7, −0.5], [0.2, 0.6]]\n      $b_2$=[0.05, −0.1]",in_box=p,ha="center",va="center",fontsize=10.5,linespacing=1.5)
+    text(ax,10.125,1.28,"参数 $W_1$ = [[0.5, −0.3], [0.8, 0.4]]\n      $b_1$ = [1.0, 0.0]\n      $W_2$ = [[0.7, −0.5], [0.2, 0.6]]\n      $b_2$ = [0.05, −0.1]",in_box=p,ha="center",va="center",fontsize=10.5,linespacing=1.5)
     finish(fig,"backprop-mini-network")
 
 
@@ -694,7 +694,7 @@ def figure_autograd():
             text(ax,x+wdt/2,y-.19,leaf,in_box=p,ha="center",va="center",fontsize=10.5,color=C["orange"])
         else:
             text(ax,x+wdt/2,y,label,in_box=p,ha="center",va="center",fontsize=10.5)
-    text(ax,6,.05,f"loss={loss:.4f}；{len(names)} 个节点；橙色小字 = 该叶子对应的参数",ha="center",fontsize=10.5)
+    text(ax,6,.05,f"loss = {loss:.4f}；{len(names)} 个节点；橙色小字 = 该叶子对应的参数",ha="center",fontsize=10.5)
     finish(fig,"backprop-autograd-graph")
 
 
@@ -757,7 +757,7 @@ def figure_mlp_columns():
          "对应 $W_1$ 的一列），每个输出连着全部 256 个隐藏神经元。",
          ha="center", fontsize=10.5, color="#333333")
     text(ax, 6, 1.45, "参数 = 边数 + 偏置数"
-         r" =784×256+256+256×10+10=203 530",
+         r" = 784×256+256+256×10+10 = 203 530",
          ha="center", fontsize=10.5, color="#111111")
     finish(fig, "backprop-two-layer-mlp")
 

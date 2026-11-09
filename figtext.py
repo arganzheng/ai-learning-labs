@@ -284,6 +284,11 @@ def check_plain_text(fig):
         # 无衬线希腊字母和 CM 数学混在一起不齐。μ 例外：多半是 μs/μm 单位前缀。
         if re.search(r"[α-ωΑ-Ω]", plain.replace("μ", "")):
             bad.append(("希腊字母应为 mathtext", s))
+        # 正文 = 两边都要空格（" = "）；数学串末尾紧贴 = 也算（"$x$=3"）。
+        # 代码形态豁免：==、:=、!=、<=、>= 或含 _ 开头标识符（_ParamAndGradBuffer）。
+        if not re.search(r"==|:=|!=|<=|>=|\b_\w+", s) \
+                and re.search(r"\S=|=\S", plain):
+            bad.append(("= 两边需空格", s))
     if bad:
         raise AssertionError(
             f"{len(bad)} 处正文含非法字符（\\\\ / _ / ^ / ASCII 负号）：\n"

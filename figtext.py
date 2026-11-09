@@ -321,8 +321,82 @@ def style_titles(fig):
             t.set_fontname("Noto Sans SC Medium")
 
 
+def center_in_rects(fig, tol=1.5):
+    """矩形容纳的一组文字按墨迹整体居中：每个矩形内所有文字 bbox 的并集
+    上下边距相等（≤0.75px 显示像素），相对间距不动。全部 ha=center 时
+    横向同样居中。做不到就抛错（>1.5px）。跳过图例色块/坐标背景/空矩形。"""
+    import matplotlib.patches as mp
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    groups = {}                     # patch -> (patch, [Text])
+    for ax in fig.axes:
+        rects = []
+        for p in ax.patches:
+            if not isinstance(p, (mp.Rectangle, mp.FancyBboxPatch)) \
+                    or p is ax.patch:
+                continue
+            try:
+                b = p.get_window_extent(renderer=ren)
+            except Exception:
+                continue
+            if b.width <= 2 or b.height <= 2:
+                continue
+            rects.append((p, b))
+        if not rects:
+            continue
+        for t in ax.texts:
+            if not t.get_text().strip() or not t.get_visible():
+                continue
+            e = t.get_window_extent(renderer=ren)
+            cx, cy = e.x0 + e.width / 2, e.y0 + e.height / 2
+            host, area = None, None
+            for p, b in rects:
+                if b.x0 <= cx <= b.x1 and b.y0 <= cy <= b.y1:
+                    a = b.width * b.height
+                    if area is None or a < area:
+                        host, area = p, a
+            if host is not None:
+                groups.setdefault(id(host), (host, []))[1].append(t)
+    errs = []
+    for p, texts in groups.values():
+        ax = p.axes
+        if ax is None or len(texts) < 2:
+            continue
+        do_x = all(t.get_ha() == "center" for t in texts)
+        for _ in range(4):
+            fig.canvas.draw()
+            ren = fig.canvas.get_renderer()
+            b = p.get_window_extent(renderer=ren)
+            from matplotlib.transforms import Bbox
+            u = Bbox.union([t.get_window_extent(renderer=ren) for t in texts])
+            dy = ((b.y1 - u.y1) - (u.y0 - b.y0)) / 2.0
+            dx = ((b.x1 - u.x1) - (u.x0 - b.x0)) / 2.0 if do_x else 0.0
+            if abs(dy) <= 0.75 and abs(dx) <= 0.75:
+                break
+            inv = ax.transData.inverted()
+            (x0, y0), (x1, y1) = inv.transform([(0, 0), (dx, dy)])
+            for t in texts:
+                t.set_position((t.get_position()[0] + x1 - x0,
+                                t.get_position()[1] + y1 - y0))
+        fig.canvas.draw()
+        ren = fig.canvas.get_renderer()
+        b = p.get_window_extent(renderer=ren)
+        from matplotlib.transforms import Bbox
+        u = Bbox.union([t.get_window_extent(renderer=ren) for t in texts])
+        dy = abs((b.y1 - u.y1) - (u.y0 - b.y0))
+        dx = abs((b.x1 - u.x1) - (u.x0 - b.x0)) if do_x else 0.0
+        if dy > tol or dx > tol:
+            errs.append(
+                f"矩形内文字组未居中（上下差 {dy:.1f}px，左右差 {dx:.1f}px）："
+                f"{[t.get_text() for t in texts]!r}")
+    if errs:
+        raise AssertionError(
+            f"{len(errs)} 处矩形文字组未居中：\n" + "\n".join(errs))
+
+
 def checks(fig):
     """save() 前的全部文字检查。"""
+    center_in_rects(fig)
     style_titles(fig)
     check_math_needed(fig)
     check_plain_text(fig)
@@ -343,6 +417,7 @@ def enable_embed(mod):
     orig = mod.save
 
     def wrapped(fig, name, *a, **k):
+        center_in_rects(fig)
         style_titles(fig)
         check_math_needed(fig)
         check_plain_text(fig)

@@ -121,7 +121,7 @@ def run_rvq():
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
     axes[0].plot(range(1, n_q + 1), errs, "o-", color=C["blue"]); axes[0].axhline(err1 / tot, color=C["gray"], ls="--", lw=0.8)
-    axes[0].text(4.5, err1 / tot * 0.55, f"单码本 VQ（K={K}）", fontsize=10.5, color=C["gray"])
+    axes[0].text(4.5, err1 / tot * 0.55, f"单码本 VQ（$K$ = {K}）", fontsize=10.5, color=C["gray"])
     axes[0].set_xlabel("解码时用的码本级数 n"); axes[0].set_ylabel("相对重建误差"); axes[0].set_title("前 n 级码本重建：级数越多越精细", fontsize=11.5); axes[0].set_yscale("log"); axes[0].set_yticks([1e-3, 1e-2, 1e-1, 1])
     axes[1].bar(range(1, n_q + 1), rnorm, color=C["orange"]); axes[1].set_xlabel("级"); axes[1].set_ylabel("该级之后残差的均方根"); axes[1].set_xticks(range(1, n_q + 1)); axes[1].set_xlim(0.3, n_q + 0.7); axes[1].set_title("每级去掉一部分，残差递减", fontsize=11.5)
     save(fig, "04-rvq")

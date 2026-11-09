@@ -64,7 +64,7 @@ def run_connectors():
     for i in range(2):
         for j in range(2):
             axes[2].text(j, i, labels[i][j], ha="center", va="center", fontsize=10.5)
-    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler\n16→K=3\n每个 query 看全部 patch", fontsize=10.5)
+    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler\n16 → $K$ = 3\n每个 query 看全部 patch", fontsize=10.5, linespacing=1.5)
     for i in range(3):
         axes[3].text(0, i, f"$q_{i}$·全图", ha="center", va="center", fontsize=10.5)
     for ax in axes:
@@ -181,7 +181,7 @@ def run_diagrams():
     # 上行：图 → ViT 切块 → 576 行 1024 维
     box(ax, patches, inner, (1, 21), 16, 8, "一张图\n336×336×3", L["gray"])
     arrow(ax, 17.5, 25, 19.5, 25)
-    box(ax, patches, inner, (20, 21), 20, 8, "ViT 切块\n24×24=576\n个 patch", L["blue"])
+    box(ax, patches, inner, (20, 21), 20, 8, "ViT 切块\n24 × 24 = 576\n个 patch", L["blue"])
     arrow(ax, 40.5, 25, 42.5, 25)
     box(ax, patches, inner, (43, 21), 17, 8, "576 行\n每行 1024 维", L["blue"])
     # 折线：576×1024 底部 → 行间空隙 → MLP 顶部

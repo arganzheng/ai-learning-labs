@@ -134,9 +134,69 @@ def collide(fig):
         raise AssertionError(f"{len(errs)} 处文字碰撞：\n" + "\n".join(sorted(set(errs))))
 
 
+# 桌面端正文列里图按 ~741 px 渲染；路径化文字没有 hinting，小于这个字号发虚
+COLUMN_PX = 741
+MIN_TEXT_PX = 13        # 普通文字渲染后最小像素
+MIN_MATH_PX = 14        # 含 $...$ 的 mathtext 最小像素
+
+
+def _final_width_px(fig):
+    """savefig(bbox_inches='tight') 之后的实际宽度，换算成 96 dpi 像素。"""
+    renderer = fig.canvas.get_renderer()
+    return fig.get_tightbbox(renderer).width * 96
+
+
+def _check_text_floor(fig, name):
+    if os.environ.get("PLOT_TEXT_FLOOR") == "off":
+        return
+    scale = min(1.0, COLUMN_PX / _final_width_px(fig))
+    bad = []
+    texts = list(fig.texts)
+    if fig._suptitle is not None:
+        texts.append(fig._suptitle)
+    for ax in fig.axes:
+        texts += list(ax.texts) + [ax.title, ax.xaxis.label, ax.yaxis.label]
+        if ax.axison:
+            texts += ax.get_xticklabels() + ax.get_yticklabels()
+    for t in texts:
+        s = t.get_text()
+        if not s.strip() or not t.get_visible():
+            continue
+        px = t.get_fontsize() * 96 / 72 * scale
+        floor = MIN_MATH_PX if "$" in s else MIN_TEXT_PX
+        if px < floor - 0.05:
+            bad.append(f"{s!r}: {px:.1f}px < {floor}px")
+    if os.environ.get("PLOT_TEXT_FLOOR") == "scan":
+        log = os.environ.get("PLOT_SCAN_LOG", "/tmp/textfloor-scan.jsonl")
+        import json
+        with open(log, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"name": name, "scale": round(scale, 3), "bad": bad},
+                               ensure_ascii=False) + "\n")
+        return
+    if bad:
+        raise AssertionError(
+            f"{name}: {len(bad)} 处文字渲染后低于最小字号（列宽 {COLUMN_PX}px 下按 {scale:.2f} 缩放）\n"
+            + "\n".join(bad))
+
+
+def _dump_texts(fig, name):
+    """PLOT_TEXTS=<dir> 时把本图全部文字（排序）写成 JSON，供改字号前后对比。"""
+    d = os.environ.get("PLOT_TEXTS")
+    if not d:
+        return
+    os.makedirs(d, exist_ok=True)
+    texts = sorted({t.get_text() for t in fig.findobj(matplotlib.text.Text)
+                    if t.get_text().strip() and t.get_visible()})
+    with open(os.path.join(d, f"{name}.json"), "w", encoding="utf-8") as f:
+        import json
+        json.dump(texts, f, ensure_ascii=False, indent=1, sort_keys=True)
+
+
 def save(fig, name):
     check_texts(fig)
     collide(fig)
+    _dump_texts(fig, name)
+    _check_text_floor(fig, name)
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})

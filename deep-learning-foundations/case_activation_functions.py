@@ -80,20 +80,20 @@ def plot_activation_curves():
         "SiLU": (x * sigmoid, sigmoid + x * sigmoid * (1 - sigmoid), C["teal"]),
     }
 
-    fig, axes = plt.subplots(2, 3, figsize=(12, 6.4), sharex=True, sharey=True)
+    fig, axes = plt.subplots(2, 3, figsize=(10.5, 5.9), sharex=True, sharey=True)
     for ax, (name, (values, derivatives, color)) in zip(axes.flat, curves.items()):
         ax.plot(x, values, color=color, linewidth=1.6, label="函数")
         ax.plot(x, derivatives, color=color, linewidth=1.4, linestyle="--", label="导数")
-        ax.set_title(name, fontsize=14)
-        ax.legend(loc="upper left", frameon=False, fontsize=13.5)
-        ax.tick_params(axis="both", labelsize=13.5)
+        ax.set_title(name, fontsize=15)
+        ax.legend(loc="upper left", frameon=False, fontsize=14)
+        ax.tick_params(axis="both", labelsize=14)
         ax.axhline(0, color=C["gray"], linewidth=0.6)
         ax.axvline(0, color=C["gray"], linewidth=0.6)
         ax.grid(alpha=0.2)
-    axes[0, 0].set_ylabel("激活值 / 导数", fontsize=13.5)
-    axes[1, 0].set_ylabel("激活值 / 导数", fontsize=13.5)
+    axes[0, 0].set_ylabel("激活值 / 导数", fontsize=14)
+    axes[1, 0].set_ylabel("激活值 / 导数", fontsize=14)
     for ax in axes[1]:
-        ax.set_xlabel("输入 x", fontsize=13.5)
+        ax.set_xlabel("输入 x", fontsize=14)
     save(fig, "activation-functions")
 
 
@@ -153,7 +153,8 @@ def plot_relu():
     )
     for ax in axes:
         ax.axvspan(-5, 0, color=C["red"], alpha=0.10)
-    axes[0].text(-4.7, 3.6, "zero-gradient region (x < 0)", fontsize=15)
+    axes[0].text(-4.8, 3.2, "zero-gradient\nregion (x < 0)", fontsize=14,
+                 va="top")
     save(fig, "activation-relu")
 
 
@@ -171,8 +172,8 @@ def plot_relu_variants():
         np.where(x > 0, 1, 0),
     ]
     colors = [C["purple"], C["blue"], C["orange"], C["gray"]]
-    labels = ["Leaky (α=0.1)", "PReLU (α=0.25 example)",
-              "ELU (α=1)", "ReLU reference"]
+    labels = ["Leaky ($\\alpha$ = 0.1)", "PReLU ($\\alpha$ = 0.25 example)",
+              "ELU ($\\alpha$ = 1)", "ReLU reference"]
     fig, axes = _plot_function_and_derivative(
         "ReLU variants", x, functions, derivatives, colors, labels,
     )
@@ -224,14 +225,14 @@ def plot_smooth_activations():
     silu_min = int(np.argmin(silu))
     # 最小值标注放到图例下方的空白处，用细引线指到曲线上，避免文字压线
     for index, label, color, text_y in (
-        (gelu_min, "GELU min: (-0.752, -0.170)", vermilion, 2.6),
-        (silu_min, "SiLU min: (-1.278, -0.278)", green, 1.7),
+        (gelu_min, "GELU min: (−0.752, −0.170)", vermilion, 2.6),
+        (silu_min, "SiLU min: (−1.278, −0.278)", green, 1.7),
     ):
         is_gelu = label.startswith("GELU")
         y = gelu[index] if is_gelu else silu[index]
         axes[0].scatter([x[index]], [y], color=color, zorder=4)
         axes[0].annotate(
-            label, (x[index], y), xytext=(-4.85, text_y), fontsize=11.5,
+            label, (x[index], y), xytext=(-4.85, text_y), fontsize=14,
             color=color,
             arrowprops={"arrowstyle": "-", "color": color, "lw": 0.9},
         )
@@ -254,7 +255,7 @@ def plot_glu_family():
     diagram.set_xlim(0, 10)
     diagram.set_ylim(0, 10)
     diagram.axis("off")
-    diagram.set_title("FFN projections", fontsize=11)
+    diagram.set_title("FFN projections", fontsize=14)
 
     def box(ax, center, text, width=2.4, height=1.05):
         x, y = center
@@ -264,14 +265,15 @@ def plot_glu_family():
             edgecolor="#7a8ca5", linewidth=1.1,
         )
         ax.add_patch(patch)
-        ax.text(x, y, text, ha="center", va="center", fontsize=14)
+        ax.text(x, y, text, ha="center", va="center", fontsize=15,
+                linespacing=1.5)
 
     def arrow(ax, start, end):
         ax.annotate("", xy=end, xytext=start,
                     arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 1})
 
     def code_name(ax, x, y, text):
-        ax.text(x, y, text, ha="center", va="top", fontsize=12,
+        ax.text(x, y, text, ha="center", va="top", fontsize=14,
                 color=C["gray"], style="italic")
 
     diagram.text(0.2, 8.9, "Ordinary FFN", fontsize=16, weight="bold")
@@ -300,7 +302,7 @@ def plot_glu_family():
     diagram.text(5.1, 1.35,
                  "$d_g \\approx \\frac{2}{3}\\, d_{ff}$ keeps parameters "
                  "matched ($3\\,d\\,d_g \\approx 2\\,d\\,d_{ff}$)",
-                 ha="center", fontsize=12.5, color=C["gray"])
+                 ha="center", fontsize=15, color=C["gray"])
 
     x = np.linspace(-5, 5, 1001)
     sigmoid = 1 / (1 + np.exp(-x))

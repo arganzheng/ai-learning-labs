@@ -37,7 +37,8 @@ def box(ax, center, text, width=6, height=5, fontsize=14, fc=BOX_FC,
         linewidth=1.1,
     )
     ax.add_patch(patch)
-    label = ax.text(x, y, text, ha="center", va="center", fontsize=fontsize)
+    label = ax.text(x, y, text, ha="center", va="center", fontsize=fontsize,
+                    linespacing=1.5)
     return patch, label
 
 

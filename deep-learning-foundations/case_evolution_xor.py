@@ -140,7 +140,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     ]
     titles = [
         "感知机：XOR 最后一轮",
-        "ADALINE：线性输出",
+        "ADALINE：线性输出\n4 个预测均约 0.5",
         f"两层 MLP：$H$ = 4，seed = {mlp_seed}",
     ]
     for index, (ax, surface, title) in enumerate(zip(axes, surfaces, titles)):
@@ -168,8 +168,6 @@ def plot_case(perceptron, adaline, selected_mlp):
         ax.set_xlabel("$x_1$")
         ax.set_ylabel("$x_2$")
         ax.grid(alpha=0.16)
-    axes[1].text(0.5, 0.06, "4 个预测均约 0.5", transform=axes[1].transAxes,
-                 ha="center", fontsize=15, color="#222222")
 
     errors_ax = fig.add_subplot(layout[1, 0:3])
     adaline_ax = fig.add_subplot(layout[1, 3:6])

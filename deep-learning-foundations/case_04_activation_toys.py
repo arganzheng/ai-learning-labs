@@ -58,7 +58,7 @@ def _segment_hits_rect(a, b, rect):
 
 def assert_line_clear(ax, start, end):
     for patch in lst_plot._PATCHES:
-        if patch.get_figure() is not ax.figure:
+        if patch.get_figure() is not ax.figure or getattr(patch, "_lines_ok", False):
             continue
         x, y, w, h = patch.get_bbox().bounds
         assert not _segment_hits_rect(start, end, (x, y, x + w, y + h)), \
@@ -478,6 +478,7 @@ def figure_ffn_position():
     pframe = box(ax, 6.85, 4.3, 3.75, 1.9, "", fc="#f5f8fc",
                  ec=C["blue"], lw=1.0)
     pframe._no_center = True          # 容器框：不做框内文字组整体居中
+    pframe._lines_ok = True           # 容器框：内部支路箭头允许穿过
     text(ax, 8.72, 6.0, "FFN（SwiGLU）", in_box=pframe, ha="center",
          va="center", fontsize=10.5)
     ax.plot([6.77, 6.83], [y + .4, y + .4], color=C["blue"], lw=.9)

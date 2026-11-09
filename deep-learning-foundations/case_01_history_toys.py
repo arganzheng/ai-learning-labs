@@ -187,7 +187,7 @@ def figure_xor():
     ax.text(1.02, 1.14, "两点重合", fontsize=10.5, ha="right",
             color="#555555")
     ax.plot([.27, 1.23], [1.5 - .27, 1.5 - 1.23], color=C["blue"], lw=1.4)
-    ax.text(.32, .05, r"$h_1+h_2=1.5$", fontsize=10.5, ha="left",
+    ax.text(.62, .12, r"$h_1+h_2=1.5$", fontsize=10.5, ha="left",
             color=C["blue"])
     save(fig, "dl-evo-perceptron-xor")
 

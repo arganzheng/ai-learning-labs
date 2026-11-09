@@ -278,7 +278,7 @@ def check_plain_text(fig):
             if not re.fullmatch(r"\w{2,}[_^]\w{2,}|[_^]\w{2,}", m_.group(0)):
                 bad.append(("_ 或 ^", s))
                 break
-        if re.search(r"(?<![A-Za-z0-9])-\d", plain):
+        if re.search(r"(?<![A-Za-z0-9])-[.\d]", plain):
             bad.append(("ASCII 负号/减号", s))
         # 希腊字母作为变量必须走 mathtext（$\tau$、$\delta$），不要写成平文本 Unicode——
         # 无衬线希腊字母和 CM 数学混在一起不齐。μ 例外：多半是 μs/μm 单位前缀。

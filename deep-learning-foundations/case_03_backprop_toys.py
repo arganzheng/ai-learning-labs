@@ -321,7 +321,7 @@ def figure_overview():
         box_title(ax,x+w/2,y+.68,a,p); text(ax,x+w/2,y+.27,b,in_box=p,ha="center",va="center",fontsize=10.5)
     for i in range(4): arrow(ax,(xs[i]+w+.05,y+.5),(xs[i+1]-.08,y+.5),color=C["blue"])
     text(ax,.4,6.15,"前向：逐层计算",ha="left",va="center",fontsize=10.5,color=C["blue"])
-    for x,lab in ((2.75,"W1 参数"),(7.15,"W2 参数")):
+    for x,lab in ((2.75,"$W_1$ 参数"),(7.15,"$W_2$ 参数")):
         p=box(ax,x,6.0,1.5,.65,"",fc="#f0f0f0",ec="#888888")
         text(ax,x+.75,6.32,lab,in_box=p,ha="center",va="center",fontsize=10.5)
         arrow(ax,(x+.75,5.97),(x+.75,5.75),color="#888888",lw=.8)
@@ -363,9 +363,9 @@ def figure_scalar():
     arrow(ax,(4.55,4.8),(3.5,2.45),color=C["orange"],lw=.9)
     arrow(ax,(5.15,4.8),(5.7,2.45),color=C["orange"],lw=.9)
     arrow(ax,(8.45,4.8),(9.05,2.45),color=C["orange"],lw=.9)
-    lab=[((2.9,4.5),(r"× $w$=3" + "\n" + "$dL/dx$=6"),"center"),((6.6,4.5),(r"×1" + "\n" + "$dL/dz$=2"),"center"),
-         ((9.6,4.5),(r"×2$e$=2" + "\n" + "$dL/de$=2"),"center"),((2.45,3.05),(r"× $x$=2" + "\n" + "$dL/dw$=4"),"right"),
-         ((6.15,3.35),(r"×1" + "\n" + "$dL/db$=2"),"left"),((8.9,3.67),(r"×(−1)" + "\n" + "$dL/dy$=−2"),"left")]
+    lab=[((2.9,4.5),(r"× $w$ = 3" + "\n" + "$dL/dx$ = 6"),"center"),((6.6,4.5),(r"× 1" + "\n" + "$dL/dz$ = 2"),"center"),
+         ((9.6,4.5),(r"× 2$e$ = 2" + "\n" + "$dL/de$ = 2"),"center"),((2.45,3.05),(r"× $x$ = 2" + "\n" + "$dL/dw$ = 4"),"right"),
+         ((6.15,3.35),(r"× 1" + "\n" + "$dL/db$ = 2"),"left"),((8.9,3.67),(r"× (−1)" + "\n" + "$dL/dy$ = −2"),"left")]
     for (x,y),s,ha in lab:
         text(ax,x,y,s,ha=ha,va="center",fontsize=10.5,color=C["orange"],linespacing=1.5)
     finish(fig,"backprop-scalar-graph")
@@ -374,7 +374,7 @@ def figure_scalar():
 def figure_gate():
     """三种局部反向规则：加法分发、乘法换路、max 只走被选中的一路。
 
-    每列：蓝色 = 前向（输入值 → 输出值），橙色 = 反向（上游梯度 $g$=4
+    每列：蓝色 = 前向（输入值 → 输出值），橙色 = 反向（上游梯度 $g$ = 4
     从输出端进来，乘上这条边的局部导数，得到该输入的下游梯度）。
     与 figure_scalar 同一套配色，边旁标出「× 局部导数」与结果。
     """
@@ -385,7 +385,7 @@ def figure_gate():
     text(ax,1.6,8.95,"前向（数值）",ha="left",va="center",fontsize=10.5,color=C["blue"])
     ax.plot([4.0,4.8],[8.95,8.95],color=C["orange"],lw=1.8)
     text(ax,5.0,8.95,"反向（梯度）",ha="left",va="center",fontsize=10.5,color=C["orange"])
-    text(ax,9.3,8.95,r"上游梯度 $g$=4 相同，分配规则不同",
+    text(ax,9.3,8.95,r"上游梯度 $g$ = 4 相同，分配规则不同",
          ha="left",va="center",fontsize=10.5,color="#555555")
     # 三行横排；每行自含：行题在最左，输入 → gate → 输出，g 从最右进来
     for y in (5.85,3.15):
@@ -409,9 +409,9 @@ def figure_gate():
         arrow(ax,(3.8,cy-.85),(3.1,cy-1.2),color=C["orange"],lw=1.0)
         arrow(ax,(5.8,cy+.15),(6.0,cy+.15),color=C["blue"],lw=1.1)
         arrow(ax,(6.0,cy-.18),(5.8,cy-.18),color=C["orange"],lw=1.0)
-        # 上游梯度 $g$=4 从右侧进来（橙），标注就压在箭头旁
+        # 上游梯度 $g$ = 4 从右侧进来（橙），标注就压在箭头旁
         arrow(ax,(8.35,cy),(7.1,cy),color=C["orange"],lw=1.1)
-        text(ax,7.72,cy+.35,r"上游 $g$=4",ha="center",fontsize=10.5,color=C["orange"])
+        text(ax,7.72,cy+.35,r"上游 $g$ = 4",ha="center",fontsize=10.5,color=C["orange"])
         # 反向结果：算式+结果合并写在输入格外侧
         text(ax,.62,cy+.75,g1,ha="center",fontsize=10.5,color=C["orange"])
         text(ax,.62,cy-.85,g2,ha="center",fontsize=10.5,color=C["orange"])
@@ -427,22 +427,22 @@ def figure_fanout():
     node(ax,.5,3.75,r"$x$","2",w=1.3,h=1.4)
     node(ax,.5,1.15,r"$y$","3",w=1.3,h=1.4)
     node(ax,3.4,3.65,r"$x\cdot y$","6",w=1.8,h=1.45)
-    node(ax,6.6,2.35,"+","$f$=8",w=1.6,h=1.35)
+    node(ax,6.6,2.35,"+","$f$ = 8",w=1.6,h=1.35)
     arrow(ax,(1.85,4.3),(3.35,4.3),color=C["blue"])
     arrow(ax,(1.85,1.9),(3.35,3.8),color=C["blue"])
     arrow(ax,(1.15,3.7),(1.15,2.7),color=C["blue"])
     arrow(ax,(1.15,2.7),(6.5,2.7),color=C["blue"])
     arrow(ax,(5.25,3.9),(6.55,3.2),color=C["blue"])
-    arrow(ax,(9.3,3.0),(8.35,3.0),color=C["orange"]); text(ax,9.45,3.35,"上游 $g$=1",ha="left",fontsize=10.5,color=C["orange"])
+    arrow(ax,(9.3,3.0),(8.35,3.0),color=C["orange"]); text(ax,9.45,3.35,"上游 $g$ = 1",ha="left",fontsize=10.5,color=C["orange"])
     arrow(ax,(6.5,3.35),(5.35,4.15),color=C["orange"],lw=.9)
     text(ax,6.35,4.0,"1",ha="center",fontsize=10.5,color=C["orange"])
     arrow(ax,(6.55,2.7),(1.45,2.7),color=C["orange"],lw=.9)
     arrow(ax,(1.25,2.6),(1.25,3.7),color=C["orange"],lw=.9)
     text(ax,4.0,2.15,"1",ha="center",fontsize=10.5,color=C["orange"])
     arrow(ax,(3.3,4.55),(1.9,4.55),color=C["orange"],lw=.9)
-    text(ax,2.6,5.5,r"× $y$=3，$g$=3",ha="center",fontsize=10.5,color=C["orange"])
+    text(ax,2.6,5.5,r"× $y$ = 3，$g$=3",ha="center",fontsize=10.5,color=C["orange"])
     arrow(ax,(3.3,3.6),(1.95,1.6),color=C["orange"],lw=.9)
-    text(ax,3.15,2.85,r"× $x$=2，$g$=2",ha="left",fontsize=10.5,color=C["orange"])
+    text(ax,3.15,2.85,r"× $x$ = 2，$g$=2",ha="left",fontsize=10.5,color=C["orange"])
     text(ax,0.3,3.45,"+",ha="center",va="center",fontsize=13,color=C["orange"])
     text(ax,0.6,3.05,"3 + 1 = 4",ha="center",va="center",fontsize=10.5,color=C["orange"])
     text(ax,6,0.85,"加法分叉两路各得 1；乘法门把 1 乘上对方的值；同一输入的两路梯度相加。",ha="center",fontsize=10.5)
@@ -571,9 +571,9 @@ def figure_softmax():
         tops.append(y0+h)
     # z 在一根基线上对齐；p/g 各一排，放在条下，不写进窄条
     for i,x in enumerate(xs):
-        ax.text(x,max(tops)+.22,f"$z$={z[i]:g}",ha="center",va="bottom",fontsize=10.5)
-        ax.text(x,1.7,f"$p$={p[i]:.3f}",ha="center",va="center",fontsize=10.5)
-        ax.text(x,1.25,f"$g$={grad[i]:+.3f}".replace("-","−"),ha="center",va="center",fontsize=10.5)
+        ax.text(x,max(tops)+.22,f"$z$ = {z[i]:g}",ha="center",va="bottom",fontsize=10.5)
+        ax.text(x,1.7,f"$p$ = {p[i]:.3f}",ha="center",va="center",fontsize=10.5)
+        ax.text(x,1.25,f"$g$ = {grad[i]:+.3f}".replace("-","−"),ha="center",va="center",fontsize=10.5)
     text(ax,3,max(tops)+.75,"正确类",ha="center",fontsize=10.5,color=C["green"])
     text(ax,6,.55,r"$\partial L/\partial z=p-\mathrm{onehot}(y)$：正确类得到负梯度上推，其余按概率下压。",
          ha="center",fontsize=11.5)
@@ -584,15 +584,15 @@ def figure_mini():
     d=mini_values(); err=mini_rel_err()
     fig,ax=base_fig("2-2-2 迷你网络：前向值在上，反向梯度沿链逐节点回走",7.6,3.8,(0,12),(0.3,6.3))
     xs=[.3,2.75,5.2,7.65,10.1]; w=1.8
-    vals=[("$x$","[ 0.6 −1.2]"),("$h$","[0.34 −0.66]"),("$a$","[0.34 0]"),
-          ("$z$","[0.29 −0.27]"),("$L$","0.453")]
+    vals=[("$x$","[0.6, −1.2]"),("$h$","[0.34, −0.66]"),("$a$","[0.34, 0.0]"),
+          ("$z$","[0.29, −0.27]"),("$L$","0.453")]
     for x,(a,b) in zip(xs,vals):
         p=box(ax,x,4.5,w,1.05,"",fc="#dce9f7",ec=C["blue"])
         box_title(ax,x+w/2,5.2,a,p); text(ax,x+w/2,4.78,b,in_box=p,ha="center",va="center",fontsize=10.5)
     for i in range(4): arrow(ax,(xs[i]+w+.05,5.02),(xs[i+1]-.08,5.02),color=C["blue"])
     text(ax,4.88,4.05,"ReLU 置 0",ha="center",va="center",fontsize=10.5)
     bw=1.9
-    grads=[(2.7,r"$G_H$","[−0.44 0]"),(5.15,r"$G_A$","[−0.44 0.15]"),(7.6,r"$G_Z$","[−0.36 0.36]")]
+    grads=[(2.7,r"$G_H$","[−0.44, 0.0]"),(5.15,r"$G_A$","[−0.44, 0.15]"),(7.6,r"$G_Z$","[−0.36, 0.36]")]
     for x,a,b in grads:
         p=box(ax,x,2.6,bw,1.0,"",fc="#fff3e0",ec=C["orange"])
         box_title(ax,x+bw/2,3.28,a,p); text(ax,x+bw/2,2.86,b,in_box=p,ha="center",va="center",fontsize=10.5)
@@ -601,15 +601,15 @@ def figure_mini():
     arrow(ax,(3.65,4.45),(3.65,3.65),color=C["orange"])
     arrow(ax,(7.55,3.1),(7.15,3.1),color=C["orange"])
     arrow(ax,(5.1,3.1),(4.7,3.1),color=C["orange"])
-    text(ax,10.35,3.4,r"$G_Z=(P-Y)$",ha="left",va="center",fontsize=10.5,color=C["orange"])
-    for x,a,b in ((1.4,"dW1","[[−0.26 0]\n [ 0.52 0]]"),(5.6,"dW2","[[−0.12 0.12]\n [0 0]]")):
+    text(ax,8.8,4.02,r"$G_Z=(P-Y)$",ha="left",va="center",fontsize=10.5,color=C["orange"])
+    for x,a,b in ((1.4,"$dW_1$","[[−0.26, 0.0],\n [0.52, 0.0]]"),(5.6,"$dW_2$","[[−0.12, 0.12],\n [0.0, 0.0]]")):
         p=box(ax,x,.55,2.5,1.55,"",fc="#fff3e0",ec=C["orange"])
         box_title(ax,x+1.25,1.78,a,p); text(ax,x+1.25,1.1,b,in_box=p,ha="center",va="center",fontsize=10.5)
     arrow(ax,(3.7,2.55),(3.0,2.15),color=C["orange"],lw=.9)
     arrow(ax,(8.35,2.55),(7.85,2.15),color=C["orange"],lw=.9)
-    text(ax,4.5,.3,f"有限差分最大相对误差 = {err:.1e}",ha="center",fontsize=10.5)
+    text(ax,4.5,.1,"有限差分最大相对误差 = $" + f"{err:.1e}".split("e")[0] + r"\times10^{" + f"{err:.1e}".split("e")[1].lstrip("+").replace("-0","-") + "}" + "$",ha="center",fontsize=10.5)
     p=box(ax,8.35,.30,3.55,1.95,"",fc="#f5f5f5",ec="#888888")
-    text(ax,10.125,1.28,"参数 $W_1$=[[.5,-.3],[.8,.4]]\n  $b_1$=[1,0]\n  $W_2$=[[.7,-.5],[.2,.6]]\n  $b_2$=[.05,-.1]",in_box=p,ha="center",va="center",fontsize=10.5,linespacing=1.5)
+    text(ax,10.125,1.28,"参数 $W_1$=[[0.5, −0.3], [0.8, 0.4]]\n      $b_1$=[1.0, 0.0]\n      $W_2$=[[0.7, −0.5], [0.2, 0.6]]\n      $b_2$=[0.05, −0.1]",in_box=p,ha="center",va="center",fontsize=10.5,linespacing=1.5)
     finish(fig,"backprop-mini-network")
 
 
@@ -655,7 +655,7 @@ def figure_flops():
         text(ax,x+1.625,2.0,cost,in_box=p,ha="center",va="center",fontsize=10.5,color=color)
     arrow(ax,(3.82,2.5),(4.25,2.5),color="#777777",lw=1.0)
     arrow(ax,(7.62,2.5),(8.05,2.5),color="#777777",lw=1.0)
-    text(ax,6,1.05,r"前向 $2mkn$；反向 $2+2=4mkn$=2× 前向。",ha="center",fontsize=10.5)
+    text(ax,6,1.05,r"前向 $2mkn$；反向 $2+2=4mkn$ = 2× 前向。",ha="center",fontsize=10.5)
     finish(fig,"backprop-linear-flops")
 
 

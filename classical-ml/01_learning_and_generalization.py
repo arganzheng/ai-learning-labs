@@ -74,7 +74,7 @@ def exp_fit():
     fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.6), sharey=True)
     for ax, d, title in zip(axes, (1, 4, 15), ("次数 1：欠拟合", "次数 4：合适", "次数 15：过拟合")):
         m = poly_model(d).fit(X, y)
-        ax.plot(xs, truth(xs), color=C["gray"], lw=1, ls="--", label="真实函数 sin 2πx")
+        ax.plot(xs, truth(xs), color=C["gray"], lw=1, ls="--", label=r"真实函数 $\sin 2\pi x$")
         ax.scatter(X[:, 0], y, s=14, color=C["blue"], zorder=3, label="30 个训练点")
         ax.plot(xs, m.predict(xs[:, None]), color=C["red"], lw=1.6, label=f"{d} 次多项式")
         ax.set_ylim(-1.8, 1.8)

@@ -42,7 +42,7 @@ def deriv():
         ax.plot([x0, x1], [f(x0), f(x1)], "o", color=C["red"])
         ax.plot(xs, f(x0) + slope * (xs - x0), color=C["red"], lw=1.2, label=f"割线 斜率 {slope:.2f}")
         ax.plot(xs, f(x0) + 2 * (xs - x0), color=C["green"], ls="--", lw=1, label="切线 斜率 2")
-        ax.set(title=f"ε = {eps}", xlabel="x", ylim=(-1, 6))
+        ax.set(title=rf"$\varepsilon$ = {eps}", xlabel="x", ylim=(-1, 6))
         ax.legend(fontsize=7, loc="upper left")
     axes[0].set_ylabel("f(x) = x²")
     save(fig, "07-derivative-secant")
@@ -65,7 +65,7 @@ def grad():
     t1, t2 = np.meshgrid(np.linspace(-2.6, 2.6, 200), np.linspace(-1.6, 2.1, 200))
     fig, ax = plt.subplots(figsize=(7.6, 3.8))
     cs = ax.contour(t1, t2, L_bowl(t1, t2), levels=[0.25, 1, 2, 4, 7, 10], colors=C["gray"], linewidths=0.8)
-    ax.clabel(cs, fmt="L=%g", fontsize=7)
+    ax.clabel(cs, fmt="L = %g", fontsize=7)
     g1, g2 = np.meshgrid(np.linspace(-2, 2, 9), np.linspace(-1.2, 1.2, 7))
     gx, gy = 2 * g1, 6 * g2
     ax.quiver(g1, g2, gx, gy, color=C["blue"], scale=60, width=0.003, alpha=0.8)
@@ -74,9 +74,9 @@ def grad():
     ax.annotate("", (p[0] + g[0] * 0.12, p[1] + g[1] * 0.12), p, arrowprops=dict(arrowstyle="->", color=C["red"], lw=2))
     ax.annotate("", (p[0] - g[0] * 0.12, p[1] - g[1] * 0.12), p, arrowprops=dict(arrowstyle="->", color=C["green"], lw=2))
     ax.plot(*p, "o", color="k", ms=4)
-    ax.text(1.35, 1.65, "∇L = (2, 6)\n上坡最快", color=C["red"], fontsize=8)
-    ax.text(0.2, 0.05, "−∇L\n下坡最快", color=C["green"], fontsize=8)
-    ax.set(xlabel="θ₁", ylabel="θ₂", title="等高线是 L 相等的点；梯度箭头垂直于等高线、指向 L 增长最快的方向", aspect="equal", xlim=(-2.6, 2.6), ylim=(-1.6, 2.1))
+    ax.text(1.35, 1.65, "$\\nabla L = (2, 6)$\n上坡最快", color=C["red"], linespacing=1.5, fontsize=8)
+    ax.text(0.2, 0.05, "$-\\nabla L$\n下坡最快", color=C["green"], linespacing=1.5, fontsize=8)
+    ax.set(xlabel=r"$\theta_1$", ylabel=r"$\theta_2$", title="等高线是 L 相等的点；梯度箭头垂直于等高线、指向 L 增长最快的方向", aspect="equal", xlim=(-2.6, 2.6), ylim=(-1.6, 2.1))
     save(fig, "07-gradient-field")
 
 
@@ -96,22 +96,22 @@ def chain():
 
     fig, ax = plt.subplots(figsize=(7.6, 3.2))
     ax.axis("off"); ax.set_xlim(0, 10); ax.set_ylim(0, 5)
-    nodes = {"θ₁ = 2": (1, 3.8), "θ₂ = 3": (1, 1.2), "g₁ = θ₁θ₂ = 6": (4.5, 3.8), "g₂ = θ₁+θ₂ = 5": (4.5, 1.2), "L = g₁+2g₂ = 16": (8.3, 2.5)}
+    nodes = {r"$\theta_1$ = 2": (1, 3.8), r"$\theta_2$ = 3": (1, 1.2), r"$g_1 = \theta_1\theta_2$ = 6": (4.5, 3.8), r"$g_2 = \theta_1+\theta_2$ = 5": (4.5, 1.2), r"$L = g_1+2g_2$ = 16": (8.3, 2.5)}
     for name, (x, y) in nodes.items():
         ax.add_patch(plt.Rectangle((x - 0.9, y - 0.4), 1.8 if not name.startswith("L") else 2.2, 0.8, fc="#eef3fa", ec=C["blue"]))
         ax.text(x + (0.2 if name.startswith("L") else 0), y, name, ha="center", va="center", fontsize=8.5)
-    edges = [((1.9, 3.8), (3.6, 3.8), "∂g₁/∂θ₁ = θ₂ = 3", (2.75, 4.15)),
-             ((1.9, 1.2), (3.6, 3.6), "∂g₁/∂θ₂ = θ₁ = 2", (1.75, 2.75)),
-             ((1.9, 3.6), (3.6, 1.4), "∂g₂/∂θ₁ = 1", (3.75, 2.3)),
-             ((1.9, 1.2), (3.6, 1.2), "∂g₂/∂θ₂ = 1", (2.75, 0.85)),
-             ((5.4, 3.8), (7.3, 2.7), "∂L/∂g₁ = 1", (6.3, 3.6)),
-             ((5.4, 1.2), (7.3, 2.3), "∂L/∂g₂ = 2", (6.3, 1.4))]
+    edges = [((1.9, 3.8), (3.6, 3.8), r"$\partial g_1/\partial\theta_1 = \theta_2$ = 3", (2.75, 4.15)),
+             ((1.9, 1.2), (3.6, 3.6), r"$\partial g_1/\partial\theta_2 = \theta_1$ = 2", (1.75, 2.75)),
+             ((1.9, 3.6), (3.6, 1.4), r"$\partial g_2/\partial\theta_1$ = 1", (3.75, 2.3)),
+             ((1.9, 1.2), (3.6, 1.2), r"$\partial g_2/\partial\theta_2$ = 1", (2.75, 0.85)),
+             ((5.4, 3.8), (7.3, 2.7), r"$\partial L/\partial g_1$ = 1", (6.3, 3.6)),
+             ((5.4, 1.2), (7.3, 2.3), r"$\partial L/\partial g_2$ = 2", (6.3, 1.4))]
     for (x0, y0), (x1, y1), lab, (lx, ly) in edges:
         ax.annotate("", (x1, y1), (x0, y0), arrowprops=dict(arrowstyle="->", color=C["gray"]))
         ax.text(lx, ly, lab, fontsize=7.5, color=C["gray"], ha="center")
-    ax.text(1, 4.55, "∂L/∂θ₁ = 1·3 + 2·1 = 5", color=C["red"], fontsize=9, ha="center", fontweight="bold")
-    ax.text(1, 0.4, "∂L/∂θ₂ = 1·2 + 2·1 = 4", color=C["red"], fontsize=9, ha="center", fontweight="bold")
-    ax.text(5, 0.15, "前向：沿箭头算值。反向：从 L 出发，沿每条路径把边上的局部导数相乘，汇到同一个 θ 的路径相加", fontsize=8, color=C["gray"], ha="center")
+    ax.text(1, 4.55, r"$\partial L/\partial\theta_1 = 1\cdot3 + 2\cdot1$ = 5", color=C["red"], fontsize=9, ha="center", fontweight="bold")
+    ax.text(1, 0.4, r"$\partial L/\partial\theta_2 = 1\cdot2 + 2\cdot1$ = 4", color=C["red"], fontsize=9, ha="center", fontweight="bold")
+    ax.text(5, 0.15, r"前向：沿箭头算值。反向：从 $L$ 出发，沿每条路径把边上的局部导数相乘，汇到同一个 $\theta$ 的路径相加", fontsize=8, color=C["gray"], ha="center")
     save(fig, "07-chain-rule-graph")
 
 
@@ -134,8 +134,8 @@ def smgrad():
         top = max(p[i].item(), y[i].item()) + 0.06
         col = C["green"] if gval < 0 else C["red"]
         ax.annotate("", (i, top + min(max(abs(gval), 0.15) * 0.5, 0.22) * (-1 if gval > 0 else 1)), (i, top + 0.02 if gval > 0 else top), arrowprops=dict(arrowstyle="->", color=col, lw=2))
-        ax.text(i, 1.28, f"更新 −(p−y) = {-gval:+.3f}", ha="center", fontsize=8, color=col)
-    ax.set_xticks(xs, ["token 1\nz=2", "token 2（真实）\nz=1", "token 3\nz=0"])
+        ax.text(i, 1.28, f"更新 −(p−y) = {-gval:+.3f}".replace("-", "−"), ha="center", fontsize=8, color=col)
+    ax.set_xticks(xs, ["token 1（$z$ = 2）", "token 2（真实，$z$ = 1）", "token 3（$z$ = 0）"])
     ax.set(ylim=(0, 1.42), ylabel="概率", title="梯度 p − y：真实 token 往上推 (1 − p)，其余往下推各自的 p")
     ax.legend(loc="center left", fontsize=7, bbox_to_anchor=(0.0, 0.6))
     save(fig, "07-softmax-ce-gradient")
@@ -186,7 +186,7 @@ def pg():
     n = 4
     variants = {
         "REINFORCE（b = 0）": lambda rs: np.zeros_like(rs),
-        "baseline b = 0.5（= 平均奖励）": lambda rs: np.full_like(rs, 0.5),
+        "baseline b = 0.5（即平均奖励）": lambda rs: np.full_like(rs, 0.5),
         "离谱的 baseline b = −5": lambda rs: np.full_like(rs, -5.0),
         "GRPO：b = 组内均值（含自己）": lambda rs: np.full_like(rs, rs.mean()),
         "RLOO：b = 其余几条的均值": lambda rs: (rs.sum() - rs) / (len(rs) - 1),
@@ -246,7 +246,7 @@ def pg():
         axes[0].hist(hist[name], bins=bins, histtype="step", lw=1.4, color=col, label=f"{name}  std {hist[name].std():.2f}")
     axes[0].axvline(g_exact[0], color="k", ls="--", lw=1)
     axes[0].text(g_exact[0] + 0.02, axes[0].get_ylim()[1] * 0.45, f"精确值 {g_exact[0]:.3f}", fontsize=8)
-    axes[0].set(xlabel="∂J/∂z₀ 的一次估计（n = 4 条采样）", ylabel="次数（共 20000 次）", title="同一个梯度：三种估计的分布")
+    axes[0].set(xlabel=r"$\partial J/\partial z_0$ 的一次估计（$n$ = 4 条采样）", ylabel="次数（共 20000 次）", title="同一个梯度：三种估计的分布")
     axes[0].legend(fontsize=6.5, loc="upper left")
     for (lab, c), col in zip(curves.items(), (C["blue"], C["red"], C["green"], C["purple"])):
         mu = c.mean(0); sd = c.std(0)
@@ -281,14 +281,14 @@ def gd():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.2))
     for ax in axes:
         ax.contour(t1, t2, L_bowl(t1, t2), levels=[0.1, 0.5, 1, 2, 4, 7, 10], colors=C["light"], linewidths=0.8)
-        ax.set(xlabel="θ₁", ylabel="θ₂", aspect="equal", xlim=(-2.6, 2.6), ylim=(-1.8, 1.8))
-    for lr, col, lab in ((0.02, C["blue"], "lr 0.02：太小，12 步只走了一点"), (0.15, C["green"], "lr 0.15：合适"), (0.34, C["red"], "lr 0.34：太大，θ₂ 方向发散")):
+        ax.set(xlabel=r"$\theta_1$", ylabel=r"$\theta_2$", aspect="equal", xlim=(-2.6, 2.6), ylim=(-1.8, 1.8))
+    for lr, col, lab in ((0.02, C["blue"], "lr 0.02：太小，12 步只走了一点"), (0.15, C["green"], "lr 0.15：合适"), (0.34, C["red"], r"lr 0.34：太大，$\theta_2$ 方向发散")):
         p = run(lr)
         axes[0].plot(p[:, 0], p[:, 1], "o-", color=col, ms=3, lw=1.2, label=lab)
     axes[0].plot(0, 0, "*", color="k", ms=8)
     axes[0].set_title("同一个起点，三种学习率")
     axes[0].legend(fontsize=6.5, loc="lower left")
-    for noise, col, lab in ((0.0, C["green"], "全量梯度（无噪声）"), (1.5, C["orange"], "小 batch：噪声 σ=1.5"), (4.0, C["red"], "更小 batch：噪声 σ=4")):
+    for noise, col, lab in ((0.0, C["green"], "全量梯度（无噪声）"), (1.5, C["orange"], "小 batch：噪声 $\\sigma$ = 1.5"), (4.0, C["red"], "更小 batch：噪声 $\\sigma$ = 4")):
         p = run(0.1, steps=40, noise=noise, seed=1)
         axes[1].plot(p[:, 0], p[:, 1], "-", color=col, lw=1.1, label=lab, alpha=0.9)
     axes[1].plot(0, 0, "*", color="k", ms=8)
@@ -307,14 +307,14 @@ def lagrange():
     x, y = np.meshgrid(np.linspace(0, 10, 200), np.linspace(0, 10, 200))
     fig, ax = plt.subplots(figsize=(5.4, 4.8))
     cs = ax.contour(x, y, x * y, levels=[5, 10, 16, 21, 25, 30, 36], colors=C["gray"], linewidths=0.8)
-    ax.clabel(cs, fmt="xy=%g", fontsize=7)
+    ax.clabel(cs, fmt="xy = %g", fontsize=7)
     ax.plot([0, 10], [10, 0], color=C["blue"], lw=2, label="约束 x + y = 10")
     ax.plot(5, 5, "o", color=C["red"], ms=6)
     ax.annotate("", (6.2, 6.2), (5, 5), arrowprops=dict(arrowstyle="->", color=C["red"], lw=1.6))
     ax.annotate("", (5.8, 5.8), (5, 5), arrowprops=dict(arrowstyle="->", color=C["blue"], lw=1.6))
-    ax.text(6.3, 6.4, "∇f = (5, 5)", color=C["red"], fontsize=8)
-    ax.text(4.4, 6.5, "∇g = (1, 1)", color=C["blue"], fontsize=8)
-    ax.text(5.3, 4.2, "(5, 5)：等高线 xy = 25\n与约束线相切，∇f ∥ ∇g", fontsize=8)
+    ax.text(6.3, 6.4, r"$\nabla f = (5, 5)$", color=C["red"], fontsize=8)
+    ax.text(4.4, 6.5, r"$\nabla g = (1, 1)$", color=C["blue"], fontsize=8)
+    ax.text(5.3, 4.2, "(5, 5)：等高线 $xy$ = 25\n与约束线相切，$\\nabla f \\parallel \\nabla g$", fontsize=8, linespacing=1.5)
     ax.plot(2, 8, "s", color=C["orange"], ms=5)
     ax.text(2.5, 8.7, "(2, 8)：xy = 16，等高线穿过约束线\n沿线走还能变大", fontsize=7.5, color=C["orange"])
     ax.set(xlabel="x", ylabel="y", aspect="equal", xlim=(0, 10), ylim=(0, 10), title="带约束的极值：最优点处目标函数的等高线与约束线相切")

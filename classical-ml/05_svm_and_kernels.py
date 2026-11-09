@@ -46,7 +46,7 @@ def plot_boundary(ax, decision, X, y, title, lim=None, res=80, sv=None):
     ax.scatter(X[y <= 0, 0], X[y <= 0, 1], s=9, color=C["blue"]); ax.scatter(X[y > 0, 0], X[y > 0, 1], s=9, color=C["red"])
     if sv is not None:
         ax.scatter(sv[:, 0], sv[:, 1], s=60, facecolors="none", edgecolors="k", lw=0.8)
-    ax.set_title(title, fontsize=8); ax.set_xticks([]); ax.set_yticks([])
+    ax.set_title(title, linespacing=1.5); ax.set_xticks([]); ax.set_yticks([])
 
 
 # ---------------- 1. 最大间隔：很多条线都能分开，选离两边都最远的 ----------------
@@ -67,7 +67,7 @@ def exp_margin():
         assert sep == 1.0, f"直线 {ww}, {bb} 没有完全分开：{sep}"
         ax.plot(xs, -(ww[0] * xs + bb) / ww[1], color=col, lw=1.2)
     ax.set_xlim(-4, 4); ax.set_ylim(-4, 4); ax.set_title("三条都能把训练点分开的直线", fontsize=8.5); ax.set_xticks([]); ax.set_yticks([])
-    plot_boundary(axes[1], clf.decision_function, X, y, f"SVM 选间隔最大的那条；虚线是间隔边界，圈出的是支持向量（{len(clf.support_vectors_)} 个）",
+    plot_boundary(axes[1], clf.decision_function, X, y, f"SVM 选间隔最大的那条\n虚线是间隔边界，圈出的 {len(clf.support_vectors_)} 个是支持向量",
                   lim=(-4, 4, -4, 4), sv=clf.support_vectors_)
     save(fig, "05-max-margin")
     print()
@@ -85,7 +85,7 @@ def exp_hinge():
     fig, ax = plt.subplots(figsize=(7.6, 2.8))
     ax.plot(m, zero_one, color=C["gray"], lw=1.2, ls=":", label="0-1 损失（分错就是 1，不可优化）")
     ax.plot(m, hinge, color=C["red"], lw=1.8, label="hinge：max(0, 1 − y·f(x))，SVM")
-    ax.plot(m, logistic, color=C["blue"], lw=1.8, label="逻辑回归：log(1 + e^(−y·f(x)))")
+    ax.plot(m, logistic, color=C["blue"], lw=1.8, label=r"逻辑回归：$\log(1 + e^{-y\cdot f(x)})$")
     ax.axvline(1, color=C["gray"], lw=0.6, ls="--"); ax.axvline(0, color=C["gray"], lw=0.6)
     ax.set_xlabel("间隔 y · f(x)（正 = 分对，越大越自信）"); ax.set_ylabel("损失"); ax.set_ylim(0, 3.2)
     ax.legend(frameon=False, fontsize=7.5)
@@ -145,7 +145,7 @@ def exp_kernel():
     xx, yy = np.meshgrid(np.linspace(-1.3, 1.3, 8), np.linspace(-1.3, 1.3, 8))
     w3, b3 = lin3.coef_[0], lin3.intercept_[0]
     ax.plot_surface(xx, yy, -(w3[0] * xx + w3[1] * yy + b3) / w3[2], alpha=0.25, color=C["gray"])
-    ax.set_title("加一维 z = x₁² + x₂²：一个平面分开", fontsize=8); ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
+    ax.set_title(r"加一维 $z = x_1^2 + x_2^2$：一个平面分开", fontsize=8); ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
     ax.view_init(elev=15, azim=-60)
     ax = fig.add_subplot(1, 3, 3)
     plot_boundary(ax, rbf.decision_function, X, y, f"RBF 核 SVM：{rbf.score(X, y):.2f}，边界是圆", lim=(-1.5, 1.5, -1.5, 1.5))
@@ -162,7 +162,7 @@ def exp_rbf():
     for ax, g in zip(axes, (0.1, 1, 200)):
         clf = SVC(kernel="rbf", gamma=g, C=1.0).fit(Xtr, ytr)
         print(f"  γ = {g:<4}: 训练 {clf.score(Xtr, ytr):.3f} / 测试 {clf.score(Xte, yte):.3f}，支持向量 {len(clf.support_vectors_)} 个")
-        plot_boundary(ax, clf.decision_function, Xtr, ytr, f"γ = {g}：训练 {clf.score(Xtr, ytr):.2f} / 测试 {clf.score(Xte, yte):.2f}", lim=(-2, 3, -1.5, 2))
+        plot_boundary(ax, clf.decision_function, Xtr, ytr, f"$\\gamma$ = {g}：训练 {clf.score(Xtr, ytr):.2f} / 测试 {clf.score(Xte, yte):.2f}", lim=(-2, 3, -1.5, 2))
     save(fig, "05-rbf-gamma")
     print("  γ 太大 → 每个训练点周围一个小岛，训练 100% 测试掉——又是过拟合；γ 与 C 一起用验证集选")
     print()
@@ -192,7 +192,7 @@ def exp_attention():
     fig, ax = plt.subplots(figsize=(7.6, 2.6))
     ax.scatter(xk, vk, s=18, color=C["blue"], zorder=3, label="30 个键值对 (x, v)")
     for g, col in ((0.3, C["gray"]), (2, C["red"]), (30, C["orange"])):
-        ax.plot(xq, kernel_regression(xq, xk, vk, g), color=col, lw=1.4, label=f"γ = {g}")
+        ax.plot(xq, kernel_regression(xq, xk, vk, g), color=col, lw=1.4, label=f"$\\gamma$ = {g}")
     ax.plot(xq, np.sin(xq), ls="--", color=C["gray"], lw=0.8)
     ax.set_xlabel("查询 x"); ax.set_ylabel("加权后的值"); ax.legend(frameon=False, fontsize=7, ncol=4)
     ax.set_title("核回归：查询与每个键算相似度、归一化成权重、加权求值——attention 的三步", fontsize=8.5)
@@ -283,11 +283,11 @@ def exp_dual():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0))
     lim = (-1.5, 1.5, -1.5, 1.5)
     plot_boundary(axes[0], lambda P: kernel_svm_decision(rbf_kernel(P, Xc, gamma), ac, ycpm, bc), Xc, yc,
-                  f"手写核化 SGD（RBF γ=1）：训练 {acc_c:.2f}，非零 α {n_sv_c} 个", lim=lim, sv=Xc[ac > 1e-12 * ac.max()])
+                  f"手写核化 SGD（RBF $\\gamma$ = 1）\n训练 {acc_c:.2f}，非零 $\\alpha$ {n_sv_c} 个", lim=lim, sv=Xc[ac > 1e-12 * ac.max()])
     order = np.argsort(-ac)
     axes[1].bar(range(len(ac)), ac[order] / ac.max(), color=C["blue"], width=1.0)
-    axes[1].set_xlabel("300 个训练点（按 α 从大到小排）"); axes[1].set_ylabel("α / max α")
-    axes[1].set_title(f"α 的分布：{n_sv_c} 个非零，其余恰好为 0", fontsize=8)
+    axes[1].set_xlabel(r"300 个训练点（按 $\alpha$ 从大到小排）"); axes[1].set_ylabel(r"$\alpha / \max\alpha$")
+    axes[1].set_title(f"$\\alpha$ 的分布：{n_sv_c} 个非零，其余恰好为 0", fontsize=8)
     save(fig, "05-dual-kernel-sgd")
     print()
 

@@ -15,15 +15,27 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager as _fm  # noqa: E402
 from matplotlib.ft2font import FT2Font  # noqa: E402
 
+# ---- Noto Sans SC + SVG 内嵌字体子集（共享实现见 ../figtext.py）----
+import sys as _sys  # noqa: E402
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import figtext as _ft  # noqa: E402  导入即注册 Noto + svg.fonttype=none
+
+register_noto = _ft.register_noto
+embed_fonts = _ft.embed_fonts
+check_plain_text = _ft.check_plain_text
+check_math_needed = _ft.check_math_needed
+check_math_line_spacing = _ft.check_math_line_spacing
+check_text_in_rect = _ft.check_text_in_rect
+
 plt.rcParams.update({
-    "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
+    "font.family": ["Noto Sans SC"],
     "axes.unicode_minus": False,
-    "svg.fonttype": "path",          # 文字与 mathtext 都落成轮廓，读者端不依赖字体
+    "svg.fonttype": "none",          # 真文字 + 内嵌字体子集（embed_fonts），<img> 下也有 hinting
     "mathtext.fontset": "cm",        # $...$ 用 Computer Modern，与正文 KaTeX 一致
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.labelsize": 9,
-    "legend.fontsize": 8,
+    "font.size": 10.5,
+    "axes.titlesize": 11,
+    "axes.labelsize": 10.5,
+    "legend.fontsize": 10,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "figure.dpi": 100,
@@ -192,11 +204,43 @@ def _dump_texts(fig, name):
         json.dump(texts, f, ensure_ascii=False, indent=1, sort_keys=True)
 
 
+def _unicode_minus_ticks(fig):
+    # matplotlib 这版的 ScalarFormatter 仍输出 ASCII '-' 负号；给线性轴换成输出 '−' 的包装
+    import matplotlib.ticker as _tk
+
+    class _UF(_tk.ScalarFormatter):
+        def format_ticks(self, values):
+            return [s.replace("-", "−") for s in super().format_ticks(values)]
+
+        def __call__(self, x, pos=None):
+            return super().__call__(x, pos).replace("-", "−")
+
+    for ax in fig.axes:
+        for axis in (ax.xaxis, ax.yaxis):
+            for attr in ("major", "minor"):
+                fmt = getattr(axis, f"get_{attr}_formatter")()
+                if type(fmt) is _tk.ScalarFormatter:
+                    new = _UF()
+                    new.create_dummy_axis()
+                    getattr(axis, f"set_{attr}_formatter")(new)
+
+
 def save(fig, name):
+    _unicode_minus_ticks(fig)
+    # 这批脚本的老字号（8/8.5）低于 13px 下限：统一抬到 9.4pt 起，再让检查复核
+    for t in fig.findobj(matplotlib.text.Text):
+        if "$" in t.get_text():
+            if t.get_fontsize() < 10.5: t.set_fontsize(10.5)
+        elif t.get_fontsize() < 10:
+            t.set_fontsize(10)
     check_texts(fig)
     collide(fig)
     _dump_texts(fig, name)
     _check_text_floor(fig, name)
+    check_math_needed(fig)
+    check_plain_text(fig)
+    check_math_line_spacing(fig)
+    check_text_in_rect(fig)
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})
@@ -204,6 +248,7 @@ def save(fig, name):
         lines = f.read().splitlines()
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(l.rstrip() for l in lines) + "\n")
+    embed_fonts(path)
     if os.environ.get("PLOT_PNG"):                                   # 作者自查用：PLOT_PNG=/tmp/plots 另存一份 png
         os.makedirs(os.environ["PLOT_PNG"], exist_ok=True)
         fig.savefig(os.path.join(os.environ["PLOT_PNG"], f"{name}.png"), dpi=110, bbox_inches="tight")

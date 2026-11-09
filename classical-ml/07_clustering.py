@@ -143,7 +143,7 @@ def exp_dbscan():
     for j in range(2):
         ax.scatter(Xp[kl == j, 0], Xp[kl == j, 1], s=4, color=PALETTE[j])
     ax.scatter(*km.cluster_centers_.T, marker="X", s=80, color="k", edgecolor="w", zorder=5)
-    ax.set_title(f"K-Means k=2：ARI {adjusted_rand_score(y, km.labels_):.2f}", fontsize=8.5)
+    ax.set_title(f"K-Means $k$ = 2：ARI {adjusted_rand_score(y, km.labels_):.2f}", fontsize=8.5)
     ax = axes[1]
     for j in range(2):
         ax.scatter(Xp[dl == j, 0], Xp[dl == j, 1], s=4, color=PALETTE[j])
@@ -175,8 +175,20 @@ def exp_hierarchical():
     ax = axes[0]
     for j in range(1, 4):
         ax.scatter(X[labels3 == j, 0], X[labels3 == j, 1], s=20, color=PALETTE[j - 1])
+    fig.canvas.draw()                                                  # 逐点找不撞的偏移位
+    tr = ax.transData.transform; W = 22.0
+    placed = []
     for i, (xx, yy) in enumerate(X):
-        ax.annotate(str(i), (xx, yy), fontsize=5, xytext=(2, 2), textcoords="offset points")
+        cx, cy = tr((xx, yy)); sc = fig.dpi / 72.0
+        for rad in range(11, 90, 4):
+            ang = i * 2.399963
+            ox, oy = rad * np.cos(ang), rad * np.sin(ang)
+            lx, ly = cx + ox * sc, cy + oy * sc
+            if all(abs(lx - px) > W or abs(ly - py) > W * 0.8 for px, py in placed):
+                break
+        placed.append((lx, ly))
+        ax.annotate(str(i), (xx, yy), xytext=(ox, oy),
+                    textcoords="offset points", ha="center", va="center")
     ax.set_title("30 个点，切成 3 簇", fontsize=8.5); ax.set_xticks([]); ax.set_yticks([])
     ax = axes[1]
     dendrogram(Z, ax=ax, color_threshold=Z[-2, 2], leaf_font_size=5, above_threshold_color=C["gray"])

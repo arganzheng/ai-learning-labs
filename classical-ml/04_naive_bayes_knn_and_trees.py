@@ -42,7 +42,7 @@ def seven_models():
     return {
         "逻辑回归":     make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000)),
         "朴素贝叶斯":   GaussianNB(),
-        "KNN (k=15)":  make_pipeline(StandardScaler(), KNeighborsClassifier(15)),
+        "KNN（$k$ = 15）":  make_pipeline(StandardScaler(), KNeighborsClassifier(15)),
         "决策树":       DecisionTreeClassifier(max_depth=None, random_state=0),
         "SVM (RBF)":   make_pipeline(StandardScaler(), SVC(C=1.0)),
         "随机森林":     RandomForestClassifier(300, random_state=0, n_jobs=-1),
@@ -115,7 +115,7 @@ def plot_boundary(ax, predict, X, y, title, res=80):
 def exp_compare():
     print("=== 1. 七个分类器：合成表格数据（5000 样本、20 特征、其中 8 个有用、含非线性）===")
     Xtr, Xte, ytr, yte, _, _ = tabular()
-    notes = {"逻辑回归": "线性边界：有非线性就吃亏", "朴素贝叶斯": "假设特征独立：冗余特征让它更差", "KNN (k=15)": "不训练；预测时找 15 个邻居投票",
+    notes = {"逻辑回归": "线性边界：有非线性就吃亏", "朴素贝叶斯": "假设特征独立：冗余特征让它更差", "KNN（$k$ = 15）": "不训练；预测时找 15 个邻居投票",
              "决策树": "训练 100%、测试掉一截：过拟合的教科书样子", "SVM (RBF)": "核把线性边界变弯", "随机森林": "很多棵树的 bagging：降方差",
              "梯度提升": "逐棵树拟合残差：表格数据的默认最强"}
     print(f"  {'模型':<14} {'训练准确率':>10} {'测试准确率':>10} {'训练耗时':>9}   一句话")
@@ -133,7 +133,7 @@ def exp_grid():
     axes = axes.ravel()
     ax = axes[0]
     ax.scatter(Xtr[ytr == 0, 0], Xtr[ytr == 0, 1], s=7, color=C["blue"]); ax.scatter(Xtr[ytr == 1, 0], Xtr[ytr == 1, 1], s=7, color=C["red"])
-    ax.set_xlim(-2, 3); ax.set_ylim(-1.5, 2); ax.set_title("数据：两个月牙（200 训练点）", fontsize=8); ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xlim(-2, 3); ax.set_ylim(-1.5, 2); ax.set_title("两个月牙（200 训练点）"); ax.set_xticks([]); ax.set_yticks([])
     for ax, (name, m) in zip(axes[1:], seven_models().items()):
         m.fit(Xtr, ytr)
         acc = m.score(Xte, yte)
@@ -180,7 +180,7 @@ def exp_nb():
             v = data.data[data.target == c, j]
             mu, var = v.mean(), v.var()
             ax.hist(v, bins=25, density=True, color=col, alpha=0.25)
-            ax.plot(xs, np.exp(-(xs - mu) ** 2 / (2 * var)) / np.sqrt(2 * np.pi * var), color=col, lw=1.6, label=f"{name}：μ={mu:.2f}, σ={np.sqrt(var):.2f}")
+            ax.plot(xs, np.exp(-(xs - mu) ** 2 / (2 * var)) / np.sqrt(2 * np.pi * var), color=col, lw=1.6, label=f"{name}：$\\mu$ = {mu:.2f}，$\\sigma$ = {np.sqrt(var):.2f}")
         ax.set_title(f"特征「{data.feature_names[j]}」：每类拟一个正态分布", fontsize=8.5)
         ax.legend(frameon=False, fontsize=7); ax.set_yticks([])
     save(fig, "04-nb-gaussians")
@@ -259,8 +259,8 @@ def exp_tree():
     print(f"    训练 {tree.score(Xtr, ytr):.3f} / 测试 {tree.score(Xte, yte):.3f}")
     fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.5))
     ax = axes[0]
-    ax.plot(np.linspace(Xtr[:, 0].min(), Xtr[:, 0].max(), 200), g1, color=C["gray"], label="沿 x₁ 切")
-    ax.plot(thrs, g2, color=C["blue"], label="沿 x₂ 切")
+    ax.plot(np.linspace(Xtr[:, 0].min(), Xtr[:, 0].max(), 200), g1, color=C["gray"], label=r"沿 $x_1$ 切")
+    ax.plot(thrs, g2, color=C["blue"], label=r"沿 $x_2$ 切")
     ax.axhline(gini(ytr), color=C["gray"], ls="--", lw=0.8)
     ax.plot(thr if j == 1 else t.threshold[0], weighted_gini(j, thr), "o", color=C["red"])
     ax.set_xlabel("阈值"); ax.set_ylabel("切完的加权 Gini"); ax.set_title("扫描每个阈值，选最低点", fontsize=8.5); ax.legend(frameon=False, fontsize=7)
@@ -609,7 +609,7 @@ def exp_grow():
     ax = axes[0]
     ax.plot(cands, tr_acc, color=C["gray"], label="训练"); ax.plot(cands, cv, color=C["blue"], label="5 折交叉验证"); ax.plot(cands, te_acc, color=C["red"], label="测试")
     ax.axvline(cands[best], ls="--", color=C["gray"], lw=0.8)
-    ax.set_xscale("symlog", linthresh=1e-3); ax.set_xlabel("ccp_alpha"); ax.set_ylabel("准确率"); ax.set_title("α 越大剪得越狠：训练降、测试先升后降", fontsize=8.5); ax.legend(frameon=False, fontsize=7)
+    ax.set_xscale("symlog", linthresh=1e-3); ax.set_xlabel("ccp_alpha"); ax.set_ylabel("准确率"); ax.set_title(r"$\alpha$ 越大剪得越狠：训练降、测试先升后降"); ax.legend(frameon=False, fontsize=7)
     ax = axes[1]
     ax.plot(cands, n_leaf, color=C["green"]); ax.set_xscale("symlog", linthresh=1e-3); ax.set_yscale("log")
     ax.set_xlabel("ccp_alpha"); ax.set_ylabel("叶子数"); ax.set_title(f"叶子从 {n_leaf[0]} 剪到 {n_leaf[-1]}", fontsize=8.5)

@@ -100,7 +100,7 @@ def exp_error():
     ax.plot(ks, theory, "--", color=C["gray"], label=r"理论 $\sqrt{J(1-J)/k}$")
     ax.set_xscale("log", base=2); ax.set_yscale("log")
     ax.set_xlabel("签名个数 k"); ax.set_ylabel("Jaccard 估计的标准差"); ax.legend(frameon=False)
-    ax.set_title(f"真实 Jaccard {J:.2f}：$k$ 翻 4 倍，误差减半；$k=128$ 时 $\pm${theory[4]:.3f}", fontsize=8.5)
+    ax.set_title(f"真实 Jaccard {J:.2f}：$k$ 翻 4 倍误差减半；$k$ = 128 时 ±{theory[4]:.3f}", fontsize=8.5)
     save(fig, "09-minhash-error-vs-k")
     print()
 
@@ -127,7 +127,7 @@ def exp_scurve():
     for b, r, color in configs:
         threshold = (1 - 0.5 ** (1 / b)) ** (1 / r)
         ax.plot(ss, p_candidate(ss, b, r), color=color,
-                label=rf"$b={b},\ r={r}$  ($k={b*r}$)   $s_{{50}}\approx{threshold:.3f}$")
+                label=rf"$b$ = {b}, $r$ = {r}（$k$ = {b*r}）  $s_{{50}} \approx {threshold:.3f}$")
         if (b, r) != (20, 5):
             ax.axvline(threshold, color=color, ls=":", lw=0.8, alpha=0.6)
     ax.axhline(0.5, color=C["gray"], ls="--", lw=0.8)
@@ -365,7 +365,7 @@ def exp_family():
     ax.plot(js, rows["perm"], "o", ms=4, color=C["blue"], label="独立随机排列实测（每点 300 次）")
     ax.plot(js, rows["hash"], "s", ms=4, mfc="none", color=C["green"], label="仿射 hash (a·x + b) mod p 实测")
     ax.plot(js, rows["bad"], "^", ms=4, color=C["red"], label="只平移 (x + b) mod p：k 个 hash 高度相关")
-    ax.plot(ss, ss, ":", color=C["red"], lw=0.8, label=r"$P=s$（k 列完全相关时的极限）")
+    ax.plot(ss, ss, ":", color=C["red"], lw=0.8, label=r"$P$ = $s$（k 列完全相关时的极限）")
     ax.set_xlabel("两个集合的真实 Jaccard")
     ax.set_ylabel("成为候选的概率")
     ax.legend(frameon=False, fontsize=7, loc="upper left")

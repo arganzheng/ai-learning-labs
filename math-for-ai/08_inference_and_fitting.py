@@ -143,7 +143,7 @@ def compare():
     axes[1].axhline(sig_ind, color=C["gray"], ls=":", lw=1); axes[1].text(1.5, 0.42, f"虚线：独立比较只有 {sig_ind:.0%}", fontsize=7.5, color=C["gray"], ha="center")
     for i, r in enumerate(rhos):
         axes[1].text(i, results[r][1] + 0.05, f"平均分歧\n{results[r][0]:.0f} 题", ha="center", fontsize=7)
-    axes[1].set(xlabel="两个模型错题的重叠程度 ρ", ylabel="判为显著的比例", title="配对比较：分歧题越少越灵敏", ylim=(0, 1))
+    axes[1].set(xlabel=r"两个模型错题的重叠程度 $\rho$", ylabel="判为显著的比例", title="配对比较：分歧题越少越灵敏", ylim=(0, 1))
     save(fig, "08-independent-vs-paired")
 
 
@@ -196,7 +196,7 @@ def lsq():
     ax.plot(x, y, "o", color=C["red"], zorder=3)
     for xi, yi, ri in zip(x, y, res):
         ax.plot([xi, xi], [yi, yi - ri], color=C["red"], lw=1)
-        ax.text(xi + 0.06, yi - ri / 2, f"{ri:+.2f}", fontsize=7, color=C["red"])
+        ax.text(xi + 0.06, yi - ri / 2, f"{ri:+.2f}".replace("-", "−"), fontsize=7, color=C["red"])
     ax.set(xlabel="x", ylabel="y", title="最小二乘：让所有竖直距离（残差）的平方和最小")
     ax.legend(fontsize=7)
     save(fig, "08-least-squares")
@@ -247,13 +247,13 @@ def powerlaw():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0))
     axes[0].plot(N, L, "o", color=C["red"], label="实测（7 个模型）")
     xs = np.logspace(4, 6.2, 100)
-    axes[0].plot(xs, np.exp(icpt + slope * np.log(xs)), color=C["blue"], label=f"双对数直线拟合（前 6 点），斜率 {slope:.3f}")
+    axes[0].plot(xs, np.exp(icpt + slope * np.log(xs)), color=C["blue"], label=f"双对数直线拟合（前 6 点），斜率 {slope:.3f}".replace("-", "−"))
     axes[0].set(xscale="log", yscale="log", xlabel="N（参数量，对数）", ylabel="loss（对数）", title="双对数坐标：幂律是直线")
     axes[0].legend(fontsize=7)
     axes[1].plot(N, L, "o", color=C["red"], zorder=3, label="实测")
     axes[1].plot(grid, np.exp(icpt + slope * np.log(grid)), color=C["blue"], label="拟合 / 外推")
     axes[1].fill_between(grid, plo, phi, color=C["blue"], alpha=0.2, label="bootstrap 95% 区间")
-    axes[1].plot(grid, f3(grid, E, A, al), color=C["orange"], ls="--", lw=1.2, label=f"三参数 E + A/N^α（E = {E:.2f}）")
+    axes[1].plot(grid, f3(grid, E, A, al), color=C["orange"], ls="--", lw=1.2, label=f"三参数 $E + A/N^\\alpha$（$E$ = {E:.2f}）")
     axes[1].axvline(N[5], color=C["gray"], ls=":", lw=1); axes[1].text(N[5] * 0.9, 1.05, "拟合用到的范围 →|", fontsize=7, color=C["gray"], ha="right")
     axes[1].annotate(f"第 7 个模型实测 {L[6]:.3f}\n直线预测 {pred7:.3f}，区间外", (N[6], L[6]), (N[6] * 0.08, L[6] + 0.25), fontsize=7, color=C["red"], arrowprops=dict(arrowstyle="->", color=C["red"], lw=0.8))
     axes[1].set(xscale="log", xlabel="N（对数）", ylabel="loss", title="外推：噪声的区间很窄，公式形式的误差更大")
@@ -275,7 +275,7 @@ def chinchilla():
     LL = Lf(NN, DD)
     fig, ax = plt.subplots(figsize=(7.6, 4.0))
     cs = ax.contour(NN, DD, LL, levels=[1.9, 1.95, 2.0, 2.1, 2.2, 2.4, 2.7, 3.0], colors=C["gray"], linewidths=0.8)
-    ax.clabel(cs, fmt="L=%.2f", fontsize=7)
+    ax.clabel(cs, fmt="L = %.2f", fontsize=7)
     for Cf, col in ((1e21, C["orange"]), (1e23, C["red"]), (1e25, C["purple"])):
         ax.plot(n, Cf / (6 * n), color=col, lw=1.5, label=f"等算力 6ND = {Cf:.0e} FLOPs")
         # 沿等算力线找最小 loss

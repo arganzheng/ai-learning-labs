@@ -33,9 +33,9 @@ def rmse(y, p):
 
 def models():
     return {
-        "KNN(k=10)，只用经纬度": (["longitude", "latitude"],
+        "KNN（$k$ = 10），只用经纬度": (["longitude", "latitude"],
                                 make_pipeline(StandardScaler(), KNeighborsRegressor(10))),
-        "KNN(k=10)，全部 8 个特征": (NUM, make_pipeline(SimpleImputer(), StandardScaler(), KNeighborsRegressor(10))),
+        "KNN（$k$ = 10），全部 8 个特征": (NUM, make_pipeline(SimpleImputer(), StandardScaler(), KNeighborsRegressor(10))),
         "线性回归，全部 8 个特征": (NUM, make_pipeline(SimpleImputer(), StandardScaler(), LinearRegression())),
     }
 

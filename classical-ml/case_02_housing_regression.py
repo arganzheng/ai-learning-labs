@@ -142,8 +142,10 @@ def main():
     ax.plot([0, 500], [0, 500], c=C["red"], lw=1)
     ax.set_xlabel("真实房价（千美元）"); ax.set_ylabel("预测房价（千美元）")
     ax.set_title(f"三次多项式 + Ridge：测试 RMSE {rmse(yte, pte) / 1e3:.0f} 千美元")
-    ax.annotate("50 万处的竖线：\n数据把房价截断在 500,001", xy=(500, 150), xytext=(320, 20), fontsize=8,
-                color=C["gray"], arrowprops={"arrowstyle": "->", "color": C["gray"]})
+    ax.annotate("", xy=(500, 150), xytext=(420, 150),
+                arrowprops={"arrowstyle": "->", "color": C["gray"]})
+    ax.text(0.03, 0.94, "50 万处：房价被截断在 500,001", transform=ax.transAxes,
+            color=C["gray"], ha="left", va="top")
     save(fig, "case-02-pred-vs-true")
 
     # 图 3：第 3 步系数

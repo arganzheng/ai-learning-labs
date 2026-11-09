@@ -188,8 +188,8 @@ def f3():
     bx0, bx1 = xp + wp / 2, xr + wr / 2
     by = 3.42
     ax.plot([bx0, bx0], [y + h, by - 0.06], color=C["orange"], lw=1.1)
-    ax.plot([bx1, bx1], [y + h, by - 0.06], color=C["orange"], lw=1.1)
-    ax.annotate("", xy=(bx1, by), xytext=(bx0, by),
+    ax.plot([bx0, bx1], [by, by], color=C["orange"], lw=1.1)
+    ax.annotate("", xy=(bx1, y + h), xytext=(bx1, by),
                 arrowprops=dict(arrowstyle="-|>", mutation_scale=13, color=C["orange"], lw=1.1))
     text(ax, (bx0 + bx1) / 2, by + 0.08, "all-reduce = reduce-scatter + all-gather",
          ha="center", va="bottom", fontsize=ARROW_LABEL_SIZE, color="#111111")

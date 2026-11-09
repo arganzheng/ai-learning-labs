@@ -73,7 +73,7 @@ def exp_sigmoid():
     ax = axes[0]
     ax.plot(z, sigmoid(z), color=C["blue"], lw=1.8)
     ax.axhline(0.5, color=C["gray"], ls="--", lw=0.8); ax.axvline(0, color=C["gray"], ls="--", lw=0.8)
-    ax.set_xlabel("z = wᵀx + b（线性部分，任意实数）"); ax.set_ylabel("σ(z) = P(y = 1)")
+    ax.set_xlabel(r"$z = w^\top x + b$（线性部分，任意实数）"); ax.set_ylabel(r"$\sigma(z) = P(y = 1)$")
     ax.set_title("sigmoid：z > 0 → 概率 > 0.5 → 判正类")
     ax = axes[1]
     p = np.linspace(0.001, 0.999, 300)
@@ -81,7 +81,7 @@ def exp_sigmoid():
     ax.plot(p, -np.log(1 - p), color=C["blue"], lw=1.8, label="y = 0：−log(1 − p)")
     ax.plot(p, (p - 1) ** 2, color=C["gray"], ls="--", lw=1.2, label="对比：y = 1 时的平方误差 (p − 1)²")
     ax.set_ylim(0, 6); ax.set_xlabel("预测概率 p"); ax.set_ylabel("损失")
-    ax.set_title("交叉熵：越自信地错，罚得越重（对数轴级）")
+    ax.set_title("交叉熵：越自信地错罚得越重")
     ax.legend(frameon=False, fontsize=7)
     save(fig, "03-sigmoid-and-cross-entropy")
     print()
@@ -128,7 +128,7 @@ def exp_boundary():
     ax.scatter(X[y == 0, 0], X[y == 0, 1], s=12, color=C["blue"], edgecolor="w", lw=0.3, label="类 0")
     ax.scatter(X[y == 1, 0], X[y == 1, 1], s=12, color=C["red"], edgecolor="w", lw=0.3, label="类 1")
     ax.set_title("P(y = 1 | x) 的等高线；黑线是 p = 0.5 的决策边界（一条直线）", fontsize=8.5)
-    ax.set_xlabel("x₁"); ax.set_ylabel("x₂"); ax.legend(frameon=False, loc="lower right", fontsize=7)
+    ax.set_xlabel(r"$x_1$"); ax.set_ylabel(r"$x_2$"); ax.legend(frameon=False, loc="lower right", fontsize=7)
     fig.colorbar(cf, ax=ax, shrink=0.8, label="P(y = 1)")
     save(fig, "03-decision-boundary")
     print()
@@ -225,11 +225,11 @@ def exp_reward():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0))
     ax = axes[0]
     ax.scatter(score, fitted, s=8, color=C["blue"], alpha=0.7)
-    ax.set_xlabel("真实分数 r*(x)"); ax.set_ylabel("拟合出的分数 wᵀx"); ax.set_title(f"300 个回答：拟合分 vs 真实分（相关 {np.corrcoef(score, fitted)[0,1]:.3f}）", fontsize=8.5)
+    ax.set_xlabel(r"真实分数 $r^*(x)$"); ax.set_ylabel(r"拟合出的分数 $w^\top x$"); ax.set_title(f"300 个回答：拟合分 vs 真实分（相关 {np.corrcoef(score, fitted)[0,1]:.3f}）", fontsize=8.5)
     ax = axes[1]
     ds = np.linspace(-6, 6, 200)
     ax.plot(ds, sigmoid(ds), color=C["red"], lw=1.8)
-    ax.set_xlabel("r(A) − r(B)"); ax.set_ylabel("P(A ≻ B)")
+    ax.set_xlabel("r(A) − r(B)"); ax.set_ylabel(r"$P(A \succ B)$")
     ax.set_title("Bradley-Terry：分差过 sigmoid 就是偏好概率\n分差 0 → 抛硬币；分差 4 → 98%", fontsize=8.5)
     ax.axhline(0.5, color=C["gray"], ls="--", lw=0.8); ax.axvline(0, color=C["gray"], ls="--", lw=0.8)
     save(fig, "03-reward-model-fit")
@@ -324,7 +324,7 @@ def exp_step():
         _, _, lk, _, _, _, wk, bk = one_step(x, y, wk, bk, lr)
         hist.append(lk)
     ax.plot(np.arange(1, 1001), hist, color=C["blue"])
-    ax.set_xscale("log"); ax.set_xlabel("步数"); ax.set_ylabel("平均交叉熵"); ax.set_title("loss 持续下降但到不了 0：数据线性可分，‖w‖ 会继续增大", fontsize=8.5)
+    ax.set_xscale("log"); ax.set_xlabel("步数"); ax.set_ylabel("平均交叉熵"); ax.set_title("loss 到不了 0：线性可分时 ‖w‖ 会无限增大")
     save(fig, "03-one-step-update")
     print()
 
@@ -475,7 +475,7 @@ def exp_calib():
     for (T, rows), col, name in zip(curves.items(), [C["blue"], C["red"], C["orange"]], ["T = 1（原模型）", "T = 3（过度自信）", "T = 1/3（过度保守）"]):
         acc = ((stable_sigmoid(T * logits) > 0.5) == yte).mean()
         ax.plot([r[3] for r in rows], [r[4] for r in rows], "o-", color=col, label=f"{name}，准确率 {acc:.3f}")
-    ax.set_xlabel("模型给出的 P(A ≻ B)（按桶平均）"); ax.set_ylabel("这桶里 A 实际被选中的比例")
+    ax.set_xlabel(r"模型给出的 $P(A \succ B)$（按桶平均）"); ax.set_ylabel("这桶里 A 实际被选中的比例")
     ax.set_title("三个模型准确率一样，校准完全不同", fontsize=8.5); ax.legend(frameon=False, fontsize=7, loc="upper left")
     save(fig, "03-calibration-vs-accuracy")
     print()

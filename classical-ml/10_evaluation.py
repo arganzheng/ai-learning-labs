@@ -95,7 +95,7 @@ def exp_threshold():
     ax = axes[0]
     for j, (name, col) in enumerate((("精确率", C["blue"]), ("召回率", C["red"]), ("F1", C["green"]), ("准确率", C["gray"]))):
         ax.plot(ts, curves[:, j], color=col, label=name, lw=1.4 if j < 3 else 0.9, ls="-" if j < 3 else "--")
-    ax.axvline(0.5, color=C["light"], lw=0.8); ax.set_xlabel("阈值"); ax.set_ylabel("指标值"); ax.legend(frameon=False, fontsize=7.5, loc="lower left")
+    ax.axvline(0.5, color=C["light"], lw=0.8); ax.set_xlabel("阈值", loc="right"); ax.set_ylabel("指标值"); ax.legend(frameon=False, loc="lower left")
     ax.set_title("同一个分类器：阈值升高，精确率升、召回率降", fontsize=8.5)
     ax = axes[1]
     auc, fpr, tpr = roc_auc(yte, p)

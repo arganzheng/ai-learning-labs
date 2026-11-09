@@ -123,9 +123,9 @@ def exp_knn():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0), width_ratios=[1, 1.3])
     axes[0].plot(ks, [e * 100 for e in errs], "o-", c=C["blue"])
     axes[0].set_xscale("log"); axes[0].set_xticks(ks); axes[0].set_xticklabels(ks)
-    axes[0].set_xlabel("k"); axes[0].set_ylabel("错误率 %"); axes[0].set_title("MNIST 标签干净：k 越大越模糊，k=1 反而最好（10k 训练子集）")
+    axes[0].set_xlabel("k"); axes[0].set_ylabel("错误率 %"); axes[0].set_title("MNIST：$k$ 越大越模糊，$k$ = 1 最好（10k 子集）")
     wrong = np.where(pred_e != yt)[0][:24]
-    ax = axes[1]; ax.axis("off"); ax.set_title("全量 k=3 错分的前 24 张（真实→预测）")
+    ax = axes[1]; ax.axis("off"); ax.set_title("全量 $k$ = 3 错分的前 24 张（真实→预测）")
     for i, j in enumerate(wrong):
         r, c = divmod(i, 8)
         ax.imshow(Xt[j].reshape(28, 28), cmap="gray_r", extent=(c, c + 0.9, -r - 0.9, -r))

@@ -54,8 +54,8 @@ def exp_grid():
     for i in range(len(Cs)):
         for j in range(len(gs)):
             ax.text(j, i, f"{E[i, j]:.1%}", ha="center", va="center", fontsize=8, color="white" if E[i, j] < 0.15 else "black")
-    ax.set_xticks(range(len(gs))); ax.set_xticklabels([f"γ={g}" for g in gs])
-    ax.set_yticks(range(len(Cs))); ax.set_yticklabels([f"C={c}" for c in Cs])
+    ax.set_xticks(range(len(gs))); ax.set_xticklabels([f"$\gamma$ = {g}" for g in gs])
+    ax.set_yticks(range(len(Cs))); ax.set_yticklabels([f"$C$ = {c}" for c in Cs])
     ax.set_title("RBF-SVM 验证错误率（10k 训练子集）")
     fig.colorbar(im, ax=ax, label="错误率 %（对数刻度）", shrink=0.8)
     save(fig, "case-05-svm-grid")
@@ -67,8 +67,8 @@ def exp_table():
     rows["线性分类器（逻辑回归）"] = run("线性分类器（softmax 回归）", LogisticRegression(max_iter=200, C=0.1), 60000)[0]
     rows["线性 SVM"] = run("线性 SVM（hinge + L2）", LinearSVC(C=0.01, max_iter=5000), 60000)[0]
     rows["KNN k=3"] = run("KNN，k=3，欧氏距离", KNeighborsClassifier(3, algorithm="brute", n_jobs=-1), 60000)[0]
-    rows["RBF-SVM 10k"] = run("RBF-SVM，C=10, γ=0.03", SVC(C=10, gamma=0.03), 10000)[0]
-    err, pred = run("RBF-SVM，C=10, γ=0.03", SVC(C=10, gamma=0.03, cache_size=2000), 60000)
+    rows["RBF-SVM 10k"] = run("RBF-SVM，$C$ = 10, $\gamma$ = 0.03", SVC(C=10, gamma=0.03), 10000)[0]
+    err, pred = run("RBF-SVM，$C$ = 10, $\gamma$ = 0.03", SVC(C=10, gamma=0.03, cache_size=2000), 60000)
     rows["RBF-SVM 60k"] = err
     print("""
   对照 LeCun, Bottou, Bengio, Haffner 1998《Gradient-Based Learning Applied to Document Recognition》表（原始像素，未去斜）：
@@ -79,7 +79,7 @@ def exp_table():
   之后十年 SVM 是默认选择——直到数据量和算力让卷积网络在 ImageNet 上把差距拉开（L3 第五篇）。""")
 
     fig, ax = plt.subplots(figsize=(7.6, 2.8))
-    names = ["线性\n（softmax 回归）", "线性 SVM", "KNN\nk=3", "RBF-SVM\n10k 训练", "RBF-SVM\n60k 训练"]
+    names = ["线性\n（softmax 回归）", "线性 SVM", "KNN $k$ = 3", "RBF-SVM\n10k 训练", "RBF-SVM\n60k 训练"]
     vals = [rows[k] * 100 for k in ["线性分类器（逻辑回归）", "线性 SVM", "KNN k=3", "RBF-SVM 10k", "RBF-SVM 60k"]]
     ax.bar(range(5), vals, color=[C["gray"], C["gray"], C["blue"], C["green"], C["green"]])
     for i, v in enumerate(vals):

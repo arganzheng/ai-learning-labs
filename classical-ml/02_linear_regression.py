@@ -63,7 +63,7 @@ def exp_line():
     ax.scatter(x, y, s=18, color=C["blue"], zorder=3, label="20 个数据点")
     for name, (ww, bb), col in (("直线 A", (1, 5), C["gray"]), ("直线 B", (2, 0), C["orange"]), ("最小二乘直线", (w, b), C["red"])):
         ax.plot([0, 10], [bb, ww * 10 + bb], color=col, lw=1.5, label=f"{name}：残差平方和 {np.sum((y-(ww*x+bb))**2):.0f}")
-    ax.set_xlabel("x"); ax.set_ylabel("y"); ax.legend(frameon=False, fontsize=7)
+    ax.set_xlabel("x"); ax.set_ylabel("y"); ax.legend(frameon=False, loc="lower right")
     ax.set_title("三条候选直线")
     ax = axes[1]
     ax.scatter(x, y, s=18, color=C["blue"], zorder=3)
@@ -90,7 +90,7 @@ def exp_surface():
     W, B = np.meshgrid(ws, bs)
     L = np.mean((W[..., None] * x + B[..., None] - y) ** 2, axis=-1)
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.2))
-    for ax, lr, steps, title in ((axes[0], 0.005, 400, "学习率 0.005：400 步，先冲到沟底再沿沟慢慢爬"), (axes[1], 0.0265, 60, "学习率 0.0265：接近上限 0.027，在沟两壁间来回震荡")):
+    for ax, lr, steps, title in ((axes[0], 0.005, 400, "学习率 0.005（400 步）\n先冲到沟底，再沿沟慢慢爬"), (axes[1], 0.0265, 60, "学习率 0.0265 ≈ 上限 0.027\n在沟两壁间来回震荡")):
         w = np.zeros(2); path = [w.copy()]
         for _ in range(steps):
             w = w - lr * 2 * X.T @ (X @ w - y) / len(y); path.append(w.copy())
@@ -188,7 +188,7 @@ def exp_paths():
         for j in range(50):
             ax.plot(al, path[:, j], color=C["red"] if informative[j] else C["blue"], lw=1.4 if informative[j] else 0.7,
                     alpha=1 if informative[j] else 0.5)
-        ax.set_xscale("log"); ax.set_xlabel("正则强度 α（对数轴）"); ax.set_title(title, fontsize=8.5)
+        ax.set_xscale("log"); ax.set_xlabel(r"正则强度 $\alpha$（对数轴）"); ax.set_title(title, fontsize=8.5)
         ax.axhline(0, color=C["gray"], lw=0.6)
     axes[0].set_ylabel("系数值")
     axes[0].plot([], [], color=C["red"], label="5 个真有用的特征"); axes[0].plot([], [], color=C["blue"], lw=0.7, label="45 个无用特征")
@@ -216,13 +216,13 @@ def exp_geometry():
         ax.contour(W1, W2, L, levels=np.geomspace(0.05, 8, 12), colors=C["gray"], linewidths=0.6)
         if kind == "L1":
             ax.fill([c, 0, -c, 0], [0, c, 0, -c], color=C["blue"], alpha=0.25)
-            ax.set_title(f"L1（Lasso）：菱形的角先碰到等高线\n解 ({wi[0]:.2f}, {wi[1]:.2f})：w₂ 被压到零", fontsize=8.5)
+            ax.set_title(f"L1（Lasso）：菱形的角先碰到等高线\n解 ({wi[0]:.2f}, {wi[1]:.2f})：$w_2$ 被压到零", linespacing=1.5)
         else:
             ax.fill(c * np.cos(t), c * np.sin(t), color=C["blue"], alpha=0.25)
             ax.set_title(f"L2（Ridge）：圆周上任意一点都可能相切\n解 ({wi[0]:.2f}, {wi[1]:.2f})：两个都变小、都不为零", fontsize=8.5)
         ax.plot(*w_star, "*", ms=10, color=C["orange"], label="无正则的最小二乘解")
         ax.plot(*wi, "o", ms=7, color=C["red"], label="加约束后的解")
-        ax.set_aspect("equal"); ax.set_xlabel("w₁"); ax.set_ylabel("w₂")
+        ax.set_aspect("equal"); ax.set_xlabel(r"$w_1$"); ax.set_ylabel(r"$w_2$")
         ax.axhline(0, color=C["gray"], lw=0.5); ax.axvline(0, color=C["gray"], lw=0.5)
         print(f"  {kind}: 约束 ||w|| ≤ 1 下的解 ({wi[0]:.2f}, {wi[1]:.2f})")
     axes[0].legend(frameon=False, loc="lower left", fontsize=7)
@@ -265,7 +265,7 @@ def exp_smooth():
         ax.scatter(x, y, s=12, color=C["blue"], zorder=3)
         ax.plot(xs, m.predict(xs[:, None]), color=C["red"], lw=1.5)
         ax.set_ylim(-1.8, 1.8); ax.set_xlabel("x")
-        ax.set_title(f"15 次多项式，α = {alpha:g}\n验证 MSE {va:.3f}，|系数| 最大 {np.abs(coef).max():.0f}", fontsize=8.5)
+        ax.set_title(f"15 次多项式，$\\alpha$ = {alpha:g}\n验证 MSE {va:.3f}，|系数| 最大 {np.abs(coef).max():.0f}", linespacing=1.5)
     save(fig, "02-ridge-smooths-polynomial")
     print("  正则项不改变模型容量（还是 15 次），只是不让高次系数变大——曲线于是平滑")
     print()
@@ -354,20 +354,20 @@ def exp_solvers():
     print("  lstsq / sklearn 直接对 X 做 SVD（LAPACK gelsd），只付 cond(X) 的代价")
     fig, ax = plt.subplots(figsize=(7.6, 2.8))
     ds = [row[0] for row in rows]
-    for i, (label, color) in enumerate(((" inv(XᵀX)·Xᵀy", C["red"]), ("solve(XᵀX, Xᵀy)", C["orange"]), ("lstsq(X, y)", C["blue"]))):
+    for i, (label, color) in enumerate(((r" $\mathrm{inv}(X^\top X)\,X^\top y$", C["red"]), (r"solve$(X^\top X,\,X^\top y)$", C["orange"]), (r"lstsq$(X, y)$", C["blue"]))):
         ax.plot(ds, [row[3 + i] for row in rows], "o-", color=color, label=label, lw=1.4)
     ax.set_yscale("log")
     ax.set_xlabel("多项式次数 d")
     ax.set_ylabel("训练残差平方和（对数轴）")
-    ax.set_title("30 个点拟合 d 次多项式：先算 XᵀX 再求解，d 越大错得越多", fontsize=9)
+    ax.set_title(r"30 个点拟合 $d$ 次多项式：先算 $X^\top X$ 再求解，$d$ 越大错得越多")
     ax2 = ax.twinx()
-    ax2.plot(ds, [row[2] for row in rows], "s--", color=C["gray"], lw=1, label="cond(XᵀX)")
+    ax2.plot(ds, [row[2] for row in rows], "s--", color=C["gray"], lw=1, label=r"cond$(X^\top X)$")
     ax2.set_yscale("log")
-    ax2.set_ylabel("cond(XᵀX)", color=C["gray"])
+    ax2.set_ylabel(r"cond$(X^\top X)$", color=C["gray"])
     ax2.spines["top"].set_visible(False)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.5, loc="upper left")
+    ax.legend(h1 + h2, l1 + l2, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2)
     save(fig, "02-solver-conditioning")
     print()
 
@@ -423,14 +423,14 @@ def exp_soft():
     print(f"  恰好为 0 的系数：坐标下降 {int((w_cd == 0).sum())} 个，sklearn {int((sk == 0).sum())} 个；真实为 0 的 {int((w_true == 0).sum())} 个")
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
     rr = np.linspace(-15, 15, 301)
-    axes[0].plot(rr, rr / q, color=C["gray"], lw=1, ls="--", label="最小二乘 ρ/q")
-    axes[0].plot(rr, rr / (q + 4), color=C["blue"], lw=1.4, label="Ridge ρ/(q+α)，α=4")
-    axes[0].plot(rr, [soft_threshold(v, 4.0) / q for v in rr], color=C["red"], lw=1.6, label="Lasso S(ρ,α)/q，α=4")
+    axes[0].plot(rr, rr / q, color=C["gray"], lw=1, ls="--", label=r"最小二乘 $\rho/q$")
+    axes[0].plot(rr, rr / (q + 4), color=C["blue"], lw=1.4, label=r"Ridge $\rho/(q+\alpha)$，$\alpha$ = 4")
+    axes[0].plot(rr, [soft_threshold(v, 4.0) / q for v in rr], color=C["red"], lw=1.6, label=r"Lasso $S(\rho,\alpha)/q$，$\alpha$ = 4")
     axes[0].axvspan(-4, 4, color=C["light"], alpha=0.6)
     axes[0].plot([rho], [soft_threshold(rho, 4.0) / q], "o", color=C["red"])
-    axes[0].set_xlabel("ρ = xᵀy/n（特征与目标的相关量）")
+    axes[0].set_xlabel(r"$\rho = x^\top y/n$（特征与目标的相关量）")
     axes[0].set_ylabel("解出的 w")
-    axes[0].set_title("一维：|ρ| ≤ α 的灰色区间里 Lasso 的解恰好为 0", fontsize=8.5)
+    axes[0].set_title(r"一维：$|\rho| \leq \alpha$ 的灰色区间里 Lasso 的解恰好为 0", fontsize=8.5)
     axes[0].legend(frameon=False, fontsize=7)
     path = np.array(log)
     for j in range(5):

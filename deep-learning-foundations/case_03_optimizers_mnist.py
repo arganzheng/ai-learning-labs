@@ -140,20 +140,20 @@ def plot_cosine_wsd():
                         label=f"提前分叉（{frac:.0%} 处）")
                 ax.plot([frac, frac], [1.0, 1.0], color=color, lw=2.2)
                 ax.scatter([frac], [1.0], color=color, zorder=5)
-            ax.legend(fontsize=10.5, frameon=True, framealpha=0.9,
+            ax.legend(fontsize=13.2, frameon=True, framealpha=0.9,
                       loc="lower left")
             ax.set_title("WSD（恒定段可随时延长 / 分叉）", fontsize=13)
         ax.plot([0, warm], [0, 1], color=C["blue"], lw=2.2)
         ax.set_xlim(0, T + 0.03)
         ax.set_ylim(-0.06, 1.12)
-        ax.set_xlabel("训练步 t", fontsize=12)
-        ax.set_ylabel("学习率（相对峰值）", fontsize=12)
+        ax.set_xlabel("训练步 t", fontsize=13.2)
+        ax.set_ylabel("学习率（相对峰值）", fontsize=13.2)
         ax.set_xticks([warm, T] if mode == "cosine" else [warm, 0.8, T])
         ax.set_xticklabels(
             ["warmup", "T"] if mode == "cosine"
-            else ["warmup", "衰减开始", "T"], fontsize=10.5)
+            else ["warmup", "衰减开始", "T"], fontsize=13.2)
         ax.set_yticks([0, 0.1, 1.0])
-        ax.set_yticklabels(["0", "10%", "峰值"], fontsize=10.5)
+        ax.set_yticklabels(["0", "10%", "峰值"], fontsize=13.2)
         ax.grid(alpha=0.2)
         for spine in ("top", "right"):
             ax.spines[spine].set_visible(False)

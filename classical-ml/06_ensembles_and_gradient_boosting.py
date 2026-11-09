@@ -154,7 +154,7 @@ def exp_boost_steps():
         t = model[1][k]
         ax.scatter(x, resid, s=6, color=C["gray"]); ax.plot(xs[:, 0], t.predict(xs), color=C["orange"], lw=1.5)
         ax.axhline(0, color=C["gray"], lw=0.5)
-        ax.set_title(f"残差 y − F{k}(x)，第 {k+1} 棵树拟合它", fontsize=8); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"残差 $y-F_{{{k}}}$\n第 {k+1} 棵树拟合", linespacing=1.5); ax.set_xticks([]); ax.set_yticks([])
     ax = axes[1][3]
     pred50 = predict_gbdt(model, xs, lr=lr); pred50_tr = predict_gbdt(model, X, lr=lr)
     ax.scatter(x, y, s=6, color=C["blue"]); ax.plot(xs[:, 0], pred50, color=C["red"], lw=1.5)
@@ -256,9 +256,9 @@ def exp_budget():
     print()
 
 
-# ---------------- 9. 方差公式：ρσ² + (1 − ρ)σ²/B——相关 ρ 由 max_features 控制，B 再大也压不掉 ρσ² ----------------
+# ---------------- 9. 方差公式：$\\rho\\sigma^2$ + (1 − ρ)σ²/B——相关 $\\rho$ 由 max_features 控制，B 再大也压不掉 $\\rho\\sigma^2$ ----------------
 def exp_variance():
-    print("=== 9. 平均 B 棵相关系数 ρ 的树：方差 = ρσ² + (1 − ρ)σ²/B；随机特征选择降的是 ρ ===")
+    print("=== 9. 平均 B 棵相关系数 ρ 的树：方差 = $\\rho\\sigma^2 + (1-\\rho)\\sigma^2/B$；随机特征选择降的是 ρ ===")
     S, n, n_te, pairs = 50, 1000, 300, 5
     Xall, yall = make_classification(n_samples=S * n + n_te, n_features=20, n_informative=8, n_redundant=4, flip_y=0.05, class_sep=0.8, random_state=0)
     Xte, yte = Xall[:n_te], yall[:n_te]
@@ -272,7 +272,7 @@ def exp_variance():
         return float(F.var(0).mean())
 
     print(f"  从同一个分布抽 {S} 份训练集（各 {n} 个样本），固定 {n_te} 个测试点；每份上训 {pairs} 对只差随机种子的树 (h, h′) 和一片 B 棵的森林")
-    print(f"  {'m':>3} {'单棵树方差 σ²':>12} {'两棵树相关 ρ':>12} {'公式 B=100':>10} {'实测 B=100':>10} {'公式 B=∞ (ρσ²)':>14} {'实测 B=1000':>10} {'森林测试准确率':>12}")
+    print(f"  {'m':>3} {'单棵树方差 σ²':>12} {'两棵树相关 $\\rho$':>12} {'公式 B=100':>10} {'实测 B=100':>10} {'公式 B=∞ ($\\rho\\sigma^2$)':>14} {'实测 B=1000':>10} {'森林测试准确率':>12}")
     rows = {}
     for m in (20, 4, 1):
         var, cov = np.zeros(n_te), np.zeros(n_te)
@@ -287,7 +287,7 @@ def exp_variance():
         rows[m] = (sigma2, rho)
         print(f"  {m:>3} {sigma2:>12.4f} {rho:>12.3f} {pred:>10.4f} {forest_var(m, 100):>10.4f} {rho * sigma2:>14.4f} {forest_var(m, 1000):>10.4f} {acc:>12.3f}")
     sigma2, rho = rows[4]
-    print(f"  m = 4 时手算：ρσ² + (1 − ρ)σ²/B = {rho:.3f}×{sigma2:.4f} + {1 - rho:.3f}×{sigma2:.4f}/100 = {rho * sigma2:.4f} + {(1 - rho) * sigma2 / 100:.5f} = {rho * sigma2 + (1 - rho) * sigma2 / 100:.4f}")
+    print(f"  m = 4 时手算：$\\rho\\sigma^2$ + (1 − ρ)σ²/B = {rho:.3f}×{sigma2:.4f} + {1 - rho:.3f}×{sigma2:.4f}/100 = {rho * sigma2:.4f} + {(1 - rho) * sigma2 / 100:.5f} = {rho * sigma2 + (1 - rho) * sigma2 / 100:.4f}")
     print(f"  {'B':>5} {'公式 (m=4)':>10} {'实测 (m=4)':>10} {'训练 50 片森林':>12}")
     Bs = [1, 10, 100, 1000]
     meas, form = [], []
@@ -296,21 +296,21 @@ def exp_variance():
         meas.append(forest_var(4, B))
         form.append(rho * sigma2 + (1 - rho) * sigma2 / B)
         print(f"  {B:>5} {form[-1]:>10.4f} {meas[-1]:>10.4f} {time.time() - t0:>11.1f}s")
-    print("  条件读法：方差公式要求各棵树同分布（bootstrap + 同一算法保证）、ρ 是任意两棵树的相关；B → ∞ 只能压掉 (1 − ρ)σ²/B，剩下的 ρσ² 只能靠降 ρ——这就是每个节点只看 m 个特征的理由；m 太小单棵树偏差上升，准确率反而掉")
+    print("  条件读法：方差公式要求各棵树同分布（bootstrap + 同一算法保证）、ρ 是任意两棵树的相关；B → ∞ 只能压掉 (1 − ρ)σ²/B，剩下的 $\\rho\\sigma^2$ 只能靠降 ρ——这就是每个节点只看 m 个特征的理由；m 太小单棵树偏差上升，准确率反而掉")
     print(f"  ρ 是用 {S} 份数据 × {pairs} 对树估的，小到 0.0x 时本身带有 ±0.01 量级的抽样误差，所以「公式」列在 m = 4、1 时只能看量级，不能看第四位小数")
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
     ax = axes[0]
     for m, col in ((20, C["gray"]), (4, C["red"]), (1, C["blue"])):
         s2, r_ = rows[m]
         bb = np.logspace(0, 3.5, 50)
-        ax.plot(bb, r_ * s2 + (1 - r_) * s2 / bb, color=col, lw=1.4, label=f"m = {m}：ρ = {r_:.2f}，ρσ² = {r_ * s2:.4f}")
+        ax.plot(bb, r_ * s2 + (1 - r_) * s2 / bb, color=col, lw=1.4, label=f"m = {m}：$\\rho$ = {r_:.2f}，$\\rho\\sigma^2$ = {r_ * s2:.4f}")
     ax.plot(Bs, meas, "o", color=C["red"], label="实测（m = 4）")
     ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xlabel("树的棵数 B（对数轴）"); ax.set_ylabel("森林预测概率的方差（对数轴）")
-    ax.legend(frameon=False, fontsize=6.5); ax.set_title("方差 = ρσ² + (1 − ρ)σ²/B：B 大了只剩 ρσ²", fontsize=8)
+    ax.legend(frameon=False, fontsize=6.5); ax.set_title("方差 = $\\rho\\sigma^2 + (1-\\rho)\\sigma^2/B$：B 大了只剩 $\\rho\\sigma^2$", fontsize=8)
     ax = axes[1]
     ms = [20, 4, 1]
     ax.bar([f"m = {m}" for m in ms], [rows[m][1] for m in ms], color=[C["gray"], C["red"], C["blue"]])
-    ax.set_ylabel("两棵树预测的相关 ρ"); ax.set_title("每个节点只看 m 个特征：m 越小 ρ 越低", fontsize=8)
+    ax.set_ylabel("两棵树预测的相关 $\\rho$"); ax.set_title("每个节点只看 m 个特征：$m$ 越小 $\\rho$ 越低", fontsize=8)
     save(fig, "06-variance-formula")
     print()
 
@@ -398,16 +398,16 @@ def exp_logit():
     xs = np.linspace(0.5, 4.5, 200)[:, None]
     model_4 = fit_gbdt_logloss(X4, y4, n_trees=2, lr=1.0, max_depth=1)
     for k, col in ((1, C["orange"]), (2, C["red"])):
-        ax.plot(xs[:, 0], sigmoid(predict_logit(model_4, xs, lr=1.0, n_trees=k)), color=col, lw=1.4, label=f"{k} 棵树后的 p = sigmoid(F)")
-        ax.plot(xs[:, 0], predict_logit(model_4, xs, lr=1.0, n_trees=k) / 4, color=col, lw=0.8, ls="--", label=f"{k} 棵树后的 F / 4")
+        ax.plot(xs[:, 0], sigmoid(predict_logit(model_4, xs, lr=1.0, n_trees=k)), color=col, lw=1.4, label=f"{k} 棵后：$p$")
+        ax.plot(xs[:, 0], predict_logit(model_4, xs, lr=1.0, n_trees=k) / 4, color=col, lw=0.8, ls="--", label=f"{k} 棵后：$F/4$")
     ax.scatter(X4[:, 0], y4, s=30, color=C["blue"], zorder=3, label="4 个样本")
-    ax.axhline(0, color=C["gray"], lw=0.5); ax.set_xlabel("x"); ax.legend(frameon=False, fontsize=6.5)
-    ax.set_title("树累加的是 F（虚线），概率是最后一步 sigmoid(F)", fontsize=8)
+    ax.axhline(0, color=C["gray"], lw=0.5); ax.set_xlabel("x"); ax.legend(frameon=False, loc="lower right", ncol=2, fontsize=8)
+    ax.set_title("树累加 $F$（虚线），概率是最后一步 $\sigma(F)$")
     ax = axes[1]
     ax.plot(range(1, n_trees + 1), curve_logit, color=C["red"], lw=1.4, label="累加 logit，最后 sigmoid")
-    ax.plot(range(1, n_trees + 1), curve_naive, color=C["gray"], lw=1.4, label="直接累加概率（裁剪到 [0,1]）")
-    ax.set_xlabel("树的棵数"); ax.set_ylabel("测试 log-loss"); ax.legend(frameon=False, fontsize=7)
-    ax.set_title("乳腺癌数据：两种累加方式的测试 log-loss", fontsize=8)
+    ax.plot(range(1, n_trees + 1), curve_naive, color=C["gray"], lw=1.4, label="直接累加概率（裁剪）")
+    ax.set_xlabel("树的棵数"); ax.set_ylabel("测试 log-loss"); ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2)
+    ax.set_title("两种累加方式的测试 log-loss")
     save(fig, "06-logit-boosting")
     print()
 

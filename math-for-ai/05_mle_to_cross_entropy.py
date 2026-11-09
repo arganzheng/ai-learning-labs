@@ -47,7 +47,7 @@ def coin():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.9))
     axes[0].plot(p, L, color=C["blue"])
     axes[0].axvline(0.7, color=C["red"], ls="--", lw=1)
-    axes[0].set(xlabel="猜的正面概率 p", ylabel="似然 L(p) = p⁷(1−p)³", title="似然：哪个 p 让「7 正 3 反」最可能出现")
+    axes[0].set(xlabel="猜的正面概率 p", ylabel=r"似然 $L(p) = p^7(1-p)^3$", title="似然：哪个 p 让「7 正 3 反」最可能出现")
     axes[0].annotate("最高点 p = 0.7", (0.7, L.max()), (0.2, L.max() * 0.9), arrowprops=dict(arrowstyle="->", color=C["gray"]), color=C["red"])
     axes[1].plot(p, logL, color=C["orange"])
     axes[1].axvline(0.7, color=C["red"], ls="--", lw=1)
@@ -71,7 +71,7 @@ def lm():
     section("三个 token 的玩具语言模型：训练句子 'a b a c a b'，两个候选 θ 谁的似然大？")
     idx = {t: i for i, t in enumerate(TOK)}
     rows = []
-    for name, th in (("θ₁", THETA_1), ("θ₂", THETA_2)):
+    for name, th in ((r"$\theta_1$", THETA_1), (r"$\theta_2$", THETA_2)):
         ps = [th[idx[SENT[t - 1]], idx[SENT[t]]] for t in range(1, len(SENT))]
         prod = float(np.prod(ps))
         logs = [math.log(x) for x in ps]
@@ -92,12 +92,12 @@ def lm():
             for r, (name, ps, prod, ls) in enumerate(rows):
                 y = 1.2 - r * 0.7
                 ax.text(t, y, f"{ps[t-1]:.2f}", ha="center", va="center", color=[C["green"], C["orange"]][r], fontsize=11)
-    ax.text(-0.45, 1.2, "θ₁", ha="right", va="center", color=C["green"], fontsize=11, fontweight="bold")
-    ax.text(-0.45, 0.5, "θ₂", ha="right", va="center", color=C["orange"], fontsize=11, fontweight="bold")
+    ax.text(-0.45, 1.2, r"$\theta_1$", ha="right", va="center", color=C["green"], fontsize=11, fontweight="bold")
+    ax.text(-0.45, 0.5, r"$\theta_2$", ha="right", va="center", color=C["orange"], fontsize=11, fontweight="bold")
     ax.text(0, 1.2, "—", ha="center", va="center", color=C["gray"])
     ax.text(0, 0.5, "—", ha="center", va="center", color=C["gray"])
     for r, (name, ps, prod, ls) in enumerate(rows):
-        ax.text(len(SENT) - 0.4, 1.2 - r * 0.7, f"×→ {prod:.5f}\nlog 和 {ls:.2f}", va="center", fontsize=9, color=[C["green"], C["orange"]][r])
+        ax.text(len(SENT) - 0.4, 1.2 - r * 0.7, f"×→ {prod:.5f}\nlog 和 {ls:.2f}".replace("-", "−"), va="center", fontsize=9, color=[C["green"], C["orange"]][r])
     ax.text(len(SENT) / 2 - 0.5, -0.2, "每个位置：模型给「真实的下一个 token」的概率；整句的概率 = 逐位相乘（链式法则）", ha="center", fontsize=9, color=C["gray"])
     save(fig, "05-toy-lm-likelihood")
 
@@ -155,13 +155,13 @@ def softmax():
     axes[0].plot(x, np.exp(x), color=C["blue"])
     for zv in (0, 1, 2):
         axes[0].plot(zv, math.exp(zv), "o", color=C["red"])
-        axes[0].annotate(f"e^{zv} = {math.exp(zv):.2f}", (zv, math.exp(zv)), (zv - 2.4, math.exp(zv) + 1.5), fontsize=8, arrowprops=dict(arrowstyle="-", color=C["gray"], lw=0.6))
-    axes[0].set(xlabel="logit z", ylabel="e^z", title="指数：永远是正数，差 1 就放大 2.7 倍")
+        axes[0].annotate(f"$e^{{{zv}}}$ = {math.exp(zv):.2f}", (zv, math.exp(zv)), (zv - 2.4, math.exp(zv) + 1.5), fontsize=8, arrowprops=dict(arrowstyle="-", color=C["gray"], lw=0.6))
+    axes[0].set(xlabel="logit z", ylabel=r"$e^z$", title="指数：永远是正数，差 1 就放大 2.7 倍")
     taus = [0.5, 1, 2]
     for i, tau in enumerate(taus):
         pt = torch.softmax(z / tau, 0).numpy()
-        axes[1].bar(np.arange(3) + (i - 1) * 0.26, pt, 0.24, label=f"τ = {tau}", color=[C["red"], C["blue"], C["green"]][i])
-    axes[1].set_xticks(range(3), ["token 1\n(z=2)", "token 2\n(z=1)", "token 3\n(z=0)"])
+        axes[1].bar(np.arange(3) + (i - 1) * 0.26, pt, 0.24, label=f"$\\tau$ = {tau}", color=[C["red"], C["blue"], C["green"]][i])
+    axes[1].set_xticks(range(3), ["token 1（$z$ = 2）", "token 2（$z$ = 1）", "token 3（$z$ = 0）"])
     axes[1].set(ylabel="概率", title="同一组 logits，温度改变「多确定」")
     axes[1].legend()
     save(fig, "05-exp-and-temperature")
@@ -276,7 +276,7 @@ def sampling():
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0), width_ratios=[3, 2])
     xs = np.arange(10)
     for i, (tau, col) in enumerate(zip((0.5, 1.0, 2.0), (C["red"], C["blue"], C["green"]))):
-        axes[0].bar(xs + (i - 1) * 0.27, table[tau].numpy(), 0.25, label=f"τ = {tau}", color=col)
+        axes[0].bar(xs + (i - 1) * 0.27, table[tau].numpy(), 0.25, label=f"$\\tau$ = {tau}", color=col)
     axes[0].set_xticks(xs, names, rotation=45, ha="right", fontsize=8)
     axes[0].set(ylabel="概率", title="GPT-2：'The capital of France is' 之后的前十个 token")
     axes[0].legend()
@@ -318,7 +318,7 @@ def mask():
     for i, (t, mm) in enumerate(zip(toks, m)):
         r, c = divmod(i, per_row)
         ax.add_patch(plt.Rectangle((c, -r * 1.3), 0.96, 1.0, fc="#fde5e5" if mm else "#eef3fa", ec=C["red"] if mm else C["blue"], lw=0.8))
-        ax.text(c + 0.475, -r * 1.3 + 0.62, t if len(t) < 13 else t[:11] + "…", ha="center", va="center", fontsize=7)
+        ax.text(c + 0.475, -r * 1.3 + 0.62, t.replace("\\n", "⏎").replace("=?", "= ?") if len(t) < 13 else t[:11] + "…", ha="center", va="center", fontsize=7)
         ax.text(c + 0.475, -r * 1.3 + 0.2, str(mm), ha="center", va="center", fontsize=8, color=C["red"] if mm else C["blue"], fontweight="bold")
     rows = (len(toks) - 1) // per_row + 1
     ax.set_xlim(-0.1, per_row)
@@ -340,7 +340,7 @@ def rm():
     ax.text(0.2, 3.5, "分不出好坏：loss = ln 2 = 0.69", fontsize=8)
     ax.text(2.5, 1.2, "好的分高 →\n概率接近 1，loss → 0", fontsize=8, color=C["green"])
     ax.text(-5.8, 3.5, "← 把差的排在前面\nloss 线性增长，被重罚", fontsize=8, color=C["red"])
-    ax.set(xlabel="r(好回答) − r(差回答)", ylabel="loss = −log σ(差值)", title="同一个模板：把「A 比 B 好」的概率放进 −log")
+    ax.set(xlabel="r(好回答) − r(差回答)", ylabel=r"loss = $-\log\sigma$(差值)", title="同一个模板：把「A 比 B 好」的概率放进 −log")
     save(fig, "05-reward-model-loss")
 
 

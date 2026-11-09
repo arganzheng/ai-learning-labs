@@ -101,7 +101,7 @@ def exp_reconstruct():
     for ax, k in zip(axes[1:], (1, 2, 5, 10, 30)):
         rec = mu + Z[i, :k] @ V[:k]                                 # 均值 + 前 k 个坐标 × 前 k 个方向
         err = np.mean((rec - X[i]) ** 2)
-        ax.imshow(rec.reshape(8, 8), cmap="gray_r"); ax.set_title(f"k = {k}\n重建误差 {err:.1f}", fontsize=8)
+        ax.imshow(rec.reshape(8, 8), cmap="gray_r"); ax.set_title(f"$k$ = {k}"); ax.text(0.5, -0.14, f"误差 {err:.1f}", transform=ax.transAxes, ha="center", va="top")
         print(f"  k = {k:>2}: 这张图的重建 MSE {err:6.2f}，全部 1797 张的平均 {np.mean((mu + Z[:, :k] @ V[:k] - X) ** 2):6.2f}")
     for a in axes: a.axis("off")
     save(fig, "08-reconstruction")
@@ -135,13 +135,13 @@ def exp_tsne():
     d = load_digits()
     Z, _, ratio = pca(d.data, 2)
     print(f"  PCA 前两维只解释 {ratio[:2].sum():.1%} 的方差")
-    Zt = TSNE(2, init="pca", perplexity=30, random_state=0).fit_transform(d.data)
-    Zt50 = TSNE(2, init="pca", perplexity=30, random_state=0).fit_transform(PCA(30).fit_transform(d.data))
+    Zt = TSNE(2, init="pca", perplexity = 30, random_state=0).fit_transform(d.data)
+    Zt50 = TSNE(2, init="pca", perplexity = 30, random_state=0).fit_transform(PCA(30).fit_transform(d.data))
     for name, ZZ in (("PCA 2 维", Z), ("t-SNE 2 维", Zt), ("PCA 30 → t-SNE 2", Zt50)):
         acc = cross_val_score(KNeighborsClassifier(5), ZZ, d.target, cv=5).mean()
         print(f"  在{name}坐标上做 KNN 分类（5 折）：{acc:.3f}——衡量二维图上同类点有多聚在一起")
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4))
-    for ax, ZZ, title in ((axes[0], Z, f"PCA 前两维（解释 {ratio[:2].sum():.0%} 方差）：0 和 1 分得开，3/5/8 混在一起"),
+    for ax, ZZ, title in ((axes[0], Z, f"PCA 前两维（{ratio[:2].sum():.0%} 方差）\n0/1 分得开，3/5/8 混在一起"),
                           (axes[1], Zt50, "PCA 30 维 → t-SNE 2 维：十类各成一团")):
         sc = ax.scatter(ZZ[::3, 0], ZZ[::3, 1], c=d.target[::3], cmap="tab10", s=5)
         ax.set_title(title, fontsize=8); ax.set_xticks([]); ax.set_yticks([])
@@ -209,7 +209,7 @@ def exp_spectrum():
     print(f"  同尺寸随机矩阵：       前 10 个奇异值 {np.round(sR[:10], 1)}")
     print(f"  解释 90% 能量需要的秩：真实权重 {energy_rank(sW)} / 896，随机矩阵 {energy_rank(sR)} / 896")
     fig, ax = plt.subplots(figsize=(7.6, 2.6))
-    ax.plot(sW / sW[0], color=C["red"], label="Qwen2.5-0.5B 第 12 层 q_proj（896×896）")
+    ax.plot(sW / sW[0], color=C["red"], label="Qwen2.5-0.5B 第 12 层 query 投影（896×896）")
     ax.plot(sR / sR[0], color=C["gray"], label="同尺寸、同标准差的随机高斯矩阵")
     ax.set_yscale("log"); ax.set_xlabel("奇异值序号"); ax.set_ylabel("奇异值 / 最大奇异值（对数轴）"); ax.legend(frameon=False, fontsize=7.5)
     ax.set_title("真实权重的奇异值比随机矩阵衰减得快，但本身不低秩", fontsize=8.5)
@@ -320,10 +320,10 @@ def exp_neighbors():
     ]
     for perp in (5, 30, 50):
         _, _, Z2 = report(
-            f"t-SNE perplexity={perp}",
+            f"t-SNE perplexity = {perp}",
             TSNE(2, init="pca", perplexity=perp, random_state=0).fit_transform(X30),
         )
-        panels.append((f"t-SNE perplexity={perp}", Z2))
+        panels.append((f"t-SNE perplexity = {perp}", Z2))
     if umap is None:
         print("  （没装 umap-learn，跳过 UMAP；pip install umap-learn==0.5.7）")
     else:

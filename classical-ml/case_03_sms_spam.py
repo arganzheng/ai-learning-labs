@@ -106,8 +106,8 @@ def main():
     # 图 2：阈值移动 → 精确率 / 召回率此消彼长
     pr, rc, th = precision_recall_curve(yte, prob)
     fig, ax = plt.subplots(figsize=(7.6, 3.0))
-    ax.plot(th, pr[:-1], c=C["blue"], label="精确率（判成 spam 的里面真是 spam 的比例）")
-    ax.plot(th, rc[:-1], c=C["orange"], label="召回率（所有 spam 里被抓住的比例）")
+    ax.plot(th, pr[:-1], c=C["blue"], label="精确率")
+    ax.plot(th, rc[:-1], c=C["orange"], label="召回率")
     for t in [0.2, 0.5]:
         ax.axvline(t, ls="--", c=C["gray"], lw=0.8); ax.text(t + 0.01, 0.62, f"阈值 {t}", fontsize=8, color=C["gray"])
     ax.set_xlabel("判为 spam 的概率阈值"); ax.set_ylim(0.5, 1.02); ax.legend(loc="lower right")

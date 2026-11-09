@@ -293,6 +293,31 @@ def collide(fig, margin=6.0):
                 else:
                     continue
                 break
+    # 散点 marker 的墨迹 bbox 也挡住文字（scatter 的 PathCollection offsets +
+    # marker 尺寸），不只是线段
+    import numpy as _np
+    for ax in fig.axes:
+        axbb = ax.get_window_extent(renderer=ren)
+        for c in ax.collections:
+            offs = getattr(c, "get_offsets", lambda: None)()
+            if offs is None or len(offs) == 0:
+                continue
+            sizes = c.get_sizes()
+            if len(sizes) == 0:
+                continue
+            pts = ax.transData.transform(_np.asarray(offs))
+            for (mx, my), s in zip(pts, sizes):
+                if not (axbb.x0 - 20 < mx < axbb.x1 + 20
+                        and axbb.y0 - 20 < my < axbb.y1 + 20):
+                    continue
+                r = float(_np.sqrt(s)) * ren.points_to_pixels(1) / 2.0
+                for t in line_texts:
+                    e = ext[t]
+                    iw = min(e.x1 - 1, mx + r) - max(e.x0 + 1, mx - r)
+                    ih = min(e.y1 - 1, my + r) - max(e.y0 + 1, my - r)
+                    if iw > 1 and ih > 1:
+                        errs.append(f"文字压散点 marker：{t.get_text()!r}")
+                        break
     # 线段/箭头不得穿过或贴着盒内区域：端点搭在盒边可以，盒内穿行不行
     box_patches = [p for p in _PATCHES if p.get_figure() is fig]
     bext = {p: p.get_window_extent(renderer=ren) for p in box_patches}

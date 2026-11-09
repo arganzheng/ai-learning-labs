@@ -428,15 +428,21 @@ def check_arrows(fig, min_shaft=16.0):
         raise AssertionError(f"{len(errs)} 处箭头过短：\n" + "\n".join(errs))
 
 
+_OVERHANG_END = re.compile(r"(?:[VWYTUXK]|\\(?:tau|gamma|nu|upsilon)\b)\}?$")
+
+
 def fix_math_eq_spacing(fig):
-    """math run 后面接正体 " =" 时，CM 斜体的右悬伸会吃掉空格
-    （渲染成 V= 50257）。在 math run 尾巴里补一个 \\, 细空格，
-    让视觉间距接近正常空格。"""
+    """math run 以悬伸斜体字母结尾（V W Y T U X K 或 \\tau/\\gamma/\\nu/\\upsilon）
+    后面接正体 " =" 时，右悬伸吃掉空格（渲染成 V= 50257）。
+    只在 run 尾部补一个 \\, 细空格；下标、右括号、数字、普通小写字母不补。"""
     for t in fig.findobj(matplotlib.text.Text):
         s = t.get_text()
         if not s.strip() or not t.get_visible():
             continue
-        n = re.sub(r"\$([^$]*[^$\s])\$ =", r"$\1\,$ =", s)
+        def _pad(m):
+            body = m.group(1)
+            return f"${body}\\,$ =" if _OVERHANG_END.search(body) else m.group(0)
+        n = re.sub(r"\$([^$]*[^$\s])\$ =", _pad, s)
         if n != s:
             t.set_text(n)
 

@@ -126,7 +126,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     xx, yy = np.meshgrid(grid, grid)
     grid_points = np.column_stack((xx.ravel(), yy.ravel()))
 
-    fig = plt.figure(figsize=(9.0, 4.8))
+    fig = plt.figure(figsize=(9.0, 5.2))
     layout = fig.add_gridspec(2, 6, height_ratios=(1.05, 1.0))
     axes = [
         fig.add_subplot(layout[0, 0:2]),
@@ -168,8 +168,8 @@ def plot_case(perceptron, adaline, selected_mlp):
         ax.set_xlabel("$x_1$")
         ax.set_ylabel("$x_2$")
         ax.grid(alpha=0.16)
-    axes[1].text(0.03, 0.04, "4 个预测均约 0.5", transform=axes[1].transAxes,
-                 fontsize=15, color="#222222")
+    axes[1].text(0.5, 0.06, "4 个预测均约 0.5", transform=axes[1].transAxes,
+                 ha="center", fontsize=15, color="#222222")
 
     errors_ax = fig.add_subplot(layout[1, 0:3])
     adaline_ax = fig.add_subplot(layout[1, 3:6])
@@ -181,6 +181,7 @@ def plot_case(perceptron, adaline, selected_mlp):
     errors_ax.set_title("感知机：每轮更新次数")
     errors_ax.set_xlabel("epoch")
     errors_ax.set_ylabel("误分数")
+    errors_ax.set_yticks([0, 1, 2, 3, 4])
     errors_ax.legend(frameon=False, ncol=2)
     errors_ax.grid(alpha=0.2)
 

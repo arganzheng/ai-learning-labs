@@ -315,7 +315,7 @@ def toy_graph():
 def figure_overview():
     fig,ax=base_fig("前向算 loss，反向沿原路把梯度送回每个参数",7.6,3.9,(0,12),(1.3,7.0))
     xs=[.35,2.55,4.75,6.95,9.15]; y=4.7; w=1.6
-    fw=[("X","输入"),("H","Linear"),("A","ReLU"),("Z","Linear"),("L","loss")]
+    fw=[("$X$","输入"),("$H$","Linear"),("$A$","ReLU"),("$Z$","Linear"),("$L$","loss")]
     for x,(a,b) in zip(xs,fw):
         p=box(ax,x,y,w,1.0,"",fc="#dce9f7",ec=C["blue"])
         box_title(ax,x+w/2,y+.68,a,p); text(ax,x+w/2,y+.27,b,in_box=p,ha="center",va="center",fontsize=10.5)
@@ -345,8 +345,8 @@ def figure_scalar():
     fig,ax=base_fig("标量计算图：每条边反向下传「上游梯度 × 局部导数」",7.6,3.8,(0,12),(0.9,6.6))
     top=4.9
     node(ax,.7,top,r"$x$","2",w=1.4,h=1.1)
-    node(ax,3.7,top,r"$z$=$wx+b$","5",w=2.4,h=1.1)
-    node(ax,7.1,top,r"$e$=$z-y$","1",w=2.0,h=1.1)
+    node(ax,3.7,top,r"$z=wx+b$","5",w=2.4,h=1.1)
+    node(ax,7.1,top,r"$e=z-y$","1",w=2.0,h=1.1)
     node(ax,10.1,top,r"$L=e^2$","1",w=1.5,h=1.1)
     node(ax,2.6,1.3,r"$w$","3",w=1.5,h=1.05)
     node(ax,5.1,1.3,r"$b$","−1",w=1.5,h=1.05)
@@ -423,11 +423,11 @@ def figure_gate():
 
 
 def figure_fanout():
-    fig,ax=base_fig("一个量走了两条路：两路梯度在 x 处相加",7.6,3.7,(0,12),(0.4,6.4))
+    fig,ax=base_fig("一个量走了两条路：两路梯度在 $x$ 处相加",7.6,3.7,(0,12),(0.4,6.4))
     node(ax,.5,3.75,r"$x$","2",w=1.3,h=1.4)
     node(ax,.5,1.15,r"$y$","3",w=1.3,h=1.4)
-    node(ax,3.4,3.65,"x*y","6",w=1.8,h=1.45)
-    node(ax,6.6,2.35,"+","f=8",w=1.6,h=1.35)
+    node(ax,3.4,3.65,r"$x\cdot y$","6",w=1.8,h=1.45)
+    node(ax,6.6,2.35,"+","$f$=8",w=1.6,h=1.35)
     arrow(ax,(1.85,4.3),(3.35,4.3),color=C["blue"])
     arrow(ax,(1.85,1.9),(3.35,3.8),color=C["blue"])
     arrow(ax,(1.15,3.7),(1.15,2.7),color=C["blue"])
@@ -616,12 +616,12 @@ def figure_mini():
 def figure_mlp():
     fig,ax=base_fig("784-256-10：前向、主梯度链、参数梯度分三排",7.6,4.2,(0,12),(0.6,7))
     xs=[.45,2.75,5.05,7.35,9.65]
-    fw=[(r"X",r"128×784"),(r"H",r"128×256"),(r"A",r"128×256"),(r"Z",r"128×10"),(r"L","scalar")]
+    fw=[(r"$X$",r"128×784"),(r"$H$",r"128×256"),(r"$A$",r"128×256"),(r"$Z$",r"128×10"),(r"$L$","scalar")]
     for x,(a,b) in zip(xs,fw):
         p=box(ax,x,5.22,1.55,1.05,"",fc="#dce9f7",ec=C["blue"]); box_title(ax,x+.775,5.96,a,p)
         text(ax,x+.775,5.5,b,in_box=p,ha="center",va="center",fontsize=10.5)
     for i in range(4): arrow(ax,(xs[i]+1.6,5.72),(xs[i+1]-.05,5.72),color=C["blue"])
-    tags=[(.45,r"存 X"),(2.75,r"存 H 符号"),(5.05,r"存 A")]
+    tags=[(.45,r"存 $X$"),(2.75,r"存 $H$ 符号"),(5.05,r"存 $A$")]
     for x,label in tags:
         p=box(ax,x,4.42,1.55,.52,"",fc="#fae6d6",ec=C["orange"],lw=.8)
         text(ax,x+.775,4.68,label,in_box=p,ha="center",va="center",fontsize=10.5)
@@ -648,14 +648,14 @@ def figure_mlp():
 
 def figure_flops():
     fig,ax=base_fig("一个 Linear 的三次矩阵乘：前向一次，反向两次",7.6,2.4,(0,12),(0.75,3.5))
-    items=[(.5,"前向",r"X[m,k] W[k,n]","2mkn",C["blue"]),(4.3,r"反向 dW",r"$X^{\!\!\top}[k,m]\,G[m,n]$","2mkn",C["orange"]),(8.1,r"反向 dX",r"$G[m,n]\,W^{\!\!\top}[n,k]$","2mkn",C["green"])]
+    items=[(.5,"前向",r"$X[m,k]\,W[k,n]$","$2mkn$",C["blue"]),(4.3,r"反向 $dW$",r"$X^{\!\!\top}[k,m]\,G[m,n]$","$2mkn$",C["orange"]),(8.1,r"反向 $dX$",r"$G[m,n]\,W^{\!\!\top}[n,k]$","$2mkn$",C["green"])]
     for x,title,formula,cost,color in items:
         p=box(ax,x,1.75,3.25,1.5,"",fc="#f7f7f7",ec=color); box_title(ax,x+1.625,2.82,title,p)
         text(ax,x+1.625,2.3,formula,in_box=p,ha="center",va="center",fontsize=10.5)
         text(ax,x+1.625,2.0,cost,in_box=p,ha="center",va="center",fontsize=10.5,color=color)
     arrow(ax,(3.82,2.5),(4.25,2.5),color="#777777",lw=1.0)
     arrow(ax,(7.62,2.5),(8.05,2.5),color="#777777",lw=1.0)
-    text(ax,6,1.05,r"前向 2mkn；反向 2+2=4mkn=2× 前向。",ha="center",fontsize=10.5)
+    text(ax,6,1.05,r"前向 $2mkn$；反向 $2+2=4mkn$=2× 前向。",ha="center",fontsize=10.5)
     finish(fig,"backprop-linear-flops")
 
 

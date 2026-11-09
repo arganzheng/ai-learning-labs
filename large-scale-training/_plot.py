@@ -23,7 +23,7 @@ from matplotlib.ft2font import FT2Font  # noqa: E402
 from matplotlib.patches import FancyBboxPatch, Rectangle  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Noto Sans SC Medium", "Noto Sans SC"],
+    "font.family": ["Noto Sans SC"],
     "axes.unicode_minus": True,
     "svg.fonttype": "none",         # 真文字 + 内嵌字体子集（embed_fonts），<img> 下也有 hinting
     "mathtext.fontset": "cm",        # $...$ 用 Computer Modern 排，与正文 KaTeX 风格一致

@@ -227,10 +227,26 @@ def check_math_needed(fig):
             continue
         for m in re.finditer(r"\$([^$]*)\$", s):
             body = m.group(1)
-            # 变量表达式允许：公式里的变量必须是 CM 斜体——$p$、$z_i$、$dW$、
-            # $dL/dx$、$(P-Y)/m$。不给含 = 或数字开头的（$K=64$、$2h$ 仍拒绝）。
-            if "=" not in body and re.fullmatch(
-                    r"[A-Za-zΑ-Ωα-ω(_{][A-Za-z0-9_^{}\\ ()+\-*/·×]*", body.strip()):
+            # 变量表达式 / 变量间等式允许：公式里的变量必须是 CM 斜体——$p$、
+            # $z_i$、$dW$、$dL/dx$、$(P-Y)/m$、$z=wx+b$。每侧都要含字母：
+            # $K=64$（右纯数字）、$0$、$2h$（无等式、非变量字母开头）仍拒绝。
+            _var = re.compile(r"[A-Za-zΑ-Ωα-ω0-9_^{}\\ ()+\-*/·×,;\[\]]*")
+            b = body.strip()
+            letters = len(re.findall(r"[A-Za-zΑ-Ωα-ω]", b))
+            sides = b.split("=")
+            if "=" in b:
+                # 变量间等式（$z=wx+b$、$2+2=4mkn$）：右侧是含字母的项；
+                # $K=64$、$f=8$ 这种右侧纯数字的仍拒绝，写成 $f$ = 8。
+                ok = len(sides) <= 2 and all(
+                    _var.fullmatch(s) for s in sides) and (
+                    len(re.findall(r"[A-Za-zΑ-Ωα-ω]", sides[-1])) >= 2
+                    or re.search(r"[_^\\]", sides[-1]) is not None
+                    and re.search(r"[A-Za-zΑ-Ωα-ω]", sides[-1]) is not None)
+            else:
+                # 无等号：变量字母，或数字开头但 ≥2 字母的项（$2mkn$ 行，$2h$ 不行）
+                ok = _var.fullmatch(b) and letters and (
+                    letters >= 2 or not re.match(r"^\d", b))
+            if ok:
                 continue
             if not re.search(r"[_^\\]", _PLAIN_CMDS.sub("", body)):
                 bad.append(s)

@@ -16,6 +16,7 @@ plt.rcParams.update({
     "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
     "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
+    "mathtext.fontset": "cm",       # $...$ 用 Computer Modern，与正文 KaTeX 一致
     "font.size": 10.5,
     "axes.titlesize": 11.5,
     "axes.labelsize": 10.5,

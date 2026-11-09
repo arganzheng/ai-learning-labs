@@ -35,7 +35,7 @@ def run_patchify():
     print(f"  token 矩阵形状 {tokens.shape}（真实 ViT-L/14 在 336² 上是 [576, 1024]）")
 
     fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.6), gridspec_kw={"width_ratios": [1, 1, 1.4]})
-    axes[0].imshow(img, cmap="gray_r"); axes[0].set_title("原图 8×8")
+    axes[0].imshow(img, cmap="gray_r"); axes[0].set_title("原图 $8\\times8$")
     for k in range(1, 4):
         axes[0].axhline(k * P - 0.5, color=C["red"], lw=1); axes[0].axvline(k * P - 0.5, color=C["red"], lw=1)
     axes[0].set_xticks([]); axes[0].set_yticks([])
@@ -44,7 +44,7 @@ def run_patchify():
         axes[0].text(c * P + 0.5, r * P + 0.5, str(i), ha="center", va="center", color=C["blue"], fontsize=10.5)
     axes[1].imshow(patches, cmap="gray_r", aspect="auto"); axes[1].set_title("16 个 patch，各 4 个像素")
     axes[1].set_xlabel("patch 内像素"); axes[1].set_ylabel("patch 序号"); axes[1].set_xticks(range(4)); axes[1].set_yticks(range(0, 16, 3))
-    axes[2].imshow(tokens, cmap="RdBu_r", aspect="auto"); axes[2].set_title("乘 W（4→3）：16 个 3 维 token")
+    axes[2].imshow(tokens, cmap="RdBu_r", aspect="auto"); axes[2].set_title("乘 $W$（$4\\to3$）：16 个 3 维 token")
     axes[2].set_xlabel("维"); axes[2].set_ylabel("token 序号"); axes[2].set_xticks(range(3)); axes[2].set_yticks(range(0, 16, 3))
     save(fig, "01-patchify")
 
@@ -79,7 +79,7 @@ def run_infonce():
                 ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False, ec=C["red"], lw=2))
     ax.set_xticks(range(3)); ax.set_yticks(range(3))
     ax.set_xticklabels(["文本 1", "文本 2", "文本 3"]); ax.set_yticklabels(["图 1", "图 2", "图 3"])
-    ax.set_title("相似度矩阵 s_ij：对角线（红框）是配对")
+    ax.set_title("相似度矩阵 $s_{ij}$：对角线（红框）是配对")
     plt.colorbar(im, ax=ax, fraction=0.046)
     save(fig, "01-similarity-matrix")
 
@@ -138,8 +138,8 @@ def run_toy():
         ax.set_xticks([]); ax.set_yticks([]); ax.set_xlabel("文本（按概念排序）"); ax.set_ylabel("图（按概念排序）")
         ax.set_title("训练前：余弦无规律" if it == 0 else "400 步后：同概念块亮、其余暗", fontsize=11.5)
     axes[2].plot(losses, color=C["blue"], lw=0.8)
-    axes[2].axhline(np.log(B), color=C["gray"], ls="--", lw=0.8); axes[2].text(200, np.log(B) + 0.12, "log 64：随机猜", fontsize=10.5, color=C["gray"], ha="center")
-    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(395, np.log(16) - 0.15, "log 16：同概念分不开的下限", fontsize=10.5, color=C["green"], ha="right", va="top")
+    axes[2].axhline(np.log(B), color=C["gray"], ls="--", lw=0.8); axes[2].text(200, np.log(B) + 0.12, "$\\log 64$：随机猜", fontsize=10.5, color=C["gray"], ha="center")
+    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(395, np.log(16) - 0.15, "$\\log 16$：同概念分不开的下限", fontsize=10.5, color=C["green"], ha="right", va="top")
     axes[2].set_xlabel("步"); axes[2].set_ylabel("InfoNCE"); axes[2].set_title("损失", fontsize=11.5); axes[2].set_xlim(0, len(losses)); axes[2].set_xticks([0, 100, 200, 300, 400])
     axes[2].set_ylim(0, 10.5); axes[2].set_yticks([0, 2, 4, 6, 8, 10])
     save(fig, "01-toy-contrastive", dpi=72)
@@ -158,14 +158,13 @@ def run_temperature():
     ax.semilogx(taus, p0, color=C["blue"])
     for t, xy_t in ((1.0, (0.5, 0.14)), (0.1, (0.2, 0.45))):
         p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"])
-        ax.annotate(f"τ={t}: {p:.2f}", xy=(t, p), xytext=xy_t, fontsize=10.5,
+        ax.annotate(f"$\\tau={t}$: {p:.2f}", xy=(t, p), xytext=xy_t, fontsize=10.5,
                     arrowprops=dict(arrowstyle="->", color="#aaaaaa", lw=0.8))
     p = np.exp(0.30 / 0.01) / np.exp(cos / 0.01).sum(); ax.plot(0.01, p, "o", color=C["red"])
-    ax.text(0.55, 0.55, f"τ=0.01: {p:.2f}", fontsize=10.5)
-    ax.plot([0.52, 0.013], [0.56, 0.93], color="#aaaaaa", lw=0.7)
-    ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.02, 0.27, "1/4 = 随机猜", fontsize=10.5, color=C["gray"])
+    ax.text(0.014, 1.02, f"$\\tau=0.01$: {p:.2f}", fontsize=10.5)
+    ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.006, 0.30, "$1/4$ = 随机猜", fontsize=10.5, color=C["gray"])
     ax.set_xticks([0.005, 0.01, 0.1, 1]); ax.set_ylim(0, 1.1); ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
-    ax.set_xlabel("温度 τ（对数轴）"); ax.set_ylabel("正确类的 softmax 概率"); ax.set_title("余弦只差 0.05，τ 决定它算不算「分开了」")
+    ax.set_xlabel("温度 $\\tau$（对数轴）"); ax.set_ylabel("正确类的 $\\mathrm{softmax}$ 概率"); ax.set_title("余弦只差 0.05，$\\tau$ 决定它算不算「分开了」")
     save(fig, "01-temperature")
 
 

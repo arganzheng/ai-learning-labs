@@ -58,7 +58,7 @@ def run_mel():
     for m in range(0, 80, 8):
         axes[1].plot(freqs, fb[m], lw=0.7)
     axes[1].set_title("mel 滤波器（每 8 个画 1 个）", fontsize=11.5); axes[1].set_xlabel("Hz"); axes[1].set_xlim(0, 8000); axes[1].set_xticks([0, 2000, 4000, 6000, 8000]); axes[1].set_yticks([0, 0.5, 1.0])
-    axes[2].imshow(M.T, origin="lower", aspect="auto", cmap="magma", extent=[0, 1, 0, 80]); axes[2].set_title(f"log-mel 谱：{M.shape[0]} 帧 × 80 维", fontsize=11.5)
+    axes[2].imshow(M.T, origin="lower", aspect="auto", cmap="magma", extent=[0, 1, 0, 80]); axes[2].set_title(f"log-mel 谱：{M.shape[0]} 帧 $\\times$ 80 维", fontsize=11.5)
     axes[2].set_xlabel("秒"); axes[2].set_ylabel("mel 频带")
     save(fig, "04-wave-to-mel")
 
@@ -121,8 +121,8 @@ def run_rvq():
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8))
     axes[0].plot(range(1, n_q + 1), errs, "o-", color=C["blue"]); axes[0].axhline(err1 / tot, color=C["gray"], ls="--", lw=0.8)
-    axes[0].text(4.5, err1 / tot * 0.55, f"单码本 VQ（K={K}）", fontsize=10.5, color=C["gray"])
-    axes[0].set_xlabel("解码时用的码本级数 n"); axes[0].set_ylabel("相对重建误差"); axes[0].set_title("前 n 级码本重建：级数越多越精细", fontsize=11.5); axes[0].set_yscale("log"); axes[0].set_yticks([1e-3, 1e-2, 1e-1, 1])
+    axes[0].text(4.5, err1 / tot * 0.55, f"单码本 VQ（$K={K}$）", fontsize=10.5, color=C["gray"])
+    axes[0].set_xlabel("解码时用的码本级数 $n$"); axes[0].set_ylabel("相对重建误差"); axes[0].set_title("前 $n$ 级码本重建：级数越多越精细", fontsize=11.5); axes[0].set_yscale("log"); axes[0].set_yticks([1e-3, 1e-2, 1e-1, 1])
     axes[1].bar(range(1, n_q + 1), rnorm, color=C["orange"]); axes[1].set_xlabel("级"); axes[1].set_ylabel("该级之后残差的均方根"); axes[1].set_xticks(range(1, n_q + 1)); axes[1].set_xlim(0.3, n_q + 0.7); axes[1].set_title("每级去掉一部分，残差递减", fontsize=11.5)
     save(fig, "04-rvq")
 

@@ -51,22 +51,22 @@ def run_connectors():
     # 图：16 个 patch → 三种 connector
     fig, axes = plt.subplots(1, 4, figsize=(7.6, 2.3))
     val = np.arange(16).reshape(4, 4)
-    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出\n4×4 个 patch 特征", fontsize=10.5)
+    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出\n$4\\times4$ 个 patch 特征", fontsize=10.5)
     for i in range(4):
         for j in range(4):
             axes[0].text(j, i, str(val[i, j]), ha="center", va="center", fontsize=10.5)
-    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP\n16 → 16，逐个映射", fontsize=10.5)
+    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP\n$16\\to16$，逐个映射", fontsize=10.5)
     for i in range(4):
         for j in range(4):
-            axes[1].text(j, i, f"z{val[i, j]}", ha="center", va="center", fontsize=10.5)
-    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("2×2 merge\n16 → 4，邻域拼接", fontsize=10.5)
+            axes[1].text(j, i, f"$z_{{{val[i, j]}}}$", ha="center", va="center", fontsize=10.5)
+    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("$2\\times2$ merge\n$16\\to4$，邻域拼接", fontsize=10.5)
     labels = [["0,1\n4,5", "2,3\n6,7"], ["8,9\n12,13", "10,11\n14,15"]]
     for i in range(2):
         for j in range(2):
             axes[2].text(j, i, labels[i][j], ha="center", va="center", fontsize=10.5)
-    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler\n16 → K=3\n每个 query 看全部 patch", fontsize=10.5)
+    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler\n$16\\to K=3$\n每个 query 看全部 patch", fontsize=10.5)
     for i in range(3):
-        axes[3].text(0, i, f"q{i}·全图", ha="center", va="center", fontsize=10.5)
+        axes[3].text(0, i, f"$q_{i}$·全图", ha="center", va="center", fontsize=10.5)
     for ax in axes:
         ax.set_xticks([]); ax.set_yticks([])
     save(fig, "02-connectors")
@@ -104,10 +104,10 @@ def run_budget():
 
     sides = np.arange(64, 2049, 16)
     fig, ax = plt.subplots(figsize=(6.2, 3.0))
-    ax.plot(sides, [tokens_fixed(s, s) for s in sides], color=C["gray"], label="固定 336²")
-    ax.plot(sides, [tokens_anyres(s, s) for s in sides], color=C["orange"], label="AnyRes ≤4 tile", drawstyle="steps-post")
+    ax.plot(sides, [tokens_fixed(s, s) for s in sides], color=C["gray"], label="固定 $336^2$")
+    ax.plot(sides, [tokens_anyres(s, s) for s in sides], color=C["orange"], label="AnyRes $\leq 4$ tile", drawstyle="steps-post")
     ax.plot(sides, [tokens_native(s, s) for s in sides], color=C["blue"], label="原生动态")
-    ax.plot(sides, [(s / 28) ** 2 for s in sides], color=C["blue"], ls=":", lw=0.8, label="像素 / 784 无上下限")
+    ax.plot(sides, [(s / 28) ** 2 for s in sides], color=C["blue"], ls=":", lw=0.8, label="像素$/784$ 无上下限")
     ax.set_xlabel("正方形图的边长（像素）"); ax.set_ylabel("进 LLM 的 token 数"); ax.set_ylim(0, 3200)
     ax.set_xticks([0, 512, 1024, 1536, 2048]); ax.set_yticks([0, 800, 1600, 2400, 3200])
     fig.legend(fontsize=10.5, loc="outside lower center", ncols=2); ax.set_title("同一张图，三种策略给出的 token 数")
@@ -179,9 +179,9 @@ def run_diagrams():
     ax.set_xlim(0, 72); ax.set_ylim(0, 30); ax.axis("off")
     patches, inner = [], []
     # 上行：图 → ViT 切块 → 576 行 1024 维
-    box(ax, patches, inner, (1, 21), 16, 8, "一张图\n336×336×3", L["gray"])
+    box(ax, patches, inner, (1, 21), 16, 8, "一张图\n$336\\times336\\times3$", L["gray"])
     arrow(ax, 17.5, 25, 19.5, 25)
-    box(ax, patches, inner, (20, 21), 20, 8, "ViT 切块\n24×24 = 576\n个 patch", L["blue"])
+    box(ax, patches, inner, (20, 21), 20, 8, "ViT 切块\n$24\\times24=576$\n个 patch", L["blue"])
     arrow(ax, 40.5, 25, 42.5, 25)
     box(ax, patches, inner, (43, 21), 17, 8, "576 行\n每行 1024 维", L["blue"])
     # 折线：576×1024 底部 → 行间空隙 → MLP 顶部
@@ -191,7 +191,7 @@ def run_diagrams():
     big = FancyBboxPatch((0.5, 0.5), 31, 16.5, boxstyle="round,pad=0.02",
                          facecolor=L["orange"], edgecolor="#999999", linewidth=1)
     ax.add_patch(big); patches.append(big)
-    ax.text(16, 14.8, "同一个 MLP（每行独立，≈21M 参数）", ha="center", va="center",
+    ax.text(16, 14.8, "同一个 MLP（每行独立，$\\approx21$M 参数）", ha="center", va="center",
             fontsize=10.5, color=L["dark"])
     inner.append(ax.texts[-1])
     for i, sub in enumerate(["Linear 1024→4096", "GELU", "Linear 4096→4096"]):
@@ -236,7 +236,7 @@ def run_diagrams():
     patches, inner = [], []
     box(ax, patches, inner, (1, 17), 30, 10, "576 个 patch 特征\n作 key / value", L["blue"])
     box(ax, patches, inner, (1, 3), 30, 10, "32 个可学习 query\n模型参数，与图无关", L["orange"])
-    box(ax, patches, inner, (36, 8), 30, 14, "cross-attention\nsoftmax(QKᵀ/√d)\n· V", L["gray"])
+    box(ax, patches, inner, (36, 8), 30, 14, "cross-attention\n$\\mathrm{softmax}(QK^{\\!\\!\\top}/\\sqrt{d})\,V$", L["gray"])
     box(ax, patches, inner, (71, 10), 18, 10, "32 个输出 token\n每个 = patch\n的加权平均", L["green"])
     arrow(ax, 31.5, 22, 35.5, 17)
     arrow(ax, 31.5, 8, 35.5, 13)

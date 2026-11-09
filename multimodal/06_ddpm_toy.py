@@ -30,7 +30,7 @@ def run_forward():
     for ax, t in zip(axes, ts):
         xt = q_sample(X, torch.full((len(X),), t), eps) if t > 0 else X
         ax.scatter(xt[:, 0], xt[:, 1], s=1, color=C["blue"], alpha=0.5)
-        ax.set_title(f"t={t}\nᾱ={abar[t]:.3f}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
+        ax.set_title(f"$t={t}$\n$\\bar\\alpha={abar[t]:.3f}$", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
         print(f"  t = {t:>4}: ᾱ_t = {abar[t]:.4f}，信号系数 sqrt(ᾱ) = {abar[t].sqrt():.3f}，噪声系数 sqrt(1−ᾱ) = {(1-abar[t]).sqrt():.3f}")
     save(fig, "06-forward-noising")
 
@@ -65,7 +65,7 @@ def run_train():
             tt = torch.full((len(X),), t); eps = torch.randn_like(X); xt = q_sample(X, tt, eps)
             err = ((model(xt, tt / T) - eps) ** 2).mean().item()
             print(f"  t = {t:>3}：预测噪声的 MSE {err:.3f}（ε 本身方差 1；t 大时 x_t ≈ ε 容易猜，t 小时噪声藏在数据里难猜）")
-    fig, ax = plt.subplots(figsize=(4.6, 2.4)); ax.plot(hist, lw=0.5, color=C["blue"]); ax.set_xlabel("步"); ax.set_ylabel("L_simple"); ax.set_ylim(0, 1.2); ax.set_title("噪声预测的 MSE")
+    fig, ax = plt.subplots(figsize=(4.6, 2.4)); ax.plot(hist, lw=0.5, color=C["blue"]); ax.set_xlabel("步"); ax.set_ylabel("$L_{\\mathrm{simple}}$"); ax.set_ylim(0, 1.2); ax.set_title("噪声预测的 MSE")
     ax.set_xlim(0, len(hist)); ax.set_xticks([0, 3000, 6000, 9000, 12000])
     save(fig, "06-train-loss")
 
@@ -106,7 +106,7 @@ def run_sample():
     fig, axes = plt.subplots(1, 6, figsize=(7.6, 2.1))
     for ax, t in zip(axes, shots_t):
         ax.scatter(shots[t][:, 0], shots[t][:, 1], s=1, color=C["orange"], alpha=0.5)
-        ax.set_title(f"t = {t}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
+        ax.set_title(f"$t={t}$", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
     save(fig, "06-reverse-sampling")
     from sklearn.neighbors import NearestNeighbors
     nn = NearestNeighbors(n_neighbors=1).fit(X.numpy())

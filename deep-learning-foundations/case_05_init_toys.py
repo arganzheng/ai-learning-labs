@@ -272,7 +272,7 @@ def figure_residual_var():
     ax.set_title("64 个残差块：残差流标准差——无归一化翻倍、Pre-Norm 线性、加缩放近似平",
                  fontweight=600, color="#111111")
     ax.axhline(1, ls=":", c=C["gray"], lw=.8)
-    ax.text(17, 3e6, r"$2^{32}=4.3\times10^9$，实测 $6.0\times10^9$",
+    ax.text(38, 3e4, r"$2^{32}=4.3\times10^9$，实测 $6.0\times10^9$",
             fontsize=10.5, color=C["red"])
     ax.text(38, 0.3, "块 64 实测 1.46", fontsize=10.5, color=C["green"])
     ax.add_patch(FancyArrowPatch((52, 0.38), (61.5, 1.28),

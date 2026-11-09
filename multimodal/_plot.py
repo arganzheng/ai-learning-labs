@@ -90,6 +90,88 @@ def _dump_texts(fig, name):
         json.dump(texts, f, ensure_ascii=False, indent=1, sort_keys=True)
 
 
+def collide(fig):
+    """布局自检：全部可见文本（含各子图标题/轴标签/刻度/图例/fig.texts）两两不重叠、
+    不压实线折线、不出画布边；填充矩形两两不重叠（完整嵌套不算）。有违规直接抛错。"""
+    from matplotlib.patches import Rectangle, FancyBboxPatch
+    fig.canvas.draw()
+    ren = fig.canvas.get_renderer()
+    texts = list(fig.texts)          # suptitle 已含在 fig.texts 里
+    for ax in fig.axes:
+        texts += [t for t in ax.texts if t.get_text().strip() and t.get_visible()]
+        axis_texts = [ax.title, ax.xaxis.label, ax.yaxis.label]
+        if ax.axison:
+            axis_texts += list(ax.get_xticklabels()) + list(ax.get_yticklabels())
+        if ax.get_legend() is not None:
+            axis_texts += [t for t in ax.get_legend().get_texts() if t.get_visible()]
+        texts += [t for t in axis_texts if t.get_text().strip() and t.get_visible()]
+    ext = {t: t.get_window_extent(renderer=ren) for t in texts}
+    errs = []
+    for i in range(len(texts)):
+        for j in range(i + 1, len(texts)):
+            a, b = ext[texts[i]], ext[texts[j]]
+            iw = min(a.x1, b.x1) - max(a.x0, b.x0)
+            ih = min(a.y1, b.y1) - max(a.y0, b.y0)
+            if iw > 1 and ih > 1:
+                errs.append(f"文本重叠：{texts[i].get_text()!r} × {texts[j].get_text()!r}")
+
+    def _seg_rect(a, b, r):
+        x0, y0, x1, y1 = r
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        lo, hi = 0.0, 1.0
+        for p, q in ((-dx, a[0] - x0), (dx, x1 - a[0]),
+                     (-dy, a[1] - y0), (dy, y1 - a[1])):
+            if p == 0:
+                if q <= 0:
+                    return False
+            else:
+                rr = q / p
+                lo, hi = (max(lo, rr) if p < 0 else lo), (min(hi, rr) if p > 0 else hi)
+                if lo >= hi:
+                    return False
+        return True
+    for ax in fig.axes:
+        for ln in ax.lines:
+            if not ln.get_visible() or ln.get_linestyle() in (":", "--", "-.", "None", "none"):
+                continue
+            xd, yd = ln.get_xdata(), ln.get_ydata()
+            if len(xd) < 2:
+                continue
+            pts = ax.transData.transform(list(zip(xd, yd)))
+            ab = ax.get_window_extent(renderer=ren)
+            for k in range(len(pts) - 1):
+                if (max(pts[k][0], pts[k + 1][0]) < ab.x0 or min(pts[k][0], pts[k + 1][0]) > ab.x1
+                        or max(pts[k][1], pts[k + 1][1]) < ab.y0 or min(pts[k][1], pts[k + 1][1]) > ab.y1):
+                    continue
+                a, b = tuple(pts[k]), tuple(pts[k + 1])
+                for t in texts:
+                    e = ext[t]
+                    if _seg_rect(a, b, (e.x0 + 1, e.y0 + 1, e.x1 - 1, e.y1 - 1)):
+                        errs.append(f"文字压折线：{t.get_text()!r}")
+    fb = fig.bbox
+    for t in texts:
+        e = ext[t]
+        if e.x0 < 4 or e.y0 < 4 or e.x1 > fb.x1 - 4 or e.y1 > fb.y1 - 4:
+            errs.append(f"文字出画布边：{t.get_text()!r}")
+    # 填充矩形两两不重叠（完整嵌套如外框套子框不算）
+    for ax in fig.axes:
+        rects = [p for p in ax.patches
+                 if isinstance(p, (Rectangle, FancyBboxPatch)) and p is not ax.patch
+                 and p.get_visible() and p.get_edgecolor()[3] > 0]
+        re_ = [p.get_window_extent(renderer=ren) for p in rects]
+        for i in range(len(rects)):
+            for j in range(i + 1, len(rects)):
+                a, b = re_[i], re_[j]
+                nested = (a.contains(b.x0, b.y0) and a.contains(b.x1, b.y1)) or \
+                         (b.contains(a.x0, a.y0) and b.contains(a.x1, a.y1))
+                iw = min(a.x1, b.x1) - max(a.x0, b.x0)
+                ih = min(a.y1, b.y1) - max(a.y0, b.y0)
+                if not nested and iw > 1 and ih > 1:
+                    errs.append(f"矩形重叠：{a} × {b}")
+    if errs:
+        raise AssertionError(f"{len(errs)} 处文字碰撞：\n" + "\n".join(sorted(set(errs))))
+
+
 def save(fig, name, dpi=150):
     """散点 / 箭头 / 大量点的折线在 SVG 里按 dpi 栅格化（嵌成 PNG），文字与坐标轴仍是矢量——几千个点的图也能保持在 100 KB 以内。"""
     os.makedirs(OUT, exist_ok=True)
@@ -101,6 +183,7 @@ def save(fig, name, dpi=150):
                 line.set_rasterized(True)
     _dump_texts(fig, name)
     _check_text_floor(fig, name)
+    collide(fig)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None}, dpi=dpi)
     if os.environ.get("PLOT_PNG"):                                   # 作者自查用：PLOT_PNG=/tmp/plots 另存一份 png

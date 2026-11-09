@@ -51,20 +51,20 @@ def run_connectors():
     # 图：16 个 patch → 三种 connector
     fig, axes = plt.subplots(1, 4, figsize=(7.6, 2.3))
     val = np.arange(16).reshape(4, 4)
-    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出：4×4 个 patch 特征", fontsize=10.5)
+    axes[0].imshow(val, cmap="Pastel1"); axes[0].set_title("编码器输出\n4×4 个 patch 特征", fontsize=10.5)
     for i in range(4):
         for j in range(4):
             axes[0].text(j, i, str(val[i, j]), ha="center", va="center", fontsize=10.5)
-    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP：16 → 16，逐个映射", fontsize=10.5)
+    axes[1].imshow(val, cmap="Pastel1"); axes[1].set_title("MLP\n16 → 16，逐个映射", fontsize=10.5)
     for i in range(4):
         for j in range(4):
             axes[1].text(j, i, f"z{val[i, j]}", ha="center", va="center", fontsize=10.5)
-    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("2×2 merge：16 → 4，邻域拼接", fontsize=10.5)
+    axes[2].imshow(np.arange(4).reshape(2, 2), cmap="Pastel2"); axes[2].set_title("2×2 merge\n16 → 4，邻域拼接", fontsize=10.5)
     labels = [["0,1\n4,5", "2,3\n6,7"], ["8,9\n12,13", "10,11\n14,15"]]
     for i in range(2):
         for j in range(2):
             axes[2].text(j, i, labels[i][j], ha="center", va="center", fontsize=10.5)
-    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler：16 → K=3\n每个 query 看全部 patch", fontsize=10.5)
+    axes[3].imshow(np.arange(3).reshape(3, 1), cmap="Set3", aspect=0.5); axes[3].set_title("resampler\n16 → K=3\n每个 query 看全部 patch", fontsize=10.5)
     for i in range(3):
         axes[3].text(0, i, f"q{i}·全图", ha="center", va="center", fontsize=10.5)
     for ax in axes:
@@ -104,12 +104,13 @@ def run_budget():
 
     sides = np.arange(64, 2049, 16)
     fig, ax = plt.subplots(figsize=(6.2, 3.0))
-    ax.plot(sides, [tokens_fixed(s, s) for s in sides], color=C["gray"], label="固定 336²：永远 576")
-    ax.plot(sides, [tokens_anyres(s, s) for s in sides], color=C["orange"], label="AnyRes：tile 数 × 576 + 缩略图（≤ 4 tile）", drawstyle="steps-post")
-    ax.plot(sides, [tokens_native(s, s) for s in sides], color=C["blue"], label="原生动态：像素 / 784，夹在 [256, 1280]")
-    ax.plot(sides, [(s / 28) ** 2 for s in sides], color=C["blue"], ls=":", lw=0.8, label="像素 / 784（不设上下限）")
+    ax.plot(sides, [tokens_fixed(s, s) for s in sides], color=C["gray"], label="固定 336²")
+    ax.plot(sides, [tokens_anyres(s, s) for s in sides], color=C["orange"], label="AnyRes ≤4 tile", drawstyle="steps-post")
+    ax.plot(sides, [tokens_native(s, s) for s in sides], color=C["blue"], label="原生动态")
+    ax.plot(sides, [(s / 28) ** 2 for s in sides], color=C["blue"], ls=":", lw=0.8, label="像素 / 784 无上下限")
     ax.set_xlabel("正方形图的边长（像素）"); ax.set_ylabel("进 LLM 的 token 数"); ax.set_ylim(0, 3200)
-    ax.legend(fontsize=10.5, loc="lower right"); ax.set_title("同一张图，三种策略给出的 token 数")
+    ax.set_xticks([0, 512, 1024, 1536, 2048]); ax.set_yticks([0, 800, 1600, 2400, 3200])
+    fig.legend(fontsize=10.5, loc="outside lower center", ncols=2); ax.set_title("同一张图，三种策略给出的 token 数")
     save(fig, "02-token-budget")
 
 
@@ -226,8 +227,8 @@ def run_diagrams():
         assert m >= 0.30, "query 权重不够集中——热力图又会变成均匀洗色"
     print(f"  不论图有多少 patch，输出永远是 {K} 个 token")
 
-    fig = plt.figure(figsize=(7.6, 4.8))
-    gs = fig.add_gridspec(2, 3, height_ratios=[1.15, 1], hspace=0.5, wspace=0.25)
+    fig = plt.figure(figsize=(7.6, 3.9))
+    gs = fig.add_gridspec(2, 3, height_ratios=[0.95, 1], hspace=0.28, wspace=0.25)
     ax = fig.add_subplot(gs[0, :])
     ax.set_xlim(0, 90); ax.set_ylim(0, 30); ax.axis("off")
     patches, inner = [], []

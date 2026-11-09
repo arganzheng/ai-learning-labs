@@ -102,12 +102,12 @@ def run_flow():
     torch.save(fm2.state_dict(), "out/07_fm_reflow_model.pt")
     _, tr_rf = euler_sample(fm2, 12, 100, x1=x1, track=True)
     print(f"  reflow 一轮后同一批起点的轨迹直线度 {straightness(tr_rf):.2f}")
-    fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.8))
+    fig, axes = plt.subplots(1, 3, figsize=(7.6, 3.6))
     for ax, tr, name, col in zip(axes, (tr_dd, tr_fm, tr_rf), ("DDIM（DDPM 模型）", "flow matching", "flow matching + 1 轮 reflow"), (C["orange"], C["blue"], C["green"])):
         ax.scatter(X[:, 0], X[:, 1], s=1, color=C["light"])
         for k in range(12):
             ax.plot(tr[:, k, 0], tr[:, k, 1], color=col, lw=0.8); ax.plot(tr[0, k, 0], tr[0, k, 1], "o", color=C["gray"], ms=3); ax.plot(tr[-1, k, 0], tr[-1, k, 1], "o", color=col, ms=3)
-        ax.set_title(f"{name}\n直线度 {straightness(tr):.2f}", fontsize=11.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"{name.replace(' + 1 轮 ', chr(10) + '+ 1 轮 ')}\n直线度 {straightness(tr):.2f}", fontsize=11.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
     save(fig, "07-trajectories")
 
 
@@ -152,13 +152,13 @@ def run_cfg():
     print("=== 4. classifier-free guidance：条件 = 上月牙 / 下月牙 ===")
     cm = MLP(cond=True)
     train(cm, cfg_loss, X, steps=12000, lr=1e-3, y=Y, log_every=3000)
-    fig, axes = plt.subplots(1, 5, figsize=(7.6, 1.9))
+    fig, axes = plt.subplots(1, 5, figsize=(7.6, 3.4))
     for ax, w in zip(axes, (0, 1, 2, 4, 8)):
         x = cfg_sample(cm, 1500, 0, w)
         frac = (x[:, 1] > -0.3).float().mean().item()                          # 类 0 是上面那个月牙的粗略判据
         spread = x.std(0).mean().item()
         ax.scatter(X[:, 0], X[:, 1], s=1, color=C["light"]); ax.scatter(x[:, 0], x[:, 1], s=1.5, color=C["red"], alpha=0.6)
-        ax.set_title(f"w = {w}\n落在类 0：{frac:.0%}，散度 {spread:.2f}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"w = {w}\n落在类 0：{frac:.0%}\n散度 {spread:.2f}", fontsize=10.5); ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([])
         print(f"  w = {w}：条件「类 0」的 1500 个样本里落在类 0 一侧的 {frac:.1%}，样本坐标的标准差 {spread:.3f}（w 越大越集中）")
     save(fig, "07-cfg")
 

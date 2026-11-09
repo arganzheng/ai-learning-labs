@@ -69,7 +69,7 @@ def run_infonce():
         print(f"  τ = {tau}：第一行 softmax 概率 {np.round(P[0], 3)}，正确对的概率 {P[0,0]:.3f}，−log = {-np.log(P[0,0]):.3f}")
         print(f"         三行 −log p_ii = {np.round(-np.log(np.diag(P)), 3)}，图→文平均 {(-np.log(np.diag(P))).mean():.3f}；双向平均 {infonce(Z):.3f}")
 
-    fig, ax = plt.subplots(figsize=(3.6, 3.2))
+    fig, ax = plt.subplots(figsize=(4.2, 3.2))
     im = ax.imshow(S, cmap="Blues", vmin=0, vmax=1)
     for i in range(3):
         for j in range(3):
@@ -139,8 +139,9 @@ def run_toy():
         ax.set_title("训练前：余弦无规律" if it == 0 else "400 步后：同概念块亮、其余暗", fontsize=11.5)
     axes[2].plot(losses, color=C["blue"], lw=0.8)
     axes[2].axhline(np.log(B), color=C["gray"], ls="--", lw=0.8); axes[2].text(200, np.log(B) + 0.12, "log 64：随机猜", fontsize=10.5, color=C["gray"], ha="center")
-    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(200, np.log(16) - 0.35, "log 16：同概念分不开的下限", fontsize=10.5, color=C["green"], ha="center")
-    axes[2].set_xlabel("步"); axes[2].set_ylabel("InfoNCE"); axes[2].set_title("损失", fontsize=11.5)
+    axes[2].axhline(np.log(16), color=C["green"], ls="--", lw=0.8); axes[2].text(395, np.log(16) - 0.15, "log 16：同概念分不开的下限", fontsize=10.5, color=C["green"], ha="right", va="top")
+    axes[2].set_xlabel("步"); axes[2].set_ylabel("InfoNCE"); axes[2].set_title("损失", fontsize=11.5); axes[2].set_xlim(0, len(losses)); axes[2].set_xticks([0, 100, 200, 300, 400])
+    axes[2].set_ylim(0, 10.5); axes[2].set_yticks([0, 2, 4, 6, 8, 10])
     save(fig, "01-toy-contrastive", dpi=72)
 
 
@@ -155,9 +156,15 @@ def run_temperature():
     p0 = [np.exp(0.30 / t) / np.exp(cos / t).sum() for t in taus]
     fig, ax = plt.subplots(figsize=(4.6, 2.6))
     ax.semilogx(taus, p0, color=C["blue"])
-    for t in (1.0, 0.1, 0.01):
-        p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"]); ax.annotate(f"τ={t}: {p:.2f}", (t, p), textcoords="offset points", xytext=(5, -10), fontsize=10.5)
+    for t, xy_t in ((1.0, (0.5, 0.14)), (0.1, (0.2, 0.45))):
+        p = np.exp(0.30 / t) / np.exp(cos / t).sum(); ax.plot(t, p, "o", color=C["red"])
+        ax.annotate(f"τ={t}: {p:.2f}", xy=(t, p), xytext=xy_t, fontsize=10.5,
+                    arrowprops=dict(arrowstyle="->", color="#aaaaaa", lw=0.8))
+    p = np.exp(0.30 / 0.01) / np.exp(cos / 0.01).sum(); ax.plot(0.01, p, "o", color=C["red"])
+    ax.text(0.55, 0.55, f"τ=0.01: {p:.2f}", fontsize=10.5)
+    ax.plot([0.52, 0.013], [0.56, 0.93], color="#aaaaaa", lw=0.7)
     ax.axhline(0.25, color=C["gray"], ls="--", lw=0.8); ax.text(0.02, 0.27, "1/4 = 随机猜", fontsize=10.5, color=C["gray"])
+    ax.set_xticks([0.005, 0.01, 0.1, 1]); ax.set_ylim(0, 1.1); ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_xlabel("温度 τ（对数轴）"); ax.set_ylabel("正确类的 softmax 概率"); ax.set_title("余弦只差 0.05，τ 决定它算不算「分开了」")
     save(fig, "01-temperature")
 

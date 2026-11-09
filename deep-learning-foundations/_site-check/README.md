@@ -1,0 +1,78 @@
+# 深度学习基础：从反向传播到残差 — 配套实验
+
+博客系列：[总纲](https://arganzheng.life/deep-learning-foundations.html)。九篇正文各配实验，文中的每个数字都由这些脚本跑出来。
+
+| 脚本 | 文章 | 依赖 | 完整运行 |
+|---|---|---|---|
+| `case_evolution_xor.py` | [深度学习基础（01）：深度模型演进史——从感知机到 Transformer](https://arganzheng.life/evolution-of-deep-models-from-perceptron-to-transformer.html) | NumPy + Matplotlib | 几秒 |
+| `case_02_loss_functions.py` | [深度学习基础（02）：损失函数——怎样把「好」写成一个可求导的数](https://arganzheng.life/loss-functions-from-mse-to-dpo.html) | NumPy | 2 min |
+| `01_backprop.py` | [深度学习基础（03）：反向传播——手推一个两层网络](https://arganzheng.life/backpropagation-by-hand.html) | NumPy（`torch` 子实验可选） | 5 s |
+| `case_activation_functions.py` | [深度学习基础（04）：激活函数——从 sigmoid 到 SwiGLU](https://arganzheng.life/activation-functions-from-sigmoid-to-swiglu.html) | NumPy + PyTorch（CPU） | 3 min |
+| `case_03_activation_memory.py` | 03 / 04 补实验：autograd 保存清单、checkpoint 实测、三张配图 | PyTorch（CPU） | 30 s |
+| `case_03_backprop_toys.py` | 03《反向传播》：标量链式法则、分叉、Jacobian、Linear、softmax、迷你网络、梯度检查、Autograd 图与 14 张配图 | PyTorch + NumPy | 30 s |
+| `case_04_activation_toys.py` | 04《激活函数》：线性折叠、ReLU 折线拟合、反向 f'(H)、逐层梯度衰减、dead ReLU、GLU 数字例、saved_tensors 实测与 7 张配图 | PyTorch + NumPy | 30 s |
+| `case_02_loss_toys.py` | 02《损失函数》：均匀初始化 CE = ln V、逐位置 -log p 平均、DPO 一对样本的 margin 与梯度符号，3 张配图 | NumPy | 30 s |
+| `case_07_reg_toys.py` | 07《正则化与泛化》：多项式 + L2 三档（训练/测试 MSE 与 ‖w‖）、inverted dropout 的 mask 与 ×1/(1-p) 缩放，2 张配图（mathtext 排版） | NumPy | 30 s |
+| `case_08_cnn_toys.py` | 08《CNN》：4×4 输入的卷积展开成 4×16 稀疏矩阵（与 conv2d 差 0）、感受野公式 vs 梯度法实测，2 张配图 | NumPy + torch | 10 s |
+| `case_09_emb_toys.py` | 09《Embedding》：one-hot 查表 = 取 W 第 i 行、序列 [2,0,2] 的 W.grad 稀疏性（重复查累加），1 张配图 | NumPy + torch | 10 s |
+| `case_10_rnn_toys.py` | 10《RNN》：标量/矩阵版 BPTT 梯度随距离衰减、LSTM 单步数字流与 f≈1 的残存梯度，2 张配图 | torch + matplotlib | 10 s |
+| `case_05_init_toys.py` | 05《初始化、归一化与残差》：单层方差公式实测、64 块残差流 std 三种接法、尺度不变性、LN vs RMSNorm，3 张配图 | NumPy + PyTorch | 1 min |
+| `case_06_optimizer_toys.py` | 06《优化器》：四种优化器单步中间量、偏差修正 v vs v_hat、梯度累积等价性、warmup 更新范数，2 张配图 | NumPy | 2 min |
+| `02_init_norm_residual.py` | [深度学习基础（05）：训练为什么不稳定——初始化、归一化与残差](https://arganzheng.life/initialization-normalization-and-residual.html) | NumPy | 1 min |
+| `03_optimizers.py` | [深度学习基础（06）：优化器——从 SGD 到 AdamW 与学习率调度](https://arganzheng.life/optimizers-from-sgd-to-adamw.html) | NumPy | 3 min |
+| `04_regularization.py` | [深度学习基础（07）：正则化与泛化——为什么参数比样本多却不过拟合](https://arganzheng.life/regularization-and-generalization.html) | NumPy | 15 min |
+| `05_cnn.py` | [深度学习基础（08）：CNN——从 LeNet 到 ResNet，再到 ViT](https://arganzheng.life/cnn-from-lenet-to-resnet-and-vit.html) | PyTorch（`resnet` 子实验需 torchvision） | 10 min |
+| `case_embedding_word2vec.py` | [深度学习基础（09）：Embedding 与表示学习——从 one-hot 到上下文表示](https://arganzheng.life/embedding-and-representation-learning.html) | PyTorch（CPU） | 5 min |
+| `06_rnn_attention.py` | [深度学习基础（10）：RNN——从 LSTM 到 attention 的诞生](https://arganzheng.life/rnn-lstm-and-the-birth-of-attention.html) | PyTorch | 6 min |
+
+时间是普通笔记本 CPU 上的量级，不需要 GPU；完整 text8 案例约 5 分钟，其他实验耗时因设备而异。
+
+## 案例与图
+
+| 脚本 | 文章 | 产出 |
+|---|---|---|
+| `case_evolution_xor.py` | 01 | 感知机、ADALINE 与两层 MLP 对照 XOR；AND 线性可分控制、训练曲线与决策区域（`out/dl-evolution-xor.svg`） |
+| `case_00_component_map.py` | 00 | 导读的部件地图：前向链 + 训练回路 + 初始化 / 正则化挂点（`out/component-map.svg`） |
+| `case_02_loss_functions.py` | 02 | 损失函数概念图（MSE/MAE/Huber、sigmoid 梯度、focal、InfoNCE）；MNIST 三个对照：CE vs MSE、focal 不均衡、label smoothing 校准（`out/loss-*.svg`） |
+| `case_01_mnist_mlp.py` | 03 | MNIST 两层 MLP 15 个 epoch：训练曲线、错分样本（`out/case-01-*.svg`） |
+| `case_activation_functions.py` | 04 | 六种激活函数及导数曲线；20 × 256 深层 MLP 的梯度、准确率与 ReLU 死亡单元 |
+| `case_02_deep_mlp.py` | 05 | 64 层 MLP 七种接法：逐层激活 std / 梯度范数曲线、300 步 loss 曲线 |
+| `case_02_concept_figures.py` | 05 | 文章概念图与模拟：连乘链示意、a^L 深度曲线、64 层初始化方差模拟、归一化统计轴、LN vs RMSNorm 手算、BN 序列与 batch 噪声、残差路径（`out/init-norm-*.svg`） |
+| `case_03_optimizers_mnist.py` | 06 | 四种优化器 × 五个学习率扫描、warmup 在 64 层网络上的曲线、调度形状；`--schedules` 只出 cosine / WSD 概念图（out/optimizer-cosine-wsd.svg，不训练） |
+| `case_04_regularization_plots.py` | 07 | 1,000 张图四种正则化的 train / test 曲线；宽度扫描的 double descent（约 10 分钟） |
+| `case_04_concept_figures.py` | 07 | 文章概念图与工作实例：N/D 数轴、double descent 示意、最小范数解 GD 轨迹、label smoothing 的 loss–gap 曲线、小语言模型 2 万字符曲线（`out/reg-*.svg`，不训练） |
+| `case_05_lenet5.py` | 08 | 复现 LeNet-5：逐层形状与参数、5 个 epoch 到 99.18%、第一层卷积核与特征图、错分样本（PyTorch，MPS / CUDA / CPU） |
+| `case_embedding_word2vec.py` | 09 | 完整 text8（17M 词）skip-gram negative sampling：词近邻、类比、随机初始化 baseline 与 PCA |
+| `case_06_char_lstm_and_alignment.py` | 10 | 字符级 LSTM 写莎士比亚（与 ../transformer-and-llm/nanogpt 同一语料同预算，val 1.71 vs 1.66）；seq2seq + attention 的对齐矩阵热力图 |
+| `tools/paper_figures.py` | 05–11 | 从原论文 PDF 裁出经典结构图（Pre-LN vs Post-LN、Adam Algorithm 1 …）到 `out/paper-*.png`，博客侧转 WebP 并注明版权 |
+
+`_plot.py` 是画图的公共设置（与 `classical-ml/_plot.py` 相同）。
+
+## 运行
+
+```bash
+pip install -r ../requirements.txt        # numpy 即可跑 01–04；05/06 需要 torch
+python 01_backprop.py                     # 全部子实验，数字对照文章
+python 01_backprop.py --quick             # 一分钟内跑完，用来确认环境
+python 03_optimizers.py adamw scaling     # 只跑指定的子实验
+python 03_optimizers.py -h                # 列出子实验
+```
+
+第一次运行会把 MNIST（约 12 MB）下载到 `data/`。`expected/` 目录是作者机器上完整运行的输出，不同 CPU / BLAS / PyTorch 版本下小数末位与耗时会不同，趋势和结论应该一致。
+
+## 结构
+
+```text
+dlf/            系列贯穿的迷你框架（NumPy）
+  nn.py         Linear / ReLU / softmax-CE / MLP、梯度检查、FLOPs 计数        ← 02
+  layers.py     LayerNorm / RMSNorm / Residual / Dropout / Embedding、深层 MLP  ← 04, 06
+  optim.py      SGD / Momentum / Adam / AdamW、warmup+cosine、梯度裁剪          ← 05
+  data.py       MNIST 下载与加载、字符级语料
+  cli.py        --quick 与子实验选择
+0X_*.py         每篇文章的实验脚本，只依赖 dlf 与（05/06）torch
+expected/       作者机器上的完整输出
+```
+
+## 动手扩展
+
+每篇文章末尾都有"值得自己动手的扩展"，都可以在这些脚本上直接改：换激活函数看梯度检查是否仍通过（03）、把 `prenorm` 换成 RMSNorm（04）、给 SGD 加 cosine schedule 与 Adam 对比（05）、扫训练步数看 epoch-wise double descent（06）、把 `ConvNet` 的通道数加倍看 plain/residual 差距（07）、在 seq2seq 上换成 dot-product attention（09）。

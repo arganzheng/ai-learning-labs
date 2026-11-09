@@ -91,8 +91,8 @@ def _panel(ax, title):
     ax.set_aspect("equal")
     ax.set_xticks([0, 1])
     ax.set_yticks([0, 1])
-    ax.tick_params(labelsize=7)
-    ax.set_title(title, fontsize=8.5, color="#111111")
+    ax.tick_params(labelsize=10)
+    ax.set_title(title, fontsize=10.5, color="#111111")
     for sp in ax.spines.values():
         sp.set_linewidth(.8)
 
@@ -153,36 +153,36 @@ def figure_xor():
         _points(axes[k], name)
         _line(axes[k], w, b)
         axes[k].text(.04 if name == "AND" else .42, .50 if name == "AND" else .93, _eq(w, b),
-                     transform=axes[k].transAxes, fontsize=7.5,
+                     transform=axes[k].transAxes, fontsize=10.5,
                      ha="left", va="center", color="#555555")
     handles = [Line2D([], [], marker="o", ls="none", ms=6,
                       mfc="#eef4fb", mec=C["blue"], mew=1.4),
                Line2D([], [], marker="s", ls="none", ms=6,
                       mfc="#fae6d6", mec=C["orange"], mew=1.4)]
     fig.legend(handles, ["输出 0", "输出 1"], loc="upper right",
-               bbox_to_anchor=(.995, 1.0), fontsize=7.5, frameon=False,
+               bbox_to_anchor=(.995, 1.0), fontsize=10.5, frameon=False,
                ncol=2, handlelength=1.2, columnspacing=1.0,
                handletextpad=.4)
     _panel(axes[2], "XOR：不存在一条直线")
     _points(axes[2], "XOR")
     axes[2].plot([-.1, 1.1], [1.2, 0.], color="#c05050", lw=1.2,
                  ls=(0, (4, 3)))
-    axes[2].text(.55, .72, "找不出分隔线", fontsize=7.5, color="#c05050",
-                 ha="center", transform=axes[2].transAxes)
+    axes[2].text(.95, .92, "找不出分隔线", fontsize=10.5, color="#c05050",
+                 ha="right", transform=axes[2].transAxes)
     ax = axes[3]
     _panel(ax, r"隐藏空间 $(h_1,h_2)$")
-    ax.set_xlabel(r"$h_1$（OR）", fontsize=7.5)
-    ax.set_ylabel(r"$h_2$（NAND）", fontsize=7.5)
+    ax.set_xlabel(r"$h_1$（OR）", fontsize=10.5)
+    ax.set_ylabel(r"$h_2$（NAND）", fontsize=10.5)
     for (h1, h2, yhat), xi in zip(hidden_space("XOR"), X):
         m = "o" if yhat == 0 else "s"
         col = C["blue"] if yhat == 0 else C["orange"]
         ax.plot(h1 + .03, h2 + .02, marker=m, ms=6,
                 mfc="#eef4fb" if yhat == 0 else "#fae6d6",
                 mec=col, mew=1.4)
-    ax.text(1.02, 1.14, "两点重合", fontsize=7, ha="right",
+    ax.text(1.02, 1.14, "两点重合", fontsize=10.5, ha="right",
             color="#555555")
     ax.plot([.27, 1.23], [1.5 - .27, 1.5 - 1.23], color=C["blue"], lw=1.4)
-    ax.text(.32, .05, r"$h_1+h_2=1.5$", fontsize=7.5, ha="left",
+    ax.text(.32, .05, r"$h_1+h_2=1.5$", fontsize=10.5, ha="left",
             color=C["blue"])
     save(fig, "dl-evo-perceptron-xor")
 

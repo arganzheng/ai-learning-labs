@@ -292,32 +292,32 @@ def figure_one_step():
     rows_y = {"SGD": 6.0, "Momentum": 4.75, "Adam": 3.5, "AdamW": 2.15}
     for name, yc in rows_y.items():
         y0 = yc - ch / 2
-        text(ax, .1, yc, name, fontsize=9, color="#111111")
+        text(ax, .1, yc, name, fontsize=10.5, color="#111111")
         box(ax, cols["g"][0], y0, cols["g"][1], ch,
-            rf"$g={rows[name][0]['g']:.3f}$", fs=8)
+            rf"$g={rows[name][0]['g']:.3f}$", fs=10.5)
         r = rows[name][0]
         if name == "SGD":
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["d"][0], yc))
-            text(ax, 6.5, yc + .18, r"$-\eta\,g$：步长与梯度成正比", fontsize=8,
+            text(ax, 6.5, yc + .18, r"$-\eta\,g$：步长与梯度成正比", fontsize=10.5,
                  ha="center", color="#555555")
         elif name == "Momentum":
             box(ax, cols["mid"][0], y0, cols["mid"][1], ch,
-                rf"$m=\beta_1 m_0+g$" + "\n" + rf"$={r['m']:.3f}$", fs=8)
+                rf"$m=\beta_1 m_0+g$" + "\n" + rf"$={r['m']:.3f}$", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["d"][0], yc))
-            text(ax, 8.2, yc + .18, r"$-\eta\,m$", fontsize=8,
+            text(ax, 8.2, yc + .18, r"$-\eta\,m$", fontsize=10.5,
                  ha="center", color="#555555")
         else:
             box(ax, cols["mid"][0], yc - .5, cols["mid"][1], 1.0,
-                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={sci(r['v'])}$", fs=8)
+                rf"$m={r['m']:.3f}$" + "\n" + rf"$v={sci(r['v'])}$", fs=10.5)
             box(ax, cols["hat"][0], yc - .5, cols["hat"][1], 1.0,
-                rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=8)
+                rf"$\hat m={r['mh']:.3f}$" + "\n" + rf"$\hat v={r['vh']:.3f}$", fs=10.5)
             box(ax, cols["d"][0], y0, cols["d"][1], ch,
-                rf"$\Delta\theta={r['d']:+.3f}$", fs=8, fc="#fde9d9", ec="#c98a4a")
+                rf"$\Delta\theta={r['d']:+.3f}$", fs=10.5, fc="#fde9d9", ec="#c98a4a")
             arrow(ax, (cols["g"][0] + cols["g"][1], yc), (cols["mid"][0], yc))
             arrow(ax, (cols["mid"][0] + cols["mid"][1], yc), (cols["hat"][0], yc))
             arrow(ax, (cols["hat"][0] + cols["hat"][1], yc), (cols["d"][0], yc))
@@ -326,11 +326,11 @@ def figure_one_step():
     box(ax, cols["mid"][0], yc - 1.5, cols["hat"][0] + cols["hat"][1]
         - cols["mid"][0], .95,
         r"wd 支路：$-\eta\,\lambda\,\theta=-0.010$" + "\n" + r"（不进矩、不被 $\sqrt{\hat v}$ 缩放）",
-        fs=7.5, fc="#eef4fb", ec="#7a9ac0")
+        fs=10.5, fc="#eef4fb", ec="#7a9ac0")
     arrow(ax, (cols["hat"][0] + 2.2, yc - 0.53),
           (cols["d"][0] + cols["d"][1] / 2, yc - ch / 2), color="#7a9ac0")
     text(ax, cols["d"][0] + cols["d"][1] / 2, yc - 1.05,
-         r"$\Delta\theta=$ Adam 项 $-0.100$" + "\n" + r"$+$ wd 支路 $-0.010$", fontsize=7.5,
+         r"$\Delta\theta=$ Adam 项 $-0.100$" + "\n" + r"$+$ wd 支路 $-0.010$", fontsize=10.5,
          ha="center", va="top", color="#555555")
     finish(fig, "dl-opt-one-step")
 
@@ -345,17 +345,17 @@ def figure_bias_correction():
             label=r"$\hat v_t/g^2$（修正后）")
     ax.set_yscale("log")
     ax.set_yticks([1e-3, 1e-2, 1e-1, 1])
-    ax.set_yticklabels(["1e-3", "1e-2", "1e-1", "1"], fontsize=8)
+    ax.set_yticklabels(["1e-3", "1e-2", "1e-1", "1"], fontsize=10.5)
     ax.set_xticks([1, 5, 10, 15, 20])
     ax.set_xlabel("步 t"); ax.set_ylabel("对真值 g^2 的比值（对数）")
     ax.set_title(r"$\beta_2=0.999$、常数梯度：未修正的 $v$ 从 $0.001\,g^2$ 慢慢爬",
                  fontweight=600, color="#111111")
-    ax.text(2.4, 1.2e-2, r"$t=1$：$v=0.001\,g^2$", fontsize=8, color=C["red"])
+    ax.text(2.4, 1.2e-2, r"$t=1$：$v=0.001\,g^2$", fontsize=10.5, color=C["red"])
     ax.add_patch(FancyArrowPatch((2.2, 1e-2), (1.15, 1.4e-3),
                                  arrowstyle="-|>", mutation_scale=10,
                                  color=C["red"], lw=.8,
                                  shrinkA=1, shrinkB=1))
-    ax.legend(fontsize=8, loc="lower right", frameon=False)
+    ax.legend(fontsize=10.5, loc="lower right", frameon=False)
     finish(fig, "dl-opt-bias-correction")
 
 

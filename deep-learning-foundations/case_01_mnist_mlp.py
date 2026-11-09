@@ -22,25 +22,25 @@ def draw_mlp(sizes=(784, 256, 10), names=("输入：28×28 像素", "隐藏层�
     for col, (k, y) in enumerate(zip(shown, ys)):
         for j, yy in enumerate(y):
             if col == 0 and j in (5, 6):
-                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10, color=C["gray"]); continue
+                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
             if col == 1 and j in (4, 5):
-                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10, color=C["gray"]); continue
+                ax.text(XC[col], yy, "⋮", ha="center", va="center", fontsize=10.5, color=C["gray"]); continue
             color = [C["gray"], C["blue"], C["orange"]][col]
             if col == 2 and j == 7:
                 color = C["red"]
             ax.add_patch(plt.Circle((XC[col], yy), 0.055, color=color, zorder=3))
             if col == 2:
-                ax.text(XC[col] + 0.13, yy, str(j), va="center", fontsize=7.5, color=C["red"] if j == 7 else C["gray"])
+                ax.text(XC[col] + 0.13, yy, str(j), va="center", fontsize=10.5, color=C["red"] if j == 7 else C["gray"])
     for c in range(2):
         for ya in ys[c]:
             for yb in ys[c + 1]:
                 ax.plot([XC[c], XC[c + 1]], [ya, yb], c="#cccccc", lw=0.3, zorder=1)
     for col, (n, name) in enumerate(zip(sizes, names)):
-        ax.text(XC[col], 1.18, f"{name}\n[B, {n}]", ha="center", fontsize=8.5)
-    ax.text(0.9, -1.3, f"W₁ [784, 256] + b₁ [256]\n= {784 * 256 + 256:,} 个参数\n矩阵乘 + ReLU", ha="center", fontsize=8, color=C["blue"])
-    ax.text(2.7, -1.3, f"$W_2$（$256\\times10$）+ $b_2$（$10$）\n= {256 * 10 + 10:,} 个参数\n矩阵乘 → softmax → 交叉熵", ha="center", fontsize=8, color=C["orange"])
-    ax.text(3.95, ys[2][7], "← 标签 $y=7$：\n这一格的概率要大", va="center", fontsize=7.5, color=C["red"])
-    ax.set_title(f"两层 MLP：784 → 256 → 10，共 {784 * 256 + 256 + 256 * 10 + 10:,} 个参数", fontsize=10)
+        ax.text(XC[col], 1.18, f"{name}\n[B, {n}]", ha="center", fontsize=10.5)
+    ax.text(0.9, -1.3, f"W₁ [784, 256] + b₁ [256]\n= {784 * 256 + 256:,} 个参数\n矩阵乘 + ReLU", ha="center", fontsize=10.5, color=C["blue"])
+    ax.text(2.7, -1.3, f"$W_2$（$256\\times10$）+ $b_2$（$10$）\n= {256 * 10 + 10:,} 个参数\n矩阵乘 → softmax → 交叉熵", ha="center", fontsize=10.5, color=C["orange"])
+    ax.text(3.95, ys[2][7], "← 标签 $y=7$：\n这一格的概率要大", va="center", fontsize=10.5, color=C["red"])
+    ax.set_title(f"两层 MLP：784 → 256 → 10，共 {784 * 256 + 256 + 256 * 10 + 10:,} 个参数", fontsize=10.5)
     save(fig, "case-01-mlp-structure")
 
 
@@ -87,18 +87,18 @@ def main():
     fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.6), width_ratios=[1, 1, 1.2])
     ax = axes[0]
     ax.plot(np.arange(len(hist["step_loss"])) * 5, hist["step_loss"], c=C["blue"], lw=0.8)
-    ax.axhline(np.log(10), ls="--", c=C["gray"], lw=0.8); ax.text(5, np.log(10) + 0.05, "ln 10 = 2.30（瞎猜）", fontsize=7, color=C["gray"])
+    ax.axhline(np.log(10), ls="--", c=C["gray"], lw=0.8); ax.text(5, np.log(10) + 0.05, "ln 10 = 2.30（瞎猜）", fontsize=10.5, color=C["gray"])
     ax.set_xlabel("第 1 个 epoch 的步数"); ax.set_ylabel("batch loss"); ax.set_title("前 469 步：从瞎猜到 0.3")
     ax = axes[1]
     ax.plot(range(1, epochs + 1), hist["loss"], "o-", ms=3, c=C["blue"], label="训练 loss")
     ax2 = ax.twinx(); ax2.plot(range(1, epochs + 1), [a * 100 for a in hist["acc"]], "s--", ms=3, c=C["orange"], label="测试准确率 %")
     ax2.spines["right"].set_visible(True); ax2.set_ylim(90, 100)
-    ax.set_xlabel("epoch"); ax.set_title("15 个 epoch：97.6%"); ax.legend(loc="center right", fontsize=7); ax2.legend(loc="lower right", fontsize=7)
-    ax = axes[2]; ax.axis("off"); ax.set_title(f"错分的 {len(wrong)} 张里的前 16 张（真实→预测）", fontsize=8.5)
+    ax.set_xlabel("epoch"); ax.set_title("15 个 epoch：97.6%"); ax.legend(loc="center right", fontsize=10.5); ax2.legend(loc="lower right", fontsize=10.5)
+    ax = axes[2]; ax.axis("off"); ax.set_title(f"错分的 {len(wrong)} 张里的前 16 张（真实→预测）", fontsize=10.5)
     for i, j in enumerate(wrong[:16]):
         r, c = divmod(i, 8)
         ax.imshow(Xt[j].reshape(28, 28), cmap="gray_r", extent=(c, c + 0.9, -r * 1.4 - 0.9, -r * 1.4))
-        ax.text(c + 0.45, -r * 1.4 - 1.0, f"{yt[j]}→{pred[j]}", ha="center", va="top", fontsize=6, color=C["red"])
+        ax.text(c + 0.45, -r * 1.4 - 1.0, f"{yt[j]}→{pred[j]}", ha="center", va="top", fontsize=10.5, color=C["red"])
     ax.set_xlim(0, 8); ax.set_ylim(-2.9, 0); ax.set_aspect("equal")
     save(fig, "case-01-training")
 

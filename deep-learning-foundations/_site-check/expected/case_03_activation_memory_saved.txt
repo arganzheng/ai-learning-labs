@@ -1,0 +1,13 @@
+== saved：MLP 784->256(ReLU)->10，CE，batch 128，fp32
+ # 算子节点                         shape          dtype          字节  归类
+ 0 MmBackward:self              (128, 784)     float32    401408  输入 X
+ 1 MmBackward:self              (128, 256)     float32    131072  ReLU 输出 A
+ 2 MmBackward:mat2              (256, 10)      float32     10240  参数 W2
+ 3 ReluBackward:result          (128, 256)     float32    131072  ReLU 输出 A（同一块内存，不重复计）
+ 4 NllLossBackward:self         (128, 10)      float32      5120  Z / softmax 输出
+ 5 LogSoftmaxBackward:result    (128, 10)      float32      5120  Z / softmax 输出（同一块内存，不重复计）
+ 6 NllLossBackward:target       (128,)         int64        1024  标签 Y
+ 7 NllLossBackward:total_weight ()             float32         4  其他（CE 内部）
+
+按 storage 去重后：激活合计 526 KiB（X + ReLU 保存 + softmax 侧）；参数合计 10 KiB（autograd 为 dW/dX 保存，是参数不是激活）
+对照正文 §六.1 表：X 392 KiB + H 掩码 32 KiB + A 128 KiB = 552 KiB。PyTorch 的 ReLU 保存的是 A（输出 128 KiB）而不是 H 的 mask——反向时用 A > 0 判断符号，等价但多 96 KiB。

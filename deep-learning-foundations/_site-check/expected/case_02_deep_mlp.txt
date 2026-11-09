@@ -1,0 +1,29 @@
+模型：784 → 256 的输入投影 + 64 个 256 宽的块 + 256 → 10 的输出层；七种接法只差初始化 / 归一化 / 残差怎么放
+
+=== 1. 初始时刻：逐块激活 std 与逐层梯度范数 ===
+  plain-naive        初始 loss    2.303  激活 std 块 1 → 64：1.30e+00 → 7.20e-10   梯度范数 底层 → 顶层：4.17e-10 → 6.84e-10
+  plain-kaiming      初始 loss    3.896  激活 std 块 1 → 64：1.85e+00 → 3.09e+00   梯度范数 底层 → 顶层：1.75e+00 → 9.99e+00
+  ln                 初始 loss    2.501  激活 std 块 1 → 64：1.85e+00 → 1.00e+00   梯度范数 底层 → 顶层：2.56e-01 → 1.48e+00
+  res-nonorm         初始 loss   25.041  激活 std 块 1 → 64：1.90e+00 → 6.00e+09   梯度范数 底层 → 顶层：5.77e+09 → 5.70e+10
+  res-nonorm-scaled  初始 loss    3.513  激活 std 块 1 → 64：1.30e+00 → 1.64e+00   梯度范数 底层 → 顶层：2.29e-01 → 5.79e+00
+  prenorm            初始 loss    2.836  激活 std 块 1 → 64：1.29e+00 → 1.00e+00   梯度范数 底层 → 顶层：1.44e-01 → 2.29e+00
+  postnorm           初始 loss    2.746  激活 std 块 1 → 64：1.90e+00 → 1.00e+00   梯度范数 底层 → 顶层：5.11e-01 → 3.22e+00
+  图已保存 out/case-02-init-stats.svg
+
+=== 2. SGD 300 步，batch 128，lr 0.05 与 0.005 ===
+  lr 0.05   plain-naive        loss 2.305  acc  11.7%
+  lr 0.05   plain-kaiming      NaN @ 第 4 步
+  lr 0.05   ln                 loss 2.328  acc   9.6%
+  lr 0.05   res-nonorm         NaN @ 第 2 步
+  lr 0.05   res-nonorm-scaled  NaN @ 第 3 步
+  lr 0.05   prenorm            loss 0.158  acc  91.6%
+  lr 0.05   postnorm           loss 2.326  acc   8.8%
+  lr 0.005  plain-naive        loss 2.303  acc  11.7%
+  lr 0.005  plain-kaiming      loss 1.893  acc  29.3%
+  lr 0.005  ln                 loss 1.562  acc  37.2%
+  lr 0.005  res-nonorm         NaN @ 第 2 步
+  lr 0.005  res-nonorm-scaled  NaN @ 第 11 步
+  lr 0.005  prenorm            loss 0.155  acc  90.1%
+  lr 0.005  postnorm           loss 0.982  acc  64.3%
+  解读：七种接法里只有 Pre-Norm 在两个学习率下都正常训——这就是它成为 LLM 默认结构的原因。
+  图已保存 out/case-02-training-curves.svg

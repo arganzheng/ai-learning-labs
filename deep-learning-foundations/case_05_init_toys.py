@@ -110,7 +110,7 @@ def finish(fig, name):
     save(fig, name)
 
 
-def grid(ax, x, y, vals, cw=.5, ch=.5, fs=7.5, fc="#dce9f7", ec="#7a7a7a",
+def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
          fmt="{v:g}"):
     """数字格子；y 为顶边，返回底边 y。"""
     for r, row in enumerate(vals):
@@ -268,12 +268,12 @@ def figure_residual_var():
                  fontweight=600, color="#111111")
     ax.axhline(1, ls=":", c=C["gray"], lw=.8)
     ax.text(17, 3e6, r"$2^{32}=4.3\times10^9$，实测 $6.0\times10^9$",
-            fontsize=8, color=C["red"])
-    ax.text(38, 0.3, "块 64 实测 1.46", fontsize=8, color=C["green"])
+            fontsize=10.5, color=C["red"])
+    ax.text(38, 0.3, "块 64 实测 1.46", fontsize=10.5, color=C["green"])
     ax.add_patch(FancyArrowPatch((52, 0.38), (61.5, 1.28),
                                  arrowstyle="-|>", mutation_scale=8,
                                  color=C["green"], lw=.8))
-    ax.legend(fontsize=7.5, loc="upper left", frameon=False)
+    ax.legend(fontsize=10.5, loc="upper left", frameon=False)
     finish(fig, "dl-init-residual-var")
 
 
@@ -295,19 +295,19 @@ def figure_scale_inv():
     fig, ax = base_fig(r"尺度不变性：Norm$(cx)$ = Norm$(x)$，梯度随权重范数反比缩小",
                      h=3.4, xlim=(0, 12), ylim=(1.4, 5.9))
     # 左：x 与 2x 归一化到同一组格子
-    text(ax, .2, 5.15, r"LN$(x)$", fontsize=8.5)
-    text(ax, .2, 4.45, r"LN$(2x)$", fontsize=8.5)
-    text(ax, 2.75, 5.55, r"$x=[2,4,6,8]$", fontsize=8.5, ha="center")
-    text(ax, 5.3, 5.55, "输出相同", fontsize=8.5, ha="center",
+    text(ax, .2, 5.15, r"LN$(x)$", fontsize=10.5)
+    text(ax, .2, 4.45, r"LN$(2x)$", fontsize=10.5)
+    text(ax, 2.75, 5.55, r"$x=[2,4,6,8]$", fontsize=10.5, ha="center")
+    text(ax, 5.3, 5.55, "输出相同", fontsize=10.5, ha="center",
          color=C["green"])
     out = [round(v, 3) for v in ln(x).tolist()]
-    grid(ax, 1.55, 5.2, [out], cw=1.0, ch=.55, fs=8)
-    grid(ax, 1.55, 4.5, [out], cw=1.0, ch=.55, fs=8)
+    grid(ax, 1.55, 5.2, [out], cw=1.0, ch=.55, fs=10.5)
+    grid(ax, 1.55, 4.5, [out], cw=1.0, ch=.55, fs=10.5)
     ax.text(1.55, 2.05, "两个输入差 2 倍，输出逐元素相同：整体尺度被归一化吃掉",
-            fontsize=8, color="#555555")
+            fontsize=10.5, color="#555555")
     # 右：W x c 后 dL/dW 变 1/c
     bx = 7.2
-    text(ax, bx, 5.55, r"Linear $\to$ LN，$W$ 乘 $c$ 倍", fontsize=8.5)
+    text(ax, bx, 5.55, r"Linear $\to$ LN，$W$ 乘 $c$ 倍", fontsize=10.5)
     bw = 4.0
     for i, (c, nrm, col) in enumerate(((1, norms[0], C["blue"]),
                                       (2, norms[1], C["orange"]))):
@@ -315,14 +315,14 @@ def figure_scale_inv():
         wbar = bw * nrm / norms[0]
         ax.add_patch(Rectangle((bx + .7, yy - .3), wbar, .5,
                                facecolor=col, alpha=.75, edgecolor="none"))
-        text(ax, bx + .12, yy - .05, f"$c={c}$", fontsize=8)
+        text(ax, bx + .12, yy - .05, f"$c={c}$", fontsize=10.5)
         ax.text(bx + .75 + wbar, yy - .05,
-                rf"$\|dL/dW\|={nrm:.3f}$", fontsize=8, va="center")
+                rf"$\|dL/dW\|={nrm:.3f}$", fontsize=10.5, va="center")
     text(ax, bx + .12, 3.08,
          rf"$c=2$ 的梯度范数 $=c=1$ 的 ${norms[1] / norms[0]:.3f}=1/c$；"
-         r"相对更新缩小 $c^2$ 倍", fontsize=8, color="#555555")
+         r"相对更新缩小 $c^2$ 倍", fontsize=10.5, color="#555555")
     text(ax, bx + .12, 2.68, "前向输出逐位相同；权重越大有效学习率越小",
-         fontsize=8, color="#555555")
+         fontsize=10.5, color="#555555")
     finish(fig, "dl-init-scale-invariance")
 
 
@@ -374,36 +374,36 @@ def figure_diagnosis():
                         ("res-nonorm", C["red"], "res-nonorm（病态）")):
         ax.plot(np.linspace(0, 64, len(stats[k][0])), stats[k][0],
                 c=col, lw=1.1, label=lab)
-    ax.set_yscale("log"); ax.set_title("激活 RMS vs 层", fontsize=9)
+    ax.set_yscale("log"); ax.set_title("激活 RMS vs 层", fontsize=10.5)
     ax.set_yticks([1e-9, 1e-3, 1, 1e3, 1e9])
-    ax.set_yticklabels([r"$10^{-9}$", r"$10^{-3}$", "1", r"$10^3$", r"$10^9$"], fontsize=7)
+    ax.set_yticklabels([r"$10^{-9}$", r"$10^{-3}$", "1", r"$10^3$", r"$10^9$"], fontsize=10.5)
     ax.set_xticks([0, 32, 64])
-    ax.set_xlabel("块", fontsize=8); ax.tick_params(labelsize=7)
-    ax.legend(fontsize=6.5, frameon=False, loc="lower right")
+    ax.set_xlabel("块", fontsize=10.5); ax.tick_params(labelsize=7)
+    ax.legend(fontsize=10.5, frameon=False, loc="lower right")
     ax = axes[1]
     for k, col, lab in (("prenorm", C["green"], "prenorm（健康）"),
                         ("ln", C["red"], "ln 无残差（病态）")):
         g = stats[k][1]
         gg = g[1:-1:2] if len(g) > 70 else g[1:-1]
         ax.plot(np.linspace(1, 64, len(gg)), gg, c=col, lw=1.1, label=lab)
-    ax.set_yscale("log"); ax.set_title("梯度范数 vs 层", fontsize=9)
+    ax.set_yscale("log"); ax.set_title("梯度范数 vs 层", fontsize=10.5)
     ax.set_yticks([1e-1, 1, 1e1])
-    ax.set_yticklabels(["0.1", "1", "10"], fontsize=7)
+    ax.set_yticklabels(["0.1", "1", "10"], fontsize=10.5)
     ax.set_xticks([1, 32, 64])
-    ax.set_xlabel("块", fontsize=8); ax.tick_params(labelsize=7)
-    ax.legend(fontsize=6.5, frameon=False, loc="upper left")
+    ax.set_xlabel("块", fontsize=10.5); ax.tick_params(labelsize=7)
+    ax.legend(fontsize=10.5, frameon=False, loc="upper left")
     ax = axes[2]
     for lr, col, lab in ((0.005, C["green"], "Pre-Norm lr 0.005（健康）"),
                          (0.5, C["red"], "Pre-Norm lr 0.5（病态）")):
         ax.plot(ratios[lr], c=col, lw=1.1, label=lab)
     ax.set_yscale("log")
-    ax.set_title(r"max $\|dW\|/\|W\|$ vs 步（同 Pre-Norm）", fontsize=8.5)
+    ax.set_title(r"max $\|dW\|/\|W\|$ vs 步（同 Pre-Norm）", fontsize=10.5)
     ax.set_yticks([1e-3, 1e-2, 1e-1, 1])
-    ax.set_yticklabels([r"$10^{-3}$", r"$10^{-2}$", r"$10^{-1}$", "1"], fontsize=7)
+    ax.set_yticklabels([r"$10^{-3}$", r"$10^{-2}$", r"$10^{-1}$", "1"], fontsize=10.5)
     ax.axhline(1e-3, ls=":", c=C["gray"], lw=.8)
     ax.set_xticks([0, 150, 300])
-    ax.set_xlabel("步", fontsize=8); ax.tick_params(labelsize=7)
-    ax.legend(fontsize=6.5, frameon=False, loc="upper center",
+    ax.set_xlabel("步", fontsize=10.5); ax.tick_params(labelsize=7)
+    ax.legend(fontsize=10.5, frameon=False, loc="upper center",
               bbox_to_anchor=(0.5, -0.28), ncol=1)
     finish(fig, "dl-init-diagnosis")
 

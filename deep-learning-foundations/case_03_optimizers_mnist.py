@@ -58,14 +58,14 @@ def main():
         for r, v in zip(lrs, vals):
             if v == 85.5:
                 ax.plot(r, 85.5, "x", c=colors[name], ms=9, mew=2)
-                ax.text(r, 86.2, f"{acc[(name, r)] * 100:.0f}%" if np.isfinite(acc[(name, r)]) else "NaN", ha="center", fontsize=7, color=colors[name])
+                ax.text(r, 86.2, f"{acc[(name, r)] * 100:.0f}%" if np.isfinite(acc[(name, r)]) else "NaN", ha="center", fontsize=10.5, color=colors[name])
     ax.set_xscale("log"); ax.set_xlabel("学习率"); ax.set_ylabel("1 个 epoch 后的测试准确率 %"); ax.set_ylim(85, 98)
-    ax.set_title("学习率扫描：× = 太大，训坏了"); ax.legend(fontsize=7, loc="lower left")
+    ax.set_title("学习率扫描：× = 太大，训坏了"); ax.legend(fontsize=10.5, loc="lower left")
     ax = axes[1]
     for name, lrs in grid.items():
         best_lr = max(lrs, key=lambda r: np.nan_to_num(acc[(name, r)], nan=-1))
         ax.plot(smooth(curves[(name, best_lr)]), c=colors[name], lw=1.2, label=f"{name}，lr {best_lr:g}")
-    ax.set_xlabel("步（20 步滑动平均）"); ax.set_ylabel("训练 loss"); ax.set_ylim(0, 1.0); ax.set_title("各自最优学习率下的 loss 曲线"); ax.legend(fontsize=7)
+    ax.set_xlabel("步（20 步滑动平均）"); ax.set_ylabel("训练 loss"); ax.set_ylim(0, 1.0); ax.set_title("各自最优学习率下的 loss 曲线"); ax.legend(fontsize=10.5)
     save(fig, "case-03-optimizers")
 
     # 2. warmup 在深网络上
@@ -91,8 +91,8 @@ def main():
         col = C["red"] if wu == 0 else C["green"]; ls = "-" if lr == 1e-2 else ":"
         axes[0].plot(smooth(l, 5), c=col, ls=ls, lw=1.1, label=f"峰值 lr {lr:g}，warmup {wu}")
         axes[1].plot(l[:100], c=col, ls=ls, lw=1.1)
-    axes[0].axhline(np.log(10), c=C["gray"], lw=0.8, ls="--"); axes[0].text(150, np.log(10) + 0.1, "ln 10（随机初始化）", fontsize=7, color=C["gray"])
-    axes[0].set_xlabel("步"); axes[0].set_ylabel("训练 loss（5 步滑动平均）"); axes[0].set_ylim(0, 4.8); axes[0].set_title("64 层 Pre-Norm 网络：有无 warmup"); axes[0].legend(fontsize=7)
+    axes[0].axhline(np.log(10), c=C["gray"], lw=0.8, ls="--"); axes[0].text(150, np.log(10) + 0.1, "ln 10（随机初始化）", fontsize=10.5, color=C["gray"])
+    axes[0].set_xlabel("步"); axes[0].set_ylabel("训练 loss（5 步滑动平均）"); axes[0].set_ylim(0, 4.8); axes[0].set_title("64 层 Pre-Norm 网络：有无 warmup"); axes[0].legend(fontsize=10.5)
     axes[1].axhline(np.log(10), c=C["gray"], lw=0.8, ls="--")
     axes[1].set_xlabel("步"); axes[1].set_ylabel("训练 loss（未平滑）"); axes[1].set_ylim(0, 5); axes[1].set_title("放大前 100 步：不加 warmup 冲到 4.59")
     save(fig, "case-03-warmup")
@@ -102,7 +102,7 @@ def main():
     T = 1000; s = np.arange(T)
     ax.plot(s, [lr_at(i, 1.0, 100, T) for i in s], c=C["blue"], label="线性 warmup 100 步 + cosine 衰减到 10%")
     ax.plot(s, [1.0 if i < 800 else 1 - 0.9 * (i - 800) / 200 for i in s], c=C["orange"], label="WSD：warmup–稳定–最后 20% 线性衰减")
-    ax.set_xlabel("步"); ax.set_ylabel("学习率 / 峰值"); ax.legend(fontsize=7); ax.set_title("两种常见的学习率调度")
+    ax.set_xlabel("步"); ax.set_ylabel("学习率 / 峰值"); ax.legend(fontsize=10.5); ax.set_title("两种常见的学习率调度")
     save(fig, "case-03-schedules")
 
 
@@ -140,7 +140,7 @@ def plot_cosine_wsd():
                         label=f"提前分叉（{frac:.0%} 处）")
                 ax.plot([frac, frac], [1.0, 1.0], color=color, lw=2.2)
                 ax.scatter([frac], [1.0], color=color, zorder=5)
-            ax.legend(fontsize=9, frameon=True, framealpha=0.9,
+            ax.legend(fontsize=10.5, frameon=True, framealpha=0.9,
                       loc="lower left")
             ax.set_title("WSD（恒定段可随时延长 / 分叉）", fontsize=13)
         ax.plot([0, warm], [0, 1], color=C["blue"], lw=2.2)
@@ -151,9 +151,9 @@ def plot_cosine_wsd():
         ax.set_xticks([warm, T] if mode == "cosine" else [warm, 0.8, T])
         ax.set_xticklabels(
             ["warmup", "$T$"] if mode == "cosine"
-            else ["warmup", "衰减开始", "$T$"], fontsize=10)
+            else ["warmup", "衰减开始", "$T$"], fontsize=10.5)
         ax.set_yticks([0, 0.1, 1.0])
-        ax.set_yticklabels(["0", "10%", "峰值"], fontsize=10)
+        ax.set_yticklabels(["0", "10%", "峰值"], fontsize=10.5)
         ax.grid(alpha=0.2)
         for spine in ("top", "right"):
             ax.spines[spine].set_visible(False)

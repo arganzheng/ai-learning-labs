@@ -1,0 +1,23 @@
+=== 1. 概念图 ===
+  图已保存 out/loss-regression.svg
+  图已保存 out/loss-classification-gradient.svg
+  分类梯度：z=-6 时 |MSE 梯度|=0.00247，|CE 梯度|=0.99751，比值 403 倍
+  图已保存 out/loss-focal.svg
+  focal γ=1：p_t=0.9 相对 p_t=0.5 的 loss 权重比 = 0.20
+  focal γ=2：p_t=0.9 相对 p_t=0.5 的 loss 权重比 = 0.04
+  focal γ=5：p_t=0.9 相对 p_t=0.5 的 loss 权重比 = 0.00
+  图已保存 out/loss-infonce.svg
+  InfoNCE 样例：τ=0.1，z0 行 logsumexp=10.06，正例 logit 和=12.30，loss=5.96（三个正例平均）
+=== 2. MSE(sigmoid) vs CE(softmax)：784-256-10 MLP，SGD lr 0.1，1 epoch（469 步 × 128，seed 0）===
+  CE: 初始 loss 2.939 → 末 100 步均值 0.185；前 50 步平均 |g| 1.66；test acc 94.50%
+  MSE: 初始 loss 1.500 → 末 100 步均值 0.092；前 50 步平均 |g| 0.53；test acc 91.40%
+  图已保存 out/loss-mse-vs-ce-training.svg
+=== 3. 不均衡子集：类 9 只留 2%（约 120 张），CE vs focal γ=2，1 epoch，seed 1 ===
+  训练集 60000 → 54170，类 9 只剩 118 张（0.2%）
+  CE: 末 100 步 loss 0.146；总体 acc 86.75%；类 9 召回 7.4%；逐类召回 98 99 94 94 97 94 96 96 93 7
+  focal γ=2: 末 100 步 loss 0.076；总体 acc 87.71%；类 9 召回 21.6%；逐类召回 98 98 93 94 97 92 96 95 93 22
+  图已保存 out/loss-focal-imbalance.svg
+=== 4. 校准：one-hot vs label smoothing ε=0.1，1 epoch，seed 2 ===
+  one-hot: test acc 94.42%；ECE(10 bin) 0.96%；平均置信度 93.6%
+  平滑 ε=0.1: test acc 94.43%；ECE(10 bin) 13.00%；平均置信度 81.4%
+  图已保存 out/loss-calibration.svg

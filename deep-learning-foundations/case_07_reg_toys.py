@@ -190,7 +190,7 @@ def figure_weight_decay():
     fig, ax = plt.subplots(figsize=(7.6, 3.9))
     ax.set_xlim(-0.03, 1.03); ax.set_ylim(-2.0, 2.0)
     ax.set_xticks([0, .5, 1.0]); ax.set_yticks([-2, -1, 0, 1, 2])
-    ax.set_xlabel(r"$x$", fontsize=9); ax.set_ylabel(r"$y$", fontsize=9)
+    ax.set_xlabel(r"$x$", fontsize=10.5); ax.set_ylabel(r"$y$", fontsize=10.5)
     ax.tick_params(labelsize=8)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
@@ -210,7 +210,7 @@ def figure_weight_decay():
                  fontsize=10.5, fontweight=600, color="#111111", loc="left",
                  pad=8)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2,
-              fontsize=7.5, frameon=False)
+              fontsize=10.5, frameon=False)
     save(fig, "dl-reg-weight-decay")
 
 
@@ -224,7 +224,7 @@ def figure_dropout():
     rows = ((3.6, "mask\n$1$ = 保留", m),
             (0.6, "训练时输出", out))
     for y0, name, grid in rows:
-        text(ax, .15, y0 + .85, name, fontsize=8, color="#555555")
+        text(ax, .15, y0 + .85, name, fontsize=10.5, color="#555555")
         for i in range(4):
             for j in range(8):
                 v = grid[i, j]
@@ -234,16 +234,16 @@ def figure_dropout():
                         fc=fc, ec=ec)
                 text(ax, x0 + j * (cw + .06) + cw / 2,
                      y0 + (3 - i) * pitch + ch / 2, str(v),
-                     in_box=p, ha="center", va="center", fontsize=8,
+                     in_box=p, ha="center", va="center", fontsize=10.5,
                      color="#111111" if v else "#999999")
     for j in range(8):
         arrow(ax, (x0 + j * (cw + .06) + cw / 2, 3.55),
               (x0 + j * (cw + .06) + cw / 2, 3.06), lw=.9)
     text(ax, 8.4, 1.3, "\n".join([
         r"训练：$x\odot m/(1-p)$", r"幸存单元 $\times 2$",
-        "期望不变；推理不缩放"]), fontsize=7.5, color="#555555")
+        "期望不变；推理不缩放"]), fontsize=10.5, color="#555555")
     box(ax, 8.4, 3.9, 3.5, 1.35, "eval 输出 = 输入\n大样本输出均值 $\\approx 1.0$",
-        fs=8, fc="#fde9d9", ec="#c98a4a")
+        fs=10.5, fc="#fde9d9", ec="#c98a4a")
     finish(fig, "dl-reg-dropout")
 
 

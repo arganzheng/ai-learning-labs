@@ -255,26 +255,26 @@ def plot_landscape():
     fam_y = {f: fam_top - f * fam_pitch for f in range(len(FAM_ORDER))}
 
     for name, sec, _ in ordered:
-        bx_((13, obj_y[name]), f"{name}\n第{sec}章", width=21,
-            height=5.4, fontsize=8.5)
+        bx_((13, obj_y[name]), f"{name}\n第{sec}章", width=24,
+            height=5.4, fontsize=12.5)
     for f, (fam, sub, color) in enumerate(zip(FAM_ORDER, FAM_SUBS,
                                               FAM_COLORS)):
-        bx_((60, fam_y[f]), f"{fam}\n{sub}", width=31, height=5.6,
-            fontsize=8, fc="#ffffff", ec=color)
+        bx_((60, fam_y[f]), f"{fam}\n{sub}", width=35, height=5.6,
+            fontsize=12.5, fc="#ffffff", ec=color)
     vec_y = fam_top / 2
-    bx_((99, vec_y), "d 维向量空间", width=19, height=top * 0.62,
-        fontsize=11)
+    bx_((99, vec_y), "d 维向量空间", width=22, height=top * 0.62,
+        fontsize=13)
 
     # 对象 → 信号：连线的颜色取目标信号的颜色
     for name, sec, fams in ordered:
         for f in fams:
-            ax.plot([25, 43.5], [obj_y[name], fam_y[f]],
+            ax.plot([26, 42], [obj_y[name], fam_y[f]],
                     color=FAM_COLORS[f], lw=1.1, zorder=1, alpha=0.6)
     for f in range(len(FAM_ORDER)):
-        arrow(ax, (77.5, fam_y[f]), (88.5, fam_y[f]),
+        arrow(ax, (78.5, fam_y[f]), (87.5, fam_y[f]),
               color=FAM_COLORS[f])
     ax.text(50, top + 5.6, "嵌入什么 → 用什么信号得到向量",
-            ha="center", va="center", fontsize=10, color="#444444")
+            ha="center", va="center", fontsize=12.5, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-landscape")
@@ -317,7 +317,7 @@ def plot_negsample():
     pitch = 9.0
     top = n * pitch
 
-    fig, ax = new_diagram((7.6, 3.4), (0, 100), (-8, top + 8))
+    fig, ax = new_diagram((7.6, 3.6), (0, 100), (-8, top + 10))
     patches, inner = [], []
 
     def bx_(center_, text, **kw):
@@ -328,22 +328,22 @@ def plot_negsample():
 
     mid = top / 2
     bx_((16, mid), f"中心词\n{center}", width=15, height=7,
-        fontsize=10, fc="#eef3fa")
+        fontsize=10.5, fc="#eef3fa")
     bx_((60, top), f"正样本：{pos}\nσ = {after[pos]:.2f}",
-        width=24, height=6.2, fontsize=9.5, fc="#ffffff", ec=GREEN)
+        width=24, height=6.2, fontsize=10.5, fc="#ffffff", ec=GREEN)
     arrow(ax, (24.5, mid + 1.6), (46.5, top - 0.4), color=GREEN)
     for i, w in enumerate(negs):
         y = top - pitch * (i + 1) - 1.0
         bx_((60, y), f"负样本 {i + 1}：{w}  σ = {after[w]:.2f}",
-            width=27, height=5.2, fontsize=9, fc="#ffffff", ec=VERMILION)
+            width=27, height=5.2, fontsize=10.5, fc="#ffffff", ec=VERMILION)
         ax.plot([24.5, 45.5], [mid - 1.2, y + 0.6],
                 color=VERMILION, lw=1.1, zorder=1, alpha=0.6)
     bx_((88, mid), "目标：\n正样本推上去\n负样本压下来", width=19,
-        height=11, fontsize=9)
+        height=11, fontsize=10.5)
     arrow(ax, (74.5, top), (78, mid + 3), color=GREEN)
     arrow(ax, (74.5, 0), (78, mid - 3), color=VERMILION)
-    ax.text(50, top + 5.4, "随机初始化 + 15 步 SGD 之后的 σ 分数",
-            ha="center", va="center", fontsize=8.5, color="#444444")
+    ax.text(50, top + 6.8, "随机初始化 + 15 步 SGD 之后的 σ 分数",
+            ha="center", va="center", fontsize=12.5, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-negsample")
@@ -368,7 +368,7 @@ def plot_tokenizer():
     sent, ids, pieces = tokenizer_ids()
     n = len(ids)
 
-    fig, ax = new_diagram((11.6, 3.6), (0, 200), (-3, 33))
+    fig, ax = new_diagram((14.4, 4.2), (0, 380), (-3, 36))
     patches, inner = [], []
 
     def bx_(center_, text, **kw):
@@ -377,26 +377,27 @@ def plot_tokenizer():
         inner.append(t)
         return p, t
 
-    bx_((16, 15), f"文本\n{sent[:22]}\n{sent[22:]}", width=30, height=9.5, fontsize=8.5)
-    bx_((48, 15), "tokenizer\nBPE", width=16, height=9, fontsize=10,
+    bx_((36, 15), f"文本\n{sent[:22]}\n{sent[22:]}", width=80, height=11, fontsize=18)
+    bx_((97, 15), "tokenizer\nBPE", width=30, height=10, fontsize=18,
         fc="#eef3fa")
     # token ID 序列：每个 token 一小格，宽度按 token 文本长度取
-    gap = 3.0
-    widths = [max(len(p_.strip()) * 1.55 + 3, 7) for p_ in pieces]
-    x = 62
+    gap = 3.6
+    widths = [max(max(len(p_.strip()), len(str(tid))) * 2.6 + 7, 12)
+            for p_, tid in zip(pieces, ids)]
+    x = 116
     cells = []
     for (p_, tid), w_ in zip(zip(pieces, ids), widths):
         bx_((x + w_ / 2, 15), f"{p_.strip()}\n{tid}", width=w_, height=9,
-            fontsize=7.5, fc="#ffffff", ec=BLUE)
+            fontsize=18, fc="#ffffff", ec=BLUE)
         x += w_ + gap
         cells.append(x)
-    bx_((x + 12, 15), "embedding 表 E\nV × d 查行", width=22, height=9,
-        fontsize=8.5, fc="#eef3fa")
-    arrow(ax, (30.5, 15), (39, 15))
-    arrow(ax, (57, 15), (61, 15))
-    arrow(ax, (cells[-1], 15), (x + 0.5, 15))
-    ax.text(50, 27, "文本 → token ID → 查表 → 每行一个 d 维向量",
-            ha="center", va="center", fontsize=9.5, color="#444444")
+    bx_((x + 27, 15), "embedding 表 E\nV × d 查行", width=54, height=10,
+        fontsize=18, fc="#eef3fa")
+    arrow(ax, (76.2, 15), (70.8, 15))
+    arrow(ax, (112.3, 15), (115.5, 15))
+    arrow(ax, (cells[-1] - gap + 1, 15), (x + 0.5, 15))
+    ax.text(60, 30, "文本 → token ID → 查表 → 每行一个 d 维向量",
+            ha="center", va="center", fontsize=18, color="#444444")
 
     check_layout(fig, ax, patches, inner)
     save(fig, "emb-tokenizer-pipeline")
@@ -406,34 +407,34 @@ def plot_tokenizer():
 
 def plot_signals():
     """FIGURE：五种监督信号各画一格：输入 → 目标。"""
-    fig, axes = plt.subplots(1, 5, figsize=(11.5, 2.6))
+    fig, axes = plt.subplots(1, 5, figsize=(12.5, 3.4))
     titles = ["预测", "重建", "对比", "自蒸馏", "有监督"]
     subs = ["前文 → 下一个词 / mask 处", "x → z → 还原 x",
             "正例近、负例远", "无负样本，teacher 走 EMA", "x → 标签 y"]
     for ax, t, s in zip(axes, titles, subs):
         ax.set_xlim(0, 12)
-        ax.set_ylim(0.2, 9.6)
+        ax.set_ylim(-6.2, 9.6)
         ax.axis("off")
-        ax.set_title(t, fontsize=11)
-        ax.text(6, 0.4, s, ha="center", va="bottom", fontsize=8,
+        ax.set_title(t, fontsize=18)
+        ax.text(6, -0.8, s, ha="center", va="top", fontsize=18,
                 color=GREY)
 
     patches, inner = [], []
 
     def bx_(ax, center, text, **kw):
-        kw.setdefault("fontsize", 8.5)
+        kw.setdefault("fontsize", 18)
         kw.setdefault("pad", 0.35)
         p, t = box(ax, center, text, **kw)
         patches.append(p)
         inner.append(t)
 
     a = axes[0]
-    bx_(a, (3.0, 7.4), "猫 追 __", width=5.0, height=2.4)
+    bx_(a, (3.0, 7.4), "猫 追 __", width=5.8, height=2.4)
     bx_(a, (9.7, 7.4), "狗", width=3.0, height=2.4)
-    arrow(a, (5.7, 7.4), (8.0, 7.4))
-    bx_(a, (3.0, 3.0), "猫 __ 球", width=5.0, height=2.4)
+    arrow(a, (6.1, 7.4), (8.0, 7.4))
+    bx_(a, (3.0, 3.0), "猫 __ 球", width=5.8, height=2.4)
     bx_(a, (9.7, 3.0), "追", width=3.0, height=2.4)
-    arrow(a, (5.7, 3.0), (8.0, 3.0))
+    arrow(a, (6.1, 3.0), (8.0, 3.0))
 
     a = axes[1]
     bx_(a, (2.2, 5.4), "$x$", width=2.8, height=3.0)
@@ -453,20 +454,20 @@ def plot_signals():
     arrow(a, (5.2, 4.8), (7.8, 3.5), color=VERMILION)
 
     a = axes[3]
-    bx_(a, (3.0, 7.4), "$x$ 视图1", width=4.4, height=2.3)
-    bx_(a, (3.0, 3.0), "$x$ 视图2", width=4.4, height=2.3)
-    bx_(a, (9.5, 7.4), "student", width=3.8, height=2.3)
-    bx_(a, (9.5, 3.0), "teacher", width=3.8, height=2.3,
+    bx_(a, (2.6, 7.4), "$x$ 视图1", width=5.0, height=2.3)
+    bx_(a, (2.6, 3.0), "$x$ 视图2", width=5.0, height=2.3)
+    bx_(a, (9.0, 7.4), "student", width=6.0, height=2.3)
+    bx_(a, (9.0, 3.0), "teacher", width=6.0, height=2.3,
         fc="#e6f4ee", ec=GREEN)
-    arrow(a, (5.4, 7.4), (7.4, 7.4))
-    arrow(a, (5.4, 3.0), (7.4, 3.0), color=GREEN)
+    arrow(a, (5.3, 7.4), (5.8, 7.4))
+    arrow(a, (5.3, 3.0), (5.8, 3.0), color=GREEN)
 
     a = axes[4]
     bx_(a, (3.0, 5.4), "$x$", width=3.4, height=3.0)
     bx_(a, (9.5, 5.4), "猫", width=3.4, height=3.0, fc="#e6f4ee",
         ec=GREEN)
     arrow(a, (5.0, 5.4), (7.6, 5.4))
-    a.text(6, 8.9, "ImageNet 类标注", ha="center", fontsize=8,
+    a.text(6, 0.6, "ImageNet 类标注", ha="center", va="center", fontsize=18,
            color=GREY)
 
     check_layout(fig, axes, patches, inner)

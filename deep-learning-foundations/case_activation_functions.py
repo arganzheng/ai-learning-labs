@@ -84,15 +84,16 @@ def plot_activation_curves():
     for ax, (name, (values, derivatives, color)) in zip(axes.flat, curves.items()):
         ax.plot(x, values, color=color, linewidth=1.6, label="函数")
         ax.plot(x, derivatives, color=color, linewidth=1.4, linestyle="--", label="导数")
-        ax.set_title(name)
-        ax.legend(loc="upper left", frameon=False, fontsize=8)
+        ax.set_title(name, fontsize=14)
+        ax.legend(loc="upper left", frameon=False, fontsize=13.5)
+        ax.tick_params(axis="both", labelsize=13.5)
         ax.axhline(0, color=C["gray"], linewidth=0.6)
         ax.axvline(0, color=C["gray"], linewidth=0.6)
         ax.grid(alpha=0.2)
-    axes[0, 0].set_ylabel("激活值 / 导数")
-    axes[1, 0].set_ylabel("激活值 / 导数")
+    axes[0, 0].set_ylabel("激活值 / 导数", fontsize=13.5)
+    axes[1, 0].set_ylabel("激活值 / 导数", fontsize=13.5)
     for ax in axes[1]:
-        ax.set_xlabel("输入 x")
+        ax.set_xlabel("输入 x", fontsize=13.5)
     save(fig, "activation-functions")
 
 
@@ -270,7 +271,7 @@ def plot_glu_family():
                     arrowprops={"arrowstyle": "->", "color": C["gray"], "lw": 1})
 
     def code_name(ax, x, y, text):
-        ax.text(x, y, text, ha="center", va="top", fontsize=10.5,
+        ax.text(x, y, text, ha="center", va="top", fontsize=12,
                 color=C["gray"], style="italic")
 
     diagram.text(0.2, 8.9, "Ordinary FFN", fontsize=16, weight="bold")

@@ -44,6 +44,9 @@ def main():
         print(f"  {c:18s} 初始 loss {loss:8.3f}  激活 std 块 1 → 64：{acts[1]:.2e} → {acts[-2]:.2e}   梯度范数 底层 → 顶层：{gn[1]:.2e} → {gn[-2]:.2e}")
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4))
+    plt.rcParams.update({"font.size": 13, "axes.labelsize": 13,
+                         "axes.titlesize": 13.5, "xtick.labelsize": 14,
+                         "ytick.labelsize": 14, "legend.fontsize": 12.5})
     for c in DEEP_CONFIGS:
         acts, gn = stats[c]
         axes[0].plot(np.linspace(0, 64, len(acts)), acts, c=COLORS[c], lw=1.2)
@@ -51,9 +54,15 @@ def main():
         axes[1].plot(np.linspace(1, 64, len(g)), g, c=COLORS[c], lw=1.2, label=LABEL[c])
     axes[0].set_yscale("log"); axes[0].set_xlabel("深度（块）"); axes[0].set_ylabel("激活 std（对数）"); axes[0].set_title("前向：每层激活多大")
     axes[0].axhline(1, ls=":", c=C["gray"], lw=0.8)
-    axes[1].set_yscale("log"); axes[1].set_xlabel("深度（块）"); axes[1].set_ylabel("权重梯度范数（对数）"); axes[1].set_title("反向：每层梯度多大")
+    axes[1].set_yscale("log")
+    from matplotlib.ticker import NullFormatter
+    for _ax in axes:
+        _ax.yaxis.set_minor_formatter(NullFormatter())
+        _ax.xaxis.set_minor_formatter(NullFormatter())
+        _ax.tick_params(axis="both", which="major", labelsize=14)
+    axes[1].set_xlabel("深度（块）"); axes[1].set_ylabel("权重梯度范数（对数）"); axes[1].set_title("反向：每层梯度多大")
     h, l = axes[1].get_legend_handles_labels()
-    fig.legend(h, l, fontsize=7, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    fig.legend(h, l, fontsize=11, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.16), frameon=False)
     save(fig, "case-02-init-stats")
 
     # 2. 训练 300 步
@@ -89,7 +98,7 @@ def main():
         ax.set_xlabel("步"); ax.set_title(f"lr = {lr}（× = 发散成 NaN）"); ax.set_ylim(0, 3.2)
     axes[0].set_ylabel("训练 loss")
     h, l = axes[1].get_legend_handles_labels()
-    fig.legend(h, l, fontsize=7, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    fig.legend(h, l, fontsize=11, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.16), frameon=False)
     save(fig, "case-02-training-curves")
 
 

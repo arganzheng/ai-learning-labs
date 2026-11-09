@@ -1,0 +1,27 @@
+=== N/D 数轴 ===
+  Llama-3 预训练    N/D = 0.0005
+  Chinchilla 最优  N/D = 0.05
+  参数 = 数据        N/D = 1.0
+  奖励模型           N/D = 160
+  本文实验           N/D = 407
+  SFT            N/D = 1600
+  图已保存 out/reg-nd-axis.svg
+  图已保存 out/reg-double-descent-schematic.svg
+=== 最小范数解 ===
+  解集：w1 + 2 w2 = 5；GD 收敛到 w* = [1. 2.]，理论最小范数点 [1. 2.]，‖w*‖ = 2.236（√5）
+  另一个插值解 [5. 0.]，范数 5.000
+  图已保存 out/reg-min-norm.svg
+=== label smoothing ===
+  C=10，ε=0.1：正确类目标 0.9，其余每类 0.0111
+  平滑后 CE 的最小点在 g* = ln(81) = 4.394；one-hot 随 g→∞ 趋 0
+  图已保存 out/reg-label-smoothing.svg
+=== 小语言模型 2 万字符 ===
+  ep  1：训练 3.166  held-out 3.091  逐字记忆率 0.0%
+  ep  4：训练 2.353  held-out 2.596  逐字记忆率 0.5%
+  ep  8：训练 1.790  held-out 2.431  逐字记忆率 2.5%
+  ep 16：训练 1.213  held-out 2.408  逐字记忆率 5.5%
+  ep 24：训练 0.850  held-out 2.527  逐字记忆率 5.5%
+  ep 32：训练 0.606  held-out 2.734  逐字记忆率 7.0%
+  ep 40：训练 0.438  held-out 2.975  逐字记忆率 10.0%
+  held-out 最低点在第 16 epoch（2.408），此后升到 2.975；训练 loss 继续降到 0.438
+  图已保存 out/reg-lm-20k.svg

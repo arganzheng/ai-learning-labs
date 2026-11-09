@@ -1,0 +1,13 @@
+数据：训练 60,000 张、测试 10,000 张，每张 28×28 = 784 个像素，10 类
+模型：784 → 256（ReLU）→ 10，203,530 个参数；初始 loss 应 ≈ ln 10 = 2.303
+  图已保存 out/case-01-mlp-structure.svg
+  初始 loss 2.461
+  epoch 1   train loss 0.4477  test acc 92.52%
+  epoch 2   train loss 0.2444  test acc 94.02%
+  epoch 5   train loss 0.1416  test acc 96.01%
+  epoch 10  train loss 0.0842  test acc 97.26%
+  epoch 15  train loss 0.0585  test acc 97.61%
+  15 个 epoch 共 2s（笔记本 CPU，纯 NumPy）
+  测试集 10,000 张错 239 张（2.39%）
+  最常混的三对：7→2 12 次，9→7 11 次，9→4 11 次
+  图已保存 out/case-01-training.svg

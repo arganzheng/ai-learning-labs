@@ -199,7 +199,7 @@ def plot_pca(model, word_to_id):
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.scatter(points[:, 0], points[:, 1], color=C["blue"], s=35)
     for word, (x, y) in zip(available, points):
-        ax.annotate(word, (x, y), xytext=(4, 4), textcoords="offset points", fontsize=9)
+        ax.annotate(word, (x, y), xytext=(4, 4), textcoords="offset points", fontsize=10.5)
     ax.axhline(0, color=C["gray"], linewidth=0.6)
     ax.axvline(0, color=C["gray"], linewidth=0.6)
     ax.grid(alpha=0.2)

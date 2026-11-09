@@ -1,0 +1,36 @@
+== 1. vanilla RNN, BPTT: ||dL/dh_t|| as a function of distance from the loss (NumPy) ==
+scale 0.5: sigma_max(W) 1.00 | ||dL/dh_t|| at distance 0/10/20/40/59: 8.0e+00 1.2e-04 1.4e-09 3.5e-19 3.2e-28
+scale 1.0: sigma_max(W) 1.87 | ||dL/dh_t|| at distance 0/10/20/40/59: 8.0e+00 1.9e-01 4.0e-03 1.2e-06 1.0e-10
+scale 1.5: sigma_max(W) 2.97 | ||dL/dh_t|| at distance 0/10/20/40/59: 8.0e+00 5.5e+00 4.0e-01 7.3e-03 3.1e-04
+
+== 2. remember the first token and output it after T steps: RNN vs LSTM, 1500 steps Adam 1e-3, batch 64 ==
+T=  5: RNN  100.0% (loss 0.00, 1s)   LSTM 100.0% (loss 0.00, 1s)
+T= 10: RNN   17.7% (loss 1.64, 1s)   LSTM 100.0% (loss 0.00, 2s)
+T= 20: RNN    9.8% (loss 2.30, 2s)   LSTM   9.7% (loss 2.31, 4s)
+T= 40: RNN   10.2% (loss 2.30, 3s)   LSTM   9.2% (loss 2.30, 8s)
+T= 80: RNN    9.3% (loss 2.31, 6s)   LSTM  10.6% (loss 2.30, 16s)
+
+== 3. LSTM with forget-gate bias = 1 in both bias vectors (b_ih + b_hh = 2), eval every 500 steps up to 6000 ==
+T= 20: acc 100.0% at step 500 (1s)   trajectory: 500:100%
+T= 40: acc 100.0% at step 500 (3s)   trajectory: 500:100%
+T= 80: acc   9.6% at step 6000 (65s)   trajectory: 500:9% 1000:10% 1500:10% 2000:9% 2500:10% 3000:9% 3500:9% 4000:10% 4500:8% 5000:10% 5500:10% 6000:10%
+
+== 4. seq2seq 'reverse the sequence': fixed-vector bottleneck vs attention, 2000 steps Adam 2e-3, batch 64 ==
+T= 8: bottleneck: token acc  89.7% seq acc  40.4% (5s)   attention: token acc  98.5% seq acc  91.3% (8s)
+   alignment matrix (rows = output step, cols = input position), T=8, one example:
+   . . . . . . . #
+   . . . . . . . #
+   . . . . . . # .
+   . . . . . # . .
+   . . . . # . . .
+   . . . # . . . .
+   . . # . . . . .
+   . # + . . . . .
+T=16: bottleneck: token acc  67.5% seq acc   0.0% (9s)   attention: token acc  97.7% seq acc  76.4% (19s)
+T=32: bottleneck: token acc  43.5% seq acc   0.0% (17s)   attention: token acc  95.5% seq acc  47.0% (42s)
+
+== 5. forward wall time vs sequence length, d=256, batch 1, CPU: RNN (sequential) vs self-attention (parallel) ==
+T=   64: RNN      0.3 ms   self-attention      0.1 ms   (attention FLOPs ~ 4*T^2*d = 0.00 GFLOPs; RNN ~ 4*T*d^2 = 0.017 GFLOPs)
+T=  256: RNN      1.0 ms   self-attention      0.4 ms   (attention FLOPs ~ 4*T^2*d = 0.07 GFLOPs; RNN ~ 4*T*d^2 = 0.067 GFLOPs)
+T= 1024: RNN      4.0 ms   self-attention      4.3 ms   (attention FLOPs ~ 4*T^2*d = 1.07 GFLOPs; RNN ~ 4*T*d^2 = 0.268 GFLOPs)
+T= 4096: RNN     16.2 ms   self-attention     58.1 ms   (attention FLOPs ~ 4*T^2*d = 17.18 GFLOPs; RNN ~ 4*T*d^2 = 1.074 GFLOPs)

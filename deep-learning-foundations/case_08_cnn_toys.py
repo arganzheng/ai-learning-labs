@@ -105,7 +105,7 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
     return fig, ax
 
 
-def grid(ax, x, y, vals, cw=.5, ch=.5, fs=7.5, fc="#dce9f7", ec="#7a7a7a",
+def grid(ax, x, y, vals, cw=.5, ch=.5, fs=10.5, fc="#dce9f7", ec="#7a7a7a",
          zero_grey=True, cell_fc=None, cell_ec=None):
     """画数字格子；cell_fc/cell_ec 可选 (i,j)->颜色 的回调覆盖逐格配色。"""
     vals = np.asarray(vals)
@@ -246,24 +246,24 @@ def figure_conv_matrix():
                        h=4.6, xlim=(0, 12.6), ylim=(0.0, 7.0))
     cw = .62
     # ---- 上行：x * k = y，运算符号连接，无箭头
-    text(ax, .3, 6.35, r"输入 $x$（$4\times4$）", fontsize=8.5)
-    grid(ax, .3, 6.1, X4.astype(int), cw=cw, ch=cw, fs=8)
+    text(ax, .3, 6.35, r"输入 $x$（$4\times4$）", fontsize=10.5)
+    grid(ax, .3, 6.1, X4.astype(int), cw=cw, ch=cw, fs=10.5)
     # 橙框标出第一个 3×3 窗口（行 0–2、列 0–2）
     box(ax, .3, 6.1 - 3 * cw, 3 * cw - .02, 3 * cw - .02,
         fc="none", ec=C["orange"], lw=1.6, r=.01)
     text(ax, 3.26, 4.86, r"$\ast$", fontsize=14, va="center")
-    text(ax, 3.75, 6.35, r"核 $k$（$3\times3$）", fontsize=8.5)
-    grid(ax, 3.75, 6.1, K3.astype(int), cw=cw, ch=cw, fs=8,
+    text(ax, 3.75, 6.35, r"核 $k$（$3\times3$）", fontsize=10.5)
+    grid(ax, 3.75, 6.1, K3.astype(int), cw=cw, ch=cw, fs=10.5,
          fc="#fae6d6", ec=C["orange"], zero_grey=False)
     text(ax, 6.32, 4.86, r"$=$", fontsize=14, va="center")
-    text(ax, 7.0, 6.35, r"输出 $y$（$2\times2$）", fontsize=8.5)
-    grid(ax, 7.0, 6.1, out.astype(int), cw=.72, ch=.62, fs=6.5,
+    text(ax, 7.0, 6.35, r"输出 $y$（$2\times2$）", fontsize=10.5)
+    grid(ax, 7.0, 6.1, out.astype(int), cw=.72, ch=.62, fs=10.5,
          fc="#e8f3e8", ec=C["green"], zero_grey=False)
     # 348 格与上行窗口同色描边
     box(ax, 7.0, 6.1 - .62, .7, .6, fc="none", ec=C["orange"], lw=1.6, r=.01)
     # ---- 下行：y = Mx 的矩阵乘排版
     # x 拉直成横条放 M 上方（列对齐），y 拉直成竖条放 M 右侧（行对齐）
-    text(ax, .3, 3.4, r"拉直后就是矩阵乘 $y=Mx$：", fontsize=8.5)
+    text(ax, .3, 3.4, r"拉直后就是矩阵乘 $y=Mx$：", fontsize=10.5)
     cmap = {v: c for v, c in zip(
         (1, 2, 3, 4, 5, 6, 7, 8, 9),
         ("#d6e6f5", "#c2d8f0", "#aecdee", "#9ac2ea",
@@ -275,9 +275,9 @@ def figure_conv_matrix():
         p = box(ax, mx + j * mcw, 2.62, mcw - .02, .42,
                 fc="#dce9f7", ec="#7a7a7a", lw=.4, r=.003)
         text(ax, mx + j * mcw + (mcw - .02) / 2, 2.62 + .21,
-             f"{j + 1:g}", in_box=p, ha="center", va="center", fontsize=5.5)
+             f"{j + 1:g}", in_box=p, ha="center", va="center", fontsize=10.5)
     text(ax, mx + 16 * mcw + .38, 2.62 + .21, r"$x$（拉直 $16$）",
-         fontsize=8, va="center", color="#555555")
+         fontsize=10.5, va="center", color="#555555")
     # M（4×16）
     for i in range(4):
         for j in range(16):
@@ -288,7 +288,7 @@ def figure_conv_matrix():
             if v != 0:
                 text(ax, mx + j * mcw + (mcw - .02) / 2,
                      2.48 - (i + 1) * mch + (mch - .02) / 2,
-                     f"{v:g}", in_box=p, ha="center", va="center", fontsize=5.5)
+                     f"{v:g}", in_box=p, ha="center", va="center", fontsize=10.5)
     # M 第 0 行同色描边 —— 对应上行那个窗口
     box(ax, mx, 2.48 - mch, 16 * mcw - .02, mch - .02,
         fc="none", ec=C["orange"], lw=1.6, r=.01)
@@ -298,17 +298,17 @@ def figure_conv_matrix():
         p = box(ax, ys, 2.48 - (i + 1) * mch, .58, mch - .02,
                 fc="#e8f3e8", ec=C["green"], lw=.5, r=.003)
         text(ax, ys + .29, 2.48 - (i + 1) * mch + (mch - .02) / 2,
-             f"{v:g}", in_box=p, ha="center", va="center", fontsize=5.5)
-    text(ax, ys + .29, 2.48 - 4 * mch - .13, r"$y$（拉直 $4$）", fontsize=8,
+             f"{v:g}", in_box=p, ha="center", va="center", fontsize=10.5)
+    text(ax, ys + .29, 2.48 - 4 * mch - .13, r"$y$（拉直 $4$）", fontsize=10.5,
          ha="center", va="top", color="#555555")
     text(ax, ys + 1.0, 2.48 - mch / 2,
          "第 0 行与 $x$ 内积\n$=$ 输出 $(0,0)$ 的 $348$",
-         fontsize=7.5, va="center", color="#555555")
+         fontsize=10.5, va="center", color="#555555")
     # ---- 底注
     text(ax, .3, .38,
          r"参数量：卷积 $=9$（核的 $3\times3$）"
          r"vs 等价全连接 $=4\times16=64$",
-         fontsize=8, color="#555555")
+         fontsize=10.5, color="#555555")
     finish(fig, "cnn-conv-as-matrix")
 
 
@@ -346,12 +346,12 @@ def figure_receptive_field():
             fc = "#fae6d6" if on else "#f0f0f0"
             box(ax, x0 + j * cw, y - cw, cw - .02, cw - .02,
                 fc=fc, ec=C["orange"] if on else "#bbbbbb", lw=.5, r=.005)
-        text(ax, x0 + n * cw + .3, y - cw / 2, lab, fontsize=8, va="center",
+        text(ax, x0 + n * cw + .3, y - cw / 2, lab, fontsize=10.5, va="center",
              color="#555555")
     finish(fig, "cnn-receptive-field")
 
 
-def _mcells(ax, x, y, labels, cw, ch, fs=7.5, fc="#ffffff",
+def _mcells(ax, x, y, labels, cw, ch, fs=10.5, fc="#ffffff",
             ec="#999999", hi=None, hi_fc="#fff3e0", hi_ec="#c98a00"):
     """mathtext 数字格子；labels 为字符串矩阵，hi=(i,j) 高亮。"""
     for i, row in enumerate(labels):
@@ -377,17 +377,17 @@ def figure_sliding_window():
         fc="none", ec="#c98a00", lw=1.8, r=.01)
     text(ax, ix + 2.5 * cw, iy + .35, "输入 $x$（$5\\times5$，"
          "橙框 = 核当前盖住的 $3\\times3$）",
-         ha="center", fontsize=9, color="#333333")
+         ha="center", fontsize=10.5, color="#333333")
     kx, ky = 5.15, 6.85         # kernel 3×3
     klbl = [[f"${v:g}$" for v in row] for row in K_EDGE]
     _mcells(ax, kx, ky, klbl, cw, cw, fc="#eef6ff", ec="#1f6fb2")
     text(ax, kx + 1.5 * cw, ky + .35, "核 $k$（$3\\times3$，9 个权重）",
-         ha="center", fontsize=9, color="#333333")
+         ha="center", fontsize=10.5, color="#333333")
     ox, oy = 9.75, 6.85         # 输出 3×3
     olbl = [[f"${v:g}$" for v in row] for row in OUT5]
     _mcells(ax, ox, oy, olbl, cw, cw, hi={(0, 1)})
     text(ax, ox + 1.5 * cw, oy + .35, "输出 $y$（$3\\times3$）",
-         ha="center", fontsize=9, color="#333333")
+         ha="center", fontsize=10.5, color="#333333")
     text(ax, (ix + 5 * cw + kx) / 2, 5.8, "$\\ast$", ha="center",
          va="center", fontsize=16, color="#333333")
     text(ax, (kx + 3 * cw + ox) / 2, 5.8, "$=$", ha="center",
@@ -400,21 +400,21 @@ def figure_sliding_window():
     px, py, pw, ph = 4.35, 3.35, .95, .5
     _mcells(ax, px, py, plbl, pw, ph, fc="#f7f7f7")
     text(ax, px + 1.5 * pw, py - 3 * ph - .28, "窗口内逐元素相乘（$x\\odot k$）",
-         ha="center", fontsize=8.5, color="#333333")
+         ha="center", fontsize=10.5, color="#333333")
     arrow(ax, (ix + 2.5 * cw, iy - 5 * cw - .08), (px + .55 * pw, py + .06))
     arrow(ax, (kx + 1.5 * cw, ky - 3 * cw - .1), (px + 2.0 * pw, py + .06))
-    text(ax, px + 3 * pw + .75, 2.55, "求和", ha="center", fontsize=8.5,
+    text(ax, px + 3 * pw + .75, 2.55, "求和", ha="center", fontsize=10.5,
          color="#555555")
     arrow(ax, (px + 3 * pw + .1, 2.35), (px + 3 * pw + 1.4, 2.35), lw=1.0)
     p = box(ax, px + 3 * pw + 1.5, 2.1, .95, .5, fc="#fff3e0",
             ec="#c98a00", lw=.9, r=.01)
     text(ax, px + 3 * pw + 1.975, 2.35, "$=-3$", in_box=p, ha="center",
-         va="center", fontsize=9)
+         va="center", fontsize=10.5)
     arrow(ax, (px + 3 * pw + 1.975, 2.65), (ox + 1.5 * cw, oy - 3 * cw - .12),
           color="#c98a00")
     text(ax, 6.2, 1.08, "全连接 $25\\to9$ 需要 $25\\times9=225$ 个权重，"
          "卷积只有 9 个：只看局部、处处共享",
-         ha="center", fontsize=9, color="#333333")
+         ha="center", fontsize=10.5, color="#333333")
     finish(fig, "cnn-convolution-sliding-window")
 
 

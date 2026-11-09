@@ -56,9 +56,12 @@ def exp_reg(X, y, Xt, yt):
         axes[1].plot(eps[b], tel[b], "o", ms=6, color=col)
         axes[2].plot(eps, [a * 100 for a in tea], c=col, lw=2.2, label=name)
     axes[0].set_xlabel("epoch"); axes[0].set_ylabel("训练 loss"); axes[0].set_title("训练 loss：四条曲线都归零")
-    axes[1].set_xlabel("epoch"); axes[1].set_ylabel("测试 loss"); axes[1].set_ylim(0, 0.7); axes[1].legend(fontsize=7)
+    axes[1].set_xlabel("epoch"); axes[1].set_ylabel("测试 loss"); axes[1].set_ylim(0, 0.7); axes[1].legend(fontsize=12)
     axes[1].set_title("测试 loss：圆点 = 每条的最优早停点")
     axes[2].set_xlabel("epoch"); axes[2].set_ylabel("测试准确率 %"); axes[2].set_ylim(85, 92); axes[2].set_title("准确率几乎不动：错的样本越来越自信")
+    for _ax in axes:
+        _ax.tick_params(axis="both", labelsize=13)
+        _ax.xaxis.label.set_size(13); _ax.yaxis.label.set_size(13); _ax.title.set_size(13.5)
     save(fig, "case-04-regularizers")
 
 
@@ -81,13 +84,16 @@ def exp_dd(X, y, Xt, yt):
           "再加宽，测试误差反而一路下降到 14.5%。经典的 U 形只在阈值左边成立，右边是第二次下降——这就是 double descent。")
 
     fig, ax = plt.subplots(figsize=(7.6, 3.0))
+    plt.rcParams.update({"xtick.labelsize": 10.5, "ytick.labelsize": 10.5,
+                         "axes.labelsize": 10.5, "axes.titlesize": 11,
+                         "legend.fontsize": 10.5, "font.size": 10.5})
     ws = [r[0] for r in res]
     ax.plot(ws, [r[3] * 100 for r in res], "o-", c=C["red"], lw=2.2, label="测试错误率 %")
     ax.plot(ws, [r[2] * 100 for r in res], "s-", c=C["blue"], lw=2.2, label="训练错误率 %")
     ax2 = ax.twinx(); ax2.plot(ws, [r[4] for r in res], "^-", c=C["orange"], lw=2.2, label="测试 loss"); ax2.set_ylabel("测试 loss", color=C["orange"]); ax2.spines["right"].set_visible(True)
     ax.set_xscale("log", base=2); ax.set_xticks(ws); ax.set_xticklabels(ws); ax.set_xlabel("隐藏层宽度")
-    ax.set_ylabel("错误率 %"); ax.axvline(12, c=C["gray"], lw=0.8); ax.text(14, 12, "插值阈值：\n训练错误率刚到 0\n参数 ≈ 样本数", fontsize=7.5, color=C["gray"])
-    ax.legend(loc="upper right", fontsize=7); ax2.legend(loc="upper center", fontsize=7)
+    ax.set_ylabel("错误率 %"); ax.axvline(12, c=C["gray"], lw=0.8); ax.text(14, 12, "插值阈值：\n训练错误率刚到 0\n参数 ≈ 样本数", fontsize=10.5, color=C["gray"])
+    ax.legend(loc="upper right", fontsize=10.5); ax2.legend(loc="upper center", fontsize=10.5)
     ax.set_title("4,000 张、20% 错标签：测试误差先降、再升、再降")
     save(fig, "case-04-double-descent")
 

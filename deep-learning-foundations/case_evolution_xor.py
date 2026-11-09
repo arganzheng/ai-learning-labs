@@ -116,6 +116,9 @@ def train_mlp(hidden_size, seed):
 
 
 def plot_case(perceptron, adaline, selected_mlp):
+    plt.rcParams.update({"font.size": 15, "axes.titlesize": 16,
+                         "axes.labelsize": 15.5, "legend.fontsize": 15,
+                         "xtick.labelsize": 15.5, "ytick.labelsize": 15.5})
     p_weights, p_bias = perceptron
     a_weights, a_bias = adaline
     mlp_parameters, mlp_seed, mlp_losses = selected_mlp
@@ -166,7 +169,7 @@ def plot_case(perceptron, adaline, selected_mlp):
         ax.set_ylabel("$x_2$")
         ax.grid(alpha=0.16)
     axes[1].text(0.03, 0.04, "4 个预测均约 0.5", transform=axes[1].transAxes,
-                 fontsize=8, color="#222222")
+                 fontsize=15, color="#222222")
 
     errors_ax = fig.add_subplot(layout[1, 0:3])
     adaline_ax = fig.add_subplot(layout[1, 3:6])

@@ -87,11 +87,11 @@ def main():
     img = Xt[7:8].to(DEVICE)
     with torch.no_grad():
         fm = F.relu(model.c1(img))[0].cpu().numpy()
-    axes[0, 0].imshow(Xt[7, 0], cmap="gray_r"); axes[0, 0].set_title("输入", fontsize=7)
-    axes[1, 0].axis("off"); axes[1, 0].text(0.5, 0.5, "C1 的 6 个\n$5\\times5$ 卷积核 ↓\n\n6 张特征图 →", ha="center", va="center", fontsize=7, transform=axes[1, 0].transAxes)
+    axes[0, 0].imshow(Xt[7, 0], cmap="gray_r"); axes[0, 0].set_title("输入", fontsize=10.5)
+    axes[1, 0].axis("off"); axes[1, 0].text(0.5, 0.5, "C1 的 6 个\n$5\\times5$ 卷积核 ↓\n\n6 张特征图 →", ha="center", va="center", fontsize=10.5, transform=axes[1, 0].transAxes)
     k = model.c1.weight.detach().cpu().numpy()
     for i in range(6):
-        axes[0, i + 1].imshow(fm[i], cmap="gray_r"); axes[0, i + 1].set_title(f"特征图 {i + 1}", fontsize=7)
+        axes[0, i + 1].imshow(fm[i], cmap="gray_r"); axes[0, i + 1].set_title(f"特征图 {i + 1}", fontsize=10.5)
         axes[1, i + 1].imshow(k[i, 0], cmap="RdBu", vmin=-abs(k).max(), vmax=abs(k).max())
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
@@ -102,12 +102,12 @@ def main():
     ax = axes[0]
     ax.plot(range(1, epochs + 1), [h[0] for h in hist], "o-", ms=3, c=C["blue"], label="训练 loss")
     ax2 = ax.twinx(); ax2.plot(range(1, epochs + 1), [h[1] * 100 for h in hist], "s--", ms=3, c=C["orange"], label="测试准确率 %"); ax2.set_ylim(97, 100); ax2.spines["right"].set_visible(True)
-    ax.set_xlabel("epoch"); ax.set_title(f"LeNet-5：5 个 epoch 到 {hist[-1][1] * 100:.2f}%"); ax.legend(loc="center right", fontsize=7); ax2.legend(loc="lower right", fontsize=7)
-    ax = axes[1]; ax.axis("off"); ax.set_title(f"错分的 {len(err)} 张里的前 24 张（真实→预测）", fontsize=8.5)
+    ax.set_xlabel("epoch"); ax.set_title(f"LeNet-5：5 个 epoch 到 {hist[-1][1] * 100:.2f}%"); ax.legend(loc="center right", fontsize=10.5); ax2.legend(loc="lower right", fontsize=10.5)
+    ax = axes[1]; ax.axis("off"); ax.set_title(f"错分的 {len(err)} 张里的前 24 张（真实→预测）", fontsize=10.5)
     for i, j in enumerate(err[:24]):
         r, c = divmod(i, 12)
         ax.imshow(Xt[j, 0].numpy(), cmap="gray_r", extent=(c, c + 0.9, -r * 1.4 - 0.9, -r * 1.4))
-        ax.text(c + 0.45, -r * 1.4 - 1.0, f"{yt[j]}→{pred[j]}", ha="center", va="top", fontsize=6, color=C["red"])
+        ax.text(c + 0.45, -r * 1.4 - 1.0, f"{yt[j]}→{pred[j]}", ha="center", va="top", fontsize=10.5, color=C["red"])
     ax.set_xlim(0, 12); ax.set_ylim(-2.9, 0); ax.set_aspect("equal")
     save(fig, "case-05-lenet-training")
 

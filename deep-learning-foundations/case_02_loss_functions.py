@@ -60,7 +60,7 @@ def fig_classification_gradient():
     ax.set_xlabel("logit $z$"); ax.set_ylabel("$|\\partial L / \\partial z|$")
     ax.set_title("对 logit 的梯度：MSE 在饱和区 ≈ 0"); ax.legend()
     ax.annotate("$z=-6$ 时 MSE 梯度只有 CE 的\n$\\sigma'(-6)\\approx 0.0025$ 倍", xy=(-6, g_mse[np.argmin(np.abs(z + 6))]),
-                xytext=(-2.5, 0.55), fontsize=8,
+                xytext=(-2.5, 0.55), fontsize=10.5,
                 arrowprops=dict(arrowstyle="->", color="#666666", lw=0.8))
     save(fig, "loss-classification-gradient")
     i = np.argmin(np.abs(z + 6))
@@ -95,7 +95,7 @@ def fig_infonce():
     for i in range(n):
         for j in range(n):
             color = "#c94c4c" if (i != j and y[i] == y[j]) else "#444444"
-            ax.text(j, i, f"{sim[i,j]:.0f}", ha="center", va="center", fontsize=8, color=color)
+            ax.text(j, i, f"{sim[i,j]:.0f}", ha="center", va="center", fontsize=10.5, color=color)
     ax.set_xticks(range(n)); ax.set_yticks(range(n))
     ax.set_xticklabels([f"$z_{j}$" for j in range(n)]); ax.set_yticklabels([f"$z_{i}$" for i in range(n)])
     ax.set_title("in-batch 相似度矩阵 $\\times\\,1/\\tau$（红=正例对）")

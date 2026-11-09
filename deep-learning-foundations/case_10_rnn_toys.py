@@ -106,7 +106,7 @@ def base_fig(title, w=7.6, h=4.3, xlim=(0, 12), ylim=(0, 7)):
     return fig, ax
 
 
-def cell(ax, x, y, w, h, body, fs=8, fc="#eef4fb", ec="#7a9ac0"):
+def cell(ax, x, y, w, h, body, fs=10.5, fc="#eef4fb", ec="#7a9ac0"):
     p = box(ax, x, y, w, h, fc=fc, ec=ec, lw=.9, r=.03)
     text(ax, x + w / 2, y + h / 2, body, in_box=p, ha="center", va="center",
          fontsize=fs)
@@ -192,12 +192,12 @@ def figure_bptt_decay():
     ax.set_yticks([10.0 ** (-3 * k) for k in range(7)])
     ax.set_yticklabels(
         [r"$10^{0}$" if k == 0 else rf"$10^{{-{3 * k}}}$" for k in range(7)],
-        fontsize=8)
+        fontsize=10.5)
     ax.set_ylim(1e-20, 3)
     ax.set_ylabel(r"$\partial h_T/\partial h_t$")
     ax.set_title(r"标量 RNN 的 BPTT 梯度：$\prod w\cdot\tanh'$ 随距离衰减",
                  fontsize=10.5, fontweight=600, color="#111111")
-    ax.legend(fontsize=8, loc="upper right")
+    ax.legend(fontsize=10.5, loc="upper right")
     ax.grid(alpha=.25)
     save(fig, "rnn-bptt-decay")
 
@@ -213,29 +213,29 @@ def figure_lstm_cell():
     ch, cw = 1.0, 1.6
 
     def lab(xc, s):
-        return text(ax, xc, cy + .55, s, fontsize=8,
+        return text(ax, xc, cy + .55, s, fontsize=10.5,
                     ha="center", color="#555555")
 
-    p0 = cell(ax, .3, y, cw, ch, "$c_{t-1}=1.0$", fs=9)
+    p0 = cell(ax, .3, y, cw, ch, "$c_{t-1}=1.0$", fs=10.5)
     arrow(ax, (1.95, cy), (2.8, cy))
     lab(2.38, r"$\times f$（$0.9$）")
-    p1 = cell(ax, 2.85, y, cw, ch, r"$f\,c_{t-1}=0.9$", fs=8.5)
+    p1 = cell(ax, 2.85, y, cw, ch, r"$f\,c_{t-1}=0.9$", fs=10.5)
     arrow(ax, (4.5, cy), (5.35, cy))
     lab(4.93, r"$+$")
-    p2 = cell(ax, 5.4, y, cw, ch, f"$c_t={c_t:.1f}$", fs=9,
+    p2 = cell(ax, 5.4, y, cw, ch, f"$c_t={c_t:.1f}$", fs=10.5,
               fc="#fae6d6", ec=C["orange"])
     # i·g 从下方经 + 汇入 c_t
-    pg = cell(ax, 5.15, y - 1.7, 2.1, .9,
-              r"$i\cdot g=0.2\times0.5=0.1$", fs=8.5)
+    pg = cell(ax, 4.95, y - 1.7, 2.5, .9,
+              r"$i\cdot g=0.2\times0.5=0.1$", fs=10.5)
     arrow(ax, (6.2, y - .75), (6.2, y - .05))
-    text(ax, 6.32, y - .42, r"$+$", fontsize=9, ha="left", va="center",
+    text(ax, 6.32, y - .42, r"$+$", fontsize=10.5, ha="left", va="center",
          color="#555555")
     arrow(ax, (7.05, cy), (7.9, cy))
     lab(7.48, r"$\tanh$")
-    p3 = cell(ax, 7.95, y, cw, ch, r"$\tanh c_t=0.762$", fs=8.5)
-    arrow(ax, (9.6, cy), (10.45, cy))
+    p3 = cell(ax, 7.9, y, cw + .35, ch, r"$\tanh c_t=0.762$", fs=10.5)
+    arrow(ax, (9.9, cy), (10.45, cy))
     lab(10.03, r"$\times o$（$0.8$）")
-    p4 = cell(ax, 10.5, y, cw, ch, f"$h_t={h_t:.2f}$", fs=9,
+    p4 = cell(ax, 10.5, y, cw, ch, f"$h_t={h_t:.2f}$", fs=10.5,
               fc="#e8f3e8", ec=C["green"])
     # 底部：30 步后 ∏f 残存比例，小柱状对比
     y0, bh = 1.0, 1.5
@@ -245,15 +245,15 @@ def figure_lstm_cell():
         hgt = v / 0.740 * bh
         ax.add_patch(Rectangle((bx, y0), .9, hgt,
                                         fc=col, ec="#555555", lw=.8))
-        text(ax, bx + .45, y0 + hgt + .22, f"${v:.3f}$", fontsize=8,
+        text(ax, bx + .45, y0 + hgt + .22, f"${v:.3f}$", fontsize=10.5,
              ha="center", color="#333333")
-        text(ax, bx + .45, y0 - .28, f"$f={fv}$", fontsize=8,
+        text(ax, bx + .45, y0 - .28, f"$f={fv}$", fontsize=10.5,
              ha="center", va="top", color="#555555")
     ax.plot([.8, 4.3], [y0, y0], color="#555555", lw=.8)
     text(ax, 5.1, y0 + .75,
          r"30 步后 $\prod f$ 的残存比例"
          "（遗忘门偏置初始化为 1 的原因）",
-         fontsize=8.5, ha="left", va="center", color="#555555")
+         fontsize=10.5, ha="left", va="center", color="#555555")
     finish(fig, "rnn-lstm-cell")
 
 

@@ -245,13 +245,13 @@ def fig_one_iteration():
         ("zero", "梯度清零", "#e8e8e8", "#777777"),
     ]
     ws = [2.6, 1.35, 2.6, 2.15, 1.6]
-    x, y, h = 0.3, 4.8, 1.45
+    x, y, h = 0.3, 4.75, 1.6
     pos = []
     for (name, sub, fc, ec), w in zip(phases, ws):
         p = box(ax, x, y, w, h, "", fc=fc, ec=ec, lw=1.0)
         box_title(ax, x + w / 2, y + h - 0.36, name, p, color=ec)
-        text(ax, x + w / 2, y + 0.5, sub, in_box=p, ha="center",
-             va="center", fontsize=8.5)
+        text(ax, x + w / 2, y + 0.62, sub, in_box=p, ha="center",
+             va="center", fontsize=10.5)
         pos.append((x, x + w))
         if w is not ws[-1]:
             ax.add_patch(FancyArrowPatch((x + w + 0.03, y + h / 2),
@@ -262,7 +262,7 @@ def fig_one_iteration():
 
     # 泳道 1：保存的激活量：前向线性升到峰，反向线性降回 0
     y1 = 2.7
-    text(ax, 0.05, y1 + 0.52, "保存的激活", ha="left", va="center", fontsize=9)
+    text(ax, 0.05, y1 + 0.52, "保存的激活", ha="left", va="center", fontsize=10.5)
     xf1, xf2 = pos[0]
     xb1, xb2 = pos[2]
     xs_, xs1 = pos[1]
@@ -272,13 +272,13 @@ def fig_one_iteration():
     ax.fill_between([xf1, xs1 - 0.05, xb2], y1, [y1, y1 + 0.95, y1],
                     color=C["green"], alpha=0.18)
     text(ax, (xf1 + xs1) / 2, y1 + 0.98, "逐层堆高", ha="center",
-         va="bottom", fontsize=8.5, color=C["green"])
+         va="bottom", fontsize=10.5, color=C["green"])
     text(ax, xb2 + 0.15, y1 + 0.5, "逐层释放", ha="left",
-         va="center", fontsize=8.5, color=C["green"])
+         va="center", fontsize=10.5, color=C["green"])
 
     # 泳道 2：梯度量：反向逐步升到满，step 后清零
     y2 = 1.15
-    text(ax, 0.05, y2 + 0.52, "梯度量", ha="left", va="center", fontsize=9)
+    text(ax, 0.05, y2 + 0.52, "梯度量", ha="left", va="center", fontsize=10.5)
     xo1, xo2 = pos[3]
     xz1, xz2 = pos[4]
     ax.fill_between([xb1, xb2], y2, [y2, y2 + 0.8], color=C["purple"],
@@ -288,14 +288,14 @@ def fig_one_iteration():
     ax.plot([xz1, xz1], [y2 + 0.8, y2], color=C["purple"], lw=1.5)
     ax.plot([xz1, xz2], [y2, y2], color=C["purple"], lw=1.5)
     text(ax, (xb1 + xb2) / 2, y2 + 0.9, "逐层到齐", ha="center",
-         va="bottom", fontsize=8.5, color=C["purple"])
+         va="bottom", fontsize=10.5, color=C["purple"])
     text(ax, xz2 + 0.15, y2 + 0.4, "清零", ha="left",
-         va="center", fontsize=8.5, color=C["purple"])
+         va="center", fontsize=10.5, color=C["purple"])
 
     text(ax, 6.0, 0.35,
          "激活的峰在前向末、梯度的峰在反向末——两条泳道错开，"
          "合起来才是显存峰值",
-         ha="center", va="center", fontsize=9.5)
+         ha="center", va="center", fontsize=10.5)
     save(fig, "backprop-one-iteration")
 
 
@@ -338,9 +338,9 @@ def fig_checkpointing():
                 fc, ec, hatch = "#f5f5f5", "#aaaaaa", "///"
             else:
                 fc, ec, hatch = "#dce9f7", C["blue"], None
-            p = box(ax, x, y, cw_, chh, "", fc=fc, ec=ec, fs=7.5)
+            p = box(ax, x, y, cw_, chh, "", fc=fc, ec=ec, fs=10.5)
             ax.text(x + cw_ / 2, y + chh / 2, str(ln), ha="center",
-                    va="center", fontsize=7.5)
+                    va="center", fontsize=10.5)
             if hatch:
                 p.set_hatch(hatch)
             if phase == "fwd" and saved_inputs and ln in (1, 5):
@@ -353,7 +353,7 @@ def fig_checkpointing():
 
     def seg_label(y, x_from, x_to, s, color):
         text(ax, (x_from + x_to) / 2, y, s, ha="center", va="center",
-             fontsize=8, color=color)
+             fontsize=10.5, color=color)
 
     # ---- 图例（小色块 + 标签；与格子的画法严格一致）----
     legend = [("#fae6d6", C["orange"], None, "全部保存"),
@@ -373,13 +373,13 @@ def fig_checkpointing():
                            facecolor="#fae6d6", edgecolor=ec, lw=0.5)
             ax.add_patch(r2)
         text(ax, lx + 0.38, 6.47, name, ha="left", va="center",
-             fontsize=8.5, color="#444444")
+             fontsize=10.5, color="#444444")
         lx += 0.42 + 0.16 * len(name) + 0.55
 
     # ---- 全存 ----
     y1 = 4.85
     text(ax, 0.15, y1 + chh / 2, "全存", ha="left", va="center",
-         fontsize=10)
+         fontsize=10.5)
     cells1 = [(i + 1, "fwd") for i in range(8)] + \
              [(8 - i, "bwd") for i in range(8)]
     xe = lane(y1, cells1, all_saved=True)
@@ -391,7 +391,7 @@ def fig_checkpointing():
     # ---- 每 4 层 ckpt ----
     y2 = 2.55
     text(ax, 0.15, y2 + chh / 2, "ckpt", ha="left", va="center",
-         fontsize=9.5)
+         fontsize=10.5)
     cells2 = ([(i + 1, "fwd") for i in range(8)] +
               [(i + 5, "re") for i in range(4)] +
               [(8 - i, "bwd") for i in range(4)] +
@@ -414,22 +414,22 @@ def fig_checkpointing():
     ax.add_patch(Rectangle((bx, y1 + 0.12), bw_max, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
     text(ax, bx + bw_max + 0.3, y1 + 0.31, f"{mb1:.1f}MB", ha="left",
-         va="center", fontsize=8.5)
+         va="center", fontsize=10.5)
     small_bar = max(bw_max * mb2 / mb1, 0.1)
     ax.add_patch(Rectangle((bx, y2 + 0.12), small_bar, 0.38,
                            facecolor="#fae6d6", edgecolor=C["orange"], lw=0.8))
     text(ax, bx + small_bar + 0.3, y2 + 0.31,
-         f"{mb2:.1f}MB", ha="left", va="center", fontsize=8.5)
+         f"{mb2:.1f}MB", ha="left", va="center", fontsize=10.5)
     text(ax, bx, y1 + chh + 0.5, "实测保存", ha="left", va="center",
-         fontsize=8.5, color="#555555")
+         fontsize=10.5, color="#555555")
 
     text(ax, 6.0, 1.05,
          "灰斜线 = 不保存、反向走到时先重算；8 层各被重算恰好一次",
-         ha="center", va="center", fontsize=9.5)
+         ha="center", va="center", fontsize=10.5)
     text(ax, 6.0, 0.6,
          "= 一次额外前向（≈ +33% step FLOPs，与全量重算同量）；"
          "分块大小只改变存什么",
-         ha="center", va="center", fontsize=9.5)
+         ha="center", va="center", fontsize=10.5)
     save(fig, "backprop-checkpointing")
 
 
@@ -449,37 +449,42 @@ def fig_one_layer():
                  fontweight=600, color="#111111")
 
     boxes = [
-        (r"$x$", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.45),
-        (r"$z=Wx+b$", "线性", "$W=[[1,-1],[0.5,0.5]]$\n$b=(0,-1)$",
-         "#f5f8fc", "#555555", 2.7),
-        (r"$z$", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.45),
+        (r"$x$", "上一层输出", "(1, 2)", "#dce9f7", C["blue"], 1.55),
+        (r"$z=Wx+b$", "线性", "$W, b$",
+         "#f5f8fc", "#555555", 2.6),
+        (r"$z$", "加权和", "(-1, 0.5)", "#e5e5d7", "#8a8a4a", 1.4),
         (r"$f$", "激活函数", "ReLU", "#fae6d6", C["orange"], 1.5),
-        (r"$a$", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.5),
-        ("下一层", r"它的 $x$", "", "#f5f5f5", "#888888", 1.35),
+        (r"$a$", "激活值", "(0, 0.5)", "#dcefe2", C["green"], 1.4),
+        ("下一层", r"它的 $x$", "", "#f5f5f5", "#888888", 1.6),
     ]
     h, y, gap = 1.62, 2.7, 0.3
-    x = 0.15
+    x = 0.1
     for i, (name, sub, val, fc, ec, w) in enumerate(boxes):
         p = box(ax, x, y, w, h, "", fc=fc, ec=ec, lw=1.0)
         box_title(ax, x + w / 2, y + h - 0.34, name, p, color=ec)
         text(ax, x + w / 2, y + 0.72, val, in_box=p, ha="center",
-             va="center", fontsize=9)
-        text(ax, x + w / 2, y + 0.22, sub, in_box=p, ha="center",
-             va="center", fontsize=8.5, color="#444444")
+             va="center", fontsize=11.5)
+        text(ax, x + w / 2, y + 0.28, sub, in_box=p, ha="center",
+             va="center", fontsize=11.5, color="#444444")
         if i < len(boxes) - 1:
             ax.add_patch(FancyArrowPatch((x + w + 0.04, y + h / 2),
                                          (x + w + gap - 0.04, y + h / 2),
                                          arrowstyle="-|>", mutation_scale=12,
                                          color="#555555", lw=1.2))
         x += w + gap
+    text(ax, 6.0, 2.1,
+         r"取值：$W=[[1,-1],[0.5,0.5]]$，$b=(0,-1)$",
+         ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.55,
          r"$z=(-1,0.5)$：线性这一步的输出还带着负数；"
          r"ReLU 把它压成 $a=(0,0.5)$",
-         ha="center", va="center", fontsize=9.5)
+         ha="center", va="center", fontsize=11.5)
     text(ax, 6.0, 1.05,
-         "术语对照：f 是「激活函数」（第①义），a 是「激活值」（第②义）；"
+         "术语对照：f 是「激活函数」（第①义），a 是「激活值」（第②义）；",
+         ha="center", va="center", fontsize=10.5)
+    text(ax, 6.0, 0.6,
          "显存里的「激活」是第③义，见 01 篇的三个意思图",
-         ha="center", va="center", fontsize=9)
+         ha="center", va="center", fontsize=10.5)
     save(fig, "activation-one-layer")
 
 

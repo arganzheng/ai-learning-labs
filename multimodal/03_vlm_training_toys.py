@@ -64,7 +64,7 @@ def run_freeze():
         print(f"  {mode:<28} 视觉任务 {hist['vision'][-1]:.3f}   文本任务 {base:.3f} → {hist['text'][-1]:.3f}")
     print("  一起训：随机 connector 的噪声梯度改坏了 LLM 的参数，文本能力掉了；先冻结让 connector 先学会说 LLM 听得懂的话，再解冻时 LLM 收到的已是有意义的输入")
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 2.8), sharex=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4), sharex=True)
     colors = [C["blue"], C["red"], C["green"]]
     for (mode, hist), col in zip(results.items(), colors):
         axes[0].plot(hist["vision"], color=col, lw=1, label=mode); axes[1].plot(hist["text"], color=col, lw=1, label=mode)
@@ -76,7 +76,7 @@ def run_freeze():
     axes[0].set_yticks([0, 0.5, 1.0]); axes[1].set_yticks([0.8, 0.9, 1.0])
     for ax in axes:
         ax.set_xticks([0, 100, 200, 300, 400])
-    axes[1].legend(fontsize=10.5, loc="lower left")
+    axes[1].legend(fontsize=10.5, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncols=1)
     save(fig, "03-freeze-vs-joint")
 
 

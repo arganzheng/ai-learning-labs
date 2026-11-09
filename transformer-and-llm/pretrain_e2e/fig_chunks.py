@@ -15,7 +15,7 @@ DOC_A = ("一篇 1,000 token 的文档", 4, C["orange"])   # 目标文档：4 �
 OTHER = [("文档 A", 2, C["light"]), ("文档 B", 3, C["light"]), ("文档 C", 1, C["light"])]
 
 
-def box(ax, x, y, w, h, fc, text=None, pad=0.35, fs=8, tc="black"):
+def box(ax, x, y, w, h, fc, text=None, pad=0.35, fs=10.5, tc="black"):
     p = plt.Rectangle((x, y), w, h, facecolor=fc, edgecolor="black",
                       linewidth=0.8, joinstyle="round", zorder=2)
     ax.add_patch(p)
@@ -33,39 +33,39 @@ def main():
     patches, texts = [], []
 
     # ---- row 1: document stream -------------------------------------------------
-    ax.text(4, 84, "文档流（<|endoftext|> 分隔）", fontsize=8, ha="left", va="center")
+    ax.text(4, 84, "文档流（<|endoftext|> 分隔）", fontsize=10.5, ha="left", va="center")
     x = 4
     units = [("A", 9), ("B", 13), ("·1,000 token·", 22), ("C", 5)]
     cols = {"A": C["light"], "B": C["light"], "C": C["light"], "·1,000 token·": C["orange"]}
     for name, w in units:
         patches.append(box(ax, x, 70, w, 10, cols[name],
-                           "文档" if name != "·1,000 token·" else name, fs=7.5))
+                           "文档" if name != "·1,000 token·" else name, fs=10.5))
         x += w
-        patches.append(box(ax, x, 70, 1.6, 10, C["red"], "|", fs=7, tc="white"))
+        patches.append(box(ax, x, 70, 1.6, 10, C["red"], "|", fs=10.5, tc="white"))
         x += 1.6
-    ax.text(x + 1, 75, "……", fontsize=10, ha="left", va="center")
+    ax.text(x + 1, 75, "……", fontsize=10.5, ha="left", va="center")
 
     # ---- row 2: fixed 256-token windows -----------------------------------------
-    ax.text(4, 52, "每 256 token 切一条序列", fontsize=8, ha="left", va="center")
+    ax.text(4, 52, "每 256 token 切一条序列", fontsize=10.5, ha="left", va="center")
     x = 4
     seqs = [("①", 12.6), ("②", 12.6), ("③", 12.6), ("④", 12.6)]
     marks = [(0, False), (1, True), (2, True), (3, True)]
     # 目标文档的 4 段落在第 ②③④ 条序列与第 ⑤ 条里——用 4 段橙色表示
     for i, (lab, w) in enumerate(seqs + [("⑤", 12.6)]):
         fc = C["orange"] if i in (1, 2, 3, 4) else C["light"]
-        patches.append(box(ax, x, 38, w, 10, fc, f"序列{lab}", fs=7.5))
+        patches.append(box(ax, x, 38, w, 10, fc, f"序列{lab}", fs=10.5))
         x += w + 1.4
     ax.text(4, 32, "（序列可跨文档边界：一条 1,000 token 的文档被切成 4 段，散在 4 条序列里，互不为上下文）",
-            fontsize=7.5, ha="left", va="center", color="#a05a10")
+            fontsize=10.5, ha="left", va="center", color="#a05a10")
 
     # ---- row 3: batches ----------------------------------------------------------
     ax.text(4, 16, "训练时从 token 流里随机起点取 256 长的窗口，32 条成一个批（它的 4 段落进不同的批）",
-            fontsize=8, ha="left", va="center")
+            fontsize=10.5, ha="left", va="center")
     bx = 30
     for i, label in enumerate(["批 k", "批 k+1", "批 k+2", "…"]):
         fc = C["orange"] if i < 3 else C["light"]
-        patches.append(box(ax, bx + i * 17, 4, 8, 8, fc, label, fs=7.5))
-    ax.text(4, 8, "32 条 / 批", fontsize=7.5,
+        patches.append(box(ax, bx + i * 17, 4, 8, 8, fc, label, fs=10.5))
+    ax.text(4, 8, "32 条 / 批", fontsize=10.5,
             ha="left", va="center", color="black")
 
     # ---- assertions --------------------------------------------------------------

@@ -13,13 +13,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
-    "axes.unicode_minus": False,
-    "svg.fonttype": "none",          # 文字保留为 <text>，浏览器用本地字体渲染，文件小
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.labelsize": 9,
-    "legend.fontsize": 8,
+    "axes.unicode_minus": True,
+    "svg.fonttype": "none",          # 真文字 + 内嵌字体子集（embed_fonts）
+    "font.size": 10.5,
+    "axes.titlesize": 11.5,
+    "axes.labelsize": 10.5,
+    "xtick.labelsize": 10.5,
+    "ytick.labelsize": 10.5,
+    "legend.fontsize": 10.5,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "figure.dpi": 100,
@@ -31,11 +32,20 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
 C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c",
      "gray": "#8a8a8a", "purple": "#7b5ea7", "light": "#dddddd"}
 
+# 真文字+内嵌字体（Noto Sans SC / CM 子集）：须在创建任何 Text 前 import
+import sys as _sys  # noqa: E402
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+import figtext  # noqa: E402,F401  导入即 register_noto()
+
 
 def save(fig, name):
     os.makedirs(OUT, exist_ok=True)
+    figtext.check_text_floor(fig, name)
+    figtext.checks(fig)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None})
+    figtext.strip_ws(path)
+    figtext.embed_fonts(path)
     if os.environ.get("PLOT_PNG"):
         os.makedirs(os.environ["PLOT_PNG"], exist_ok=True)
         fig.savefig(os.path.join(os.environ["PLOT_PNG"], f"{name}.png"), dpi=110, bbox_inches="tight")

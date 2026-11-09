@@ -13,9 +13,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 plt.rcParams.update({
-    "font.family": ["Heiti SC", "Heiti TC", "Arial Unicode MS", "DejaVu Sans"],
     "axes.unicode_minus": False,
-    "svg.fonttype": "path",          # 文字落成轮廓，读者端渲染 = check_layout 量到的布局；none 会依赖读者本地字体，与断言脱节
+    "svg.fonttype": "none",          # 真文字 + 内嵌字体子集（embed_fonts），<img> 下也有 hinting
     "mathtext.fontset": "cm",       # $...$ 用 Computer Modern，与正文 KaTeX 一致
     "font.size": 10.5,
     "axes.titlesize": 11.5,
@@ -28,6 +27,11 @@ plt.rcParams.update({
 })
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
+
+# 真文字+内嵌字体（Noto Sans SC / CM 子集）：须在创建任何 Text 前 import
+import sys as _sys  # noqa: E402
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import figtext  # noqa: E402,F401  导入即 register_noto()
 
 # 一组柔和、打印也分得开的颜色
 C = {"blue": "#3b6fb6", "orange": "#e0812c", "green": "#4a9a5b", "red": "#c94c4c",
@@ -185,8 +189,11 @@ def save(fig, name, dpi=150):
     _dump_texts(fig, name)
     _check_text_floor(fig, name)
     collide(fig)
+    figtext.checks(fig)
     path = os.path.join(OUT, f"{name}.svg")
     fig.savefig(path, format="svg", bbox_inches="tight", metadata={"Date": None}, dpi=dpi)
+    figtext.strip_ws(path)
+    figtext.embed_fonts(path)
     if os.environ.get("PLOT_PNG"):                                   # 作者自查用：PLOT_PNG=/tmp/plots 另存一份 png
         os.makedirs(os.environ["PLOT_PNG"], exist_ok=True)
         fig.savefig(os.path.join(os.environ["PLOT_PNG"], f"{name}.png"), dpi=110, bbox_inches="tight")

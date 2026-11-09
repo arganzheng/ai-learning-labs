@@ -20,7 +20,7 @@ for i, (name, w) in enumerate(segs):
 ax.barh(0, 1.6, left=t, color=C["orange"], height=0.5); ax.text(t + 0.8, 0, "模型说话", ha="center", va="center", color="white", fontsize=10.5)
 ax.annotate("", xy=(t, -0.45), xytext=(2.0, -0.45), arrowprops=dict(arrowstyle="<->", color=C["red"], lw=1))
 ax.text((2.0 + t) / 2, -0.58, f"时延 {t - 2.0:.1f} s", ha="center", va="top", color=C["red"], fontsize=10.5)
-ax.set_yticks([0, 1]); ax.set_yticklabels(["模型", "用户"]); ax.set_xlim(0, 6); ax.set_ylim(-1.1, 1.75); ax.set_title("半双工：等静音（VAD）$\\to$ ASR $\\to$ LLM $\\to$ TTS 串联，用户说完才开始算（单位：秒）", fontsize=11.5)
+ax.set_yticks([0, 1]); ax.set_yticklabels(["模型", "用户"]); ax.set_xlim(0, 6); ax.set_ylim(-1.1, 1.75); ax.set_title("半双工：等静音（VAD）→ ASR → LLM → TTS 串联，用户说完才开始算（单位：秒）", fontsize=11.5)
 ax.set_xlabel("秒")
 
 # ---- 全双工：两条流每 80 ms 一格
@@ -28,9 +28,21 @@ ax = axes[1]
 frame = 0.08; n = int(6 / frame)
 user = np.zeros(n, bool); user[:25] = True; user[45:52] = True                         # 用户 0–2.0 s 说话；3.6–4.16 s 插话
 model = np.zeros(n, bool); model[27:45] = True; model[54:] = True                        # 用户停 2 帧后开始说；被插话后停，再等 2 帧继续
-for i in range(n):
-    ax.add_patch(plt.Rectangle((i * frame, 0.75), frame, 0.5, color=C["blue"] if user[i] else "#e9eef5", ec="white", lw=0.3))
-    ax.add_patch(plt.Rectangle((i * frame, -0.25), frame, 0.5, color=C["orange"] if model[i] else "#f6ecdc", ec="white", lw=0.3))
+for row, mask, on, off in ((0.75, user, C["blue"], "#e9eef5"),
+                           (-0.25, model, C["orange"], "#f6ecdc")):
+    i = 0
+    while i < n:
+        j = i
+        while j < n and mask[j] == mask[i]:
+            j += 1
+        if mask[i]:
+            ax.add_patch(plt.Rectangle((i * frame, row), (j - i) * frame, 0.5,
+                                       color=on, ec="white", lw=0.3))
+        else:
+            for k in range(i, j):
+                ax.add_patch(plt.Rectangle((k * frame, row), frame, 0.5,
+                                           color=off, ec="white", lw=0.3))
+        i = j
 ax.text(1.0, 1.0, "用户说话", ha="center", va="center", color="white", fontsize=10.5)
 ax.text(3.6 + 0.28, 1.0, "插话", ha="center", va="center", color="white", fontsize=10.5)
 ax.text(2.9, 0, "模型说话", ha="center", va="center", color="white", fontsize=10.5)

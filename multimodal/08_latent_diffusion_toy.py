@@ -32,7 +32,7 @@ def run_vae():
     for j, i in enumerate((0, 1, 2, 3, 4, 5)):
         axes[0, j].imshow(IMG[i], cmap="gray_r", vmin=0, vmax=1); axes[0, j].set_title(f"原图 {digits.target[i]}", fontsize=10.5)
         rec = pca.inverse_transform(pca.transform(X64[i:i + 1]))[0].reshape(8, 8)
-        axes[1, j].imshow(rec, cmap="gray_r", vmin=0, vmax=1); axes[1, j].set_title("16 维 $\\to$ 解码", fontsize=10.5)
+        axes[1, j].imshow(rec, cmap="gray_r", vmin=0, vmax=1); axes[1, j].set_title("16 维 → 解码", fontsize=10.5)
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
     save(fig, "08-pca-vae")

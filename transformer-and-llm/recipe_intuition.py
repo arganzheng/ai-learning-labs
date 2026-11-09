@@ -52,8 +52,8 @@ def fig_lr_gone_wrong(data, val, vocab):
         axes[1].plot(xs[:12], [l["loss"] for l in log][:12], "o-", color=col, lw=1.2, ms=3)
         print(f"  {name:<34} 第 5 步 loss {log[1]['loss']:.2f}   第 25 步 {log[4]['loss']:.2f}   末 train loss {ls[-1]:.3f}   val {log[-1]['val']:.3f}   最大梯度范数 {max(l['gnorm'] for l in log):.1f}")
     axes[0].set(xlabel="step", ylabel="train loss（5 点平滑）", title="四种学习率设置，同样的模型与数据")
-    axes[0].legend(fontsize=7)
-    axes[1].axhline(log[0]["loss"], color=C["gray"], ls=":", lw=1); axes[1].text(2, log[0]["loss"] + 0.15, "初始 loss（ln V）", fontsize=7, color=C["gray"])
+    axes[0].legend(fontsize=10.5)
+    axes[1].axhline(log[0]["loss"], color=C["gray"], ls=":", lw=1); axes[1].text(2, log[0]["loss"] + 0.15, "初始 loss（ln V）", fontsize=10.5, color=C["gray"])
     axes[1].set(xlabel="step", title="前 60 步放大：没有 warmup 的那条第 5 步冲到初始 loss 之上")
     save(fig, "pretrain-05-lr-gone-wrong")
 
@@ -73,7 +73,7 @@ def fig_spike_anatomy(data, val, vocab):
         losses = [l["loss"] for l in log]
         jumps = sum(1 for a, b in zip(losses, losses[1:]) if b > a + 0.3)
         print(f"  {name:<10} 末 loss {losses[-1]:.2f}  attention logit 最大 {max(l['max_logit'] for l in log):,.0f}  梯度范数最大 {max(l['gnorm'] for l in log):.1f}  loss 单步上跳 > 0.3 的次数 {jumps}")
-    axes[0].set(title="train loss", xlabel="step"); axes[0].legend(fontsize=7)
+    axes[0].set(title="train loss", xlabel="step"); axes[0].legend(fontsize=10.5)
     axes[1].set(title="attention logit 最大值（对数）", xlabel="step", yscale="log")
     axes[2].set(title="梯度范数（裁剪前，对数）", xlabel="step", yscale="log")
     save(fig, "pretrain-05-spike-anatomy")
@@ -90,7 +90,7 @@ def fig_zloss(data, val, vocab):
         ax.plot([l["step"] for l in log], [l["log_z"] for l in log], color=col, lw=1.2, label=f"{name}：末 val loss {log[-1]['val']:.3f}")
         print(f"  {name:<26} 末 val loss {log[-1]['val']:.3f}   |log Z| 末值 {log[-1]['log_z']:.2f}")
     ax.set(xlabel="step", ylabel="|log Z|（softmax 归一化常数的对数）", title="z-loss 把输出 logits 的整体漂移按住，loss 几乎不变")
-    ax.legend(fontsize=7.5)
+    ax.legend(fontsize=10.5)
     save(fig, "pretrain-05-zloss")
 
 
@@ -108,12 +108,12 @@ def fig_real_spike():
     axes[0].plot(h["step"][sl], h["train"][sl], "o-", color=C["blue"], lw=1, ms=3, label="train")
     axes[0].plot(h["step"][sl], h["val"][sl], "s-", color=C["orange"], lw=1, ms=3, label="val")
     axes[1].plot(h["step"][sl], h["gnorm"][sl], "o-", color=C["red"], lw=1, ms=3); axes[1].axhline(1.0, color=C["gray"], ls=":", lw=1)
-    axes[1].text(h["step"][lo], 1.1, "裁剪阈值 1.0", fontsize=7, color=C["gray"])
+    axes[1].text(h["step"][lo], 1.1, "裁剪阈值 1.0", fontsize=10.5, color=C["gray"])
     axes[2].plot(h["step"][sl], h["attn"][sl], "o-", color=C["purple"], lw=1, ms=3)
     for ax in axes:
         ax.axvline(h["step"][i], color=C["red"], ls="--", lw=0.8, alpha=0.6)
         ax.set_xlabel("step")
-    axes[0].set(title="train / val loss"); axes[0].legend(fontsize=7)
+    axes[0].set(title="train / val loss"); axes[0].legend(fontsize=10.5)
     axes[1].set(title="梯度范数（裁剪前）")
     axes[2].set(title="attention logit 最大值")
     save(fig, "pretrain-05-real-spike")

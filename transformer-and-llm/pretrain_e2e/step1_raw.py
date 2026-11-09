@@ -38,7 +38,7 @@ if __name__ == "__main__":
     axes[0].set_xticks([1, 2, 3, 4, 5, 6], ["10", "100", "1K", "10K", "100K", "1M"])
     axes[0].set(xlabel="每篇字符数（对数刻度）", ylabel="文档数", title=f"{len(paths)} 个 WET 文件：{fmt(len(docs))} 个网页的正文长度")
     axes[0].axvline(np.log10(np.median(chars)), color=C["red"], ls="--", lw=1)
-    axes[0].text(np.log10(np.median(chars)) + 0.1, axes[0].get_ylim()[1] * 0.9, f"中位数 {int(np.median(chars))}", color=C["red"], fontsize=8)
+    axes[0].text(np.log10(np.median(chars)) + 0.1, axes[0].get_ylim()[1] * 0.9, f"中位数 {int(np.median(chars))}", color=C["red"], fontsize=10.5)
     names = [l for l, _ in langs[:7]] + ["其他"]
     vals = [n for _, n in langs[:7]] + [len(docs) - sum(n for _, n in langs[:7])]
     axes[1].barh(names[::-1], vals[::-1], color=[C["gray"]] + [C["blue"]] * 7)

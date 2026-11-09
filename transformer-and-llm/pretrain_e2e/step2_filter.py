@@ -99,6 +99,6 @@ if __name__ == "__main__":
     names = list(stages); vals = list(stages.values())
     bars = ax.barh(names[::-1], vals[::-1], color=[C["green"]] + [C["blue"]] * (len(vals) - 1))
     for b, v in zip(bars, vals[::-1]):
-        ax.text(b.get_width() + n0 * 0.01, b.get_y() + b.get_height() / 2, f"{fmt(v)}（{v/n0:.0%}）", va="center", fontsize=8)
+        ax.text(b.get_width() + n0 * 0.01, b.get_y() + b.get_height() / 2, f"{fmt(v)}（{v/n0:.0%}）", va="center", fontsize=10.5)
     ax.set(xlabel="文档数", title="过滤漏斗：两个 WET 文件里的 68,834 个网页，每步剩多少", xlim=(0, n0 * 1.25))
     save(fig, "e2e-2-filter-funnel")
